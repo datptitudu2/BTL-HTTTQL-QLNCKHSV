@@ -1,0 +1,60 @@
+Total slides: 6
+
+--- SLIDE 1 ---
+Phát triển Hệ thống thông tin quản lý (MIS-Management Information System)
+TS. Nguyễn Quang Hưng
+nqhwng@gmail.com
+1
+
+--- SLIDE 2 ---
+Nội dung
+Mục tiêu của môn học
+Các nội dung chính
+Yêu cầu/ đánh giá
+Tài liệu tham khảo
+2
+
+--- SLIDE 3 ---
+Mục tiêu môn học
+Giúp SV nắm được kiến thức tổng quan, đặc thù của các hệ thống thông tin quản lý; phân tích và thiết kế hệ thống thông tin quản lý.
+3
+
+--- SLIDE 4 ---
+Các nội dung chính
+Tổng quan về Hệ thống thông tin quản lý (MIS)
+Hệ thống thông tin ra quyết định
+Phần cứng máy tính cho hệ thống thông tin
+Phần mềm cho hệ thống thông tin
+Hệ thống thông tin dữ liệu
+Công nghệ quản lý CSDL
+Tính toán Client – Server
+Hệ thống hỗ trợ ra quyết định
+Hệ thống thông tin văn phòng
+Hệ thống thông tin trong doanh nghiệp
+Phân tích và thiết kế hệ thống
+Hệ thống thông tin quản lý chiến lược
+Quản lý tài nguyên thông tin
+Quy hoạch nguồn lực doanh nghiệp
+Quản lý chuỗi cung ứng
+Ứng dụng CNTT trong doanh nghiệp
+4
+
+--- SLIDE 5 ---
+Yêu cầu/ đánh giá
+Chuyên cần: 10%
+BT nhóm: 30%, chia 11 tổ (<= 3 bạn) tương ứng với 15 chương.
+ND: báo cáo thuyết trình chương + tài liệu tham khảo chính. (bổ sung, làm giàu nếu đã có môn học riêng hoặc tài liệu khác)
+Thời gian báo cáo:
+- Theo thứ tự Chương
+Chuẩn bị báo cáo trình bày trên lớp, sau khi thầy bổ sung thì sửa báo cáo và nộp lại để chấm điểm.
+Thi: Bài tập lớn (định hướng đồ án tốt nghiệp) 60%
+5
+
+--- SLIDE 6 ---
+Tài liệu tham khảo
+Management Information System, 5th Semester, Computer Science Engineering, Odisha
+Management Information System, Managing Digital Firm, 12nd Edition, 2011.
+Coursera:
+Tài liệu cần tìm để cập nhật nội dung:
+Management Information Systems: Managing the Digital Firm, Kenneth C. Laudon & Jane P. Laudon – 16th/17th Edition
+6

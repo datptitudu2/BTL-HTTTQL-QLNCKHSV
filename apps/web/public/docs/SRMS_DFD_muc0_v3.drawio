@@ -1,0 +1,934 @@
+<mxfile host="app.diagrams.net">
+  <diagram name="DFD mức 0" id="dfd0">
+    <mxGraphModel dx="2100" dy="979" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="3490" pageHeight="2800" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="title" parent="1" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;fontFamily=Lora;fontSize=24;fontStyle=1;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" value="SƠ ĐỒ LUỒNG DỮ LIỆU (DFD) MỨC 0 – HỆ THỐNG QUẢN LÝ ĐỀ TÀI NGHIÊN CỨU KHOA HỌC SINH VIÊN (SRMS)" vertex="1">
+          <mxGeometry height="50" width="3330" x="50" y="30" as="geometry" />
+        </mxCell>
+        <mxCell id="subtitle" parent="1" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;fontFamily=Lora;fontSize=14;fontStyle=2;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" value="Mỗi khung nét đứt là một tiến trình 1.0 – 8.0 tương ứng 8 phân hệ cấp 1 của BFD cùng các tác nhân ngoài và kho dữ liệu liên quan; tác nhân và kho được vẽ lặp theo từng khung để đường nối không giao cắt." vertex="1">
+          <mxGeometry height="30" width="3330" x="50" y="84" as="geometry" />
+        </mxCell>
+        <mxCell id="fr1" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#9E9E9E;strokeWidth=1;dashed=1;dashPattern=6 4;fontFamily=Lora;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" value="" vertex="1">
+          <mxGeometry height="550" width="1620" x="50" y="150" as="geometry" />
+        </mxCell>
+        <mxCell id="p1" parent="1" style="swimlane;html=1;startSize=28;rounded=1;arcSize=12;whiteSpace=wrap;fontFamily=Lora;fontSize=14;fontStyle=1;fillColor=#FFFFFF;swimlaneFillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;collapsible=0;horizontal=1;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" value="1.0" vertex="1">
+          <mxGeometry height="110" width="840" x="440" y="414" as="geometry" />
+        </mxCell>
+        <mxCell id="p1_t" parent="p1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;fontFamily=Lora;fontSize=14;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" value="Đăng nhập &amp;amp; Quản lý tài khoản" vertex="1">
+          <mxGeometry height="82" width="840" y="28" as="geometry" />
+        </mxCell>
+        <mxCell id="p1_e_ND" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontFamily=Lora;fontSize=13;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" value="Người dùng&lt;br&gt;(Sinh viên, Giảng viên, Cán bộ)" vertex="1">
+          <mxGeometry height="54" width="240" x="740" y="190" as="geometry" />
+        </mxCell>
+        <mxCell id="p1_f_in" edge="1" parent="1" source="p1_e_ND" style="html=1;rounded=0;endArrow=block;endFill=1;strokeColor=#000000;strokeWidth=1.4;fontFamily=Lora;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.2500;exitY=1.0000;exitPerimeter=0;entryX=0.4286;entryY=0.0000;entryPerimeter=0;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" target="p1" value="Thông tin đăng nhập,&lt;br&gt;hồ sơ cá nhân">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint y="-35" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p1_f_out" edge="1" parent="1" source="p1" style="html=1;rounded=0;endArrow=block;endFill=1;strokeColor=#000000;strokeWidth=1.4;fontFamily=Lora;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.5714;exitY=0.0000;exitPerimeter=0;entryX=0.7500;entryY=1.0000;entryPerimeter=0;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" target="p1_e_ND" value="Phiên đăng nhập,&lt;br&gt;quyền truy cập">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint y="35" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p1_sL_AD" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontFamily=Lora;fontSize=13;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" value="Quản trị viên" vertex="1">
+          <mxGeometry height="110" width="150" x="110" y="414" as="geometry" />
+        </mxCell>
+        <mxCell id="p1_sLi" edge="1" parent="1" source="p1_sL_AD" style="html=1;rounded=0;endArrow=block;endFill=1;strokeColor=#000000;strokeWidth=1.4;fontFamily=Lora;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=1.0000;exitY=0.3800;exitPerimeter=0;entryX=0.0000;entryY=0.3800;entryPerimeter=0;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" target="p1" value="Thông tin cấu hình tài khoản,&lt;br&gt;đợt NCKH">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint y="-12" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p1_sLo" edge="1" parent="1" source="p1" style="html=1;rounded=0;endArrow=block;endFill=1;strokeColor=#000000;strokeWidth=1.4;fontFamily=Lora;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.0000;exitY=0.6800;exitPerimeter=0;entryX=1.0000;entryY=0.6800;entryPerimeter=0;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" target="p1_sL_AD" value="Trạng thái tài khoản,&lt;br&gt;kết quả cấu hình">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint y="12" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p1_sR_SSO" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontFamily=Lora;fontSize=13;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" value="Hệ thống SSO PTIT (Slink)" vertex="1">
+          <mxGeometry height="110" width="150" x="1460" y="414" as="geometry" />
+        </mxCell>
+        <mxCell id="p1_sRo" edge="1" parent="1" source="p1" style="html=1;rounded=0;endArrow=block;endFill=1;strokeColor=#000000;strokeWidth=1.4;fontFamily=Lora;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=1.0000;exitY=0.3800;exitPerimeter=0;entryX=0.0000;entryY=0.3800;entryPerimeter=0;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" target="p1_sR_SSO" value="Thông tin xác thực&lt;br&gt;tài khoản">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint y="-12" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p1_sRi" edge="1" parent="1" source="p1_sR_SSO" style="html=1;rounded=0;endArrow=block;endFill=1;strokeColor=#000000;strokeWidth=1.4;fontFamily=Lora;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.0000;exitY=0.6800;exitPerimeter=0;entryX=1.0000;entryY=0.6800;entryPerimeter=0;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" target="p1" value="Kết quả xác thực,&lt;br&gt;dữ liệu định danh">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint y="12" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p1_d0_D1" parent="1" style="shape=partialRectangle;whiteSpace=wrap;html=1;right=0;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontFamily=Lora;fontSize=12;align=left;spacingLeft=48;spacingRight=4;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" value="Tài khoản và hồ sơ người dùng" vertex="1">
+          <mxGeometry height="50" width="200" x="640" y="604" as="geometry" />
+        </mxCell>
+        <mxCell id="p1_d0_D1_i" parent="p1_d0_D1" style="shape=partialRectangle;whiteSpace=wrap;html=1;top=0;left=0;bottom=0;right=1;fillColor=none;strokeColor=#000000;strokeWidth=1.5;fontFamily=Lora;fontSize=13;fontStyle=1;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" value="D1" vertex="1">
+          <mxGeometry height="50" width="42" as="geometry" />
+        </mxCell>
+        <mxCell id="p1_d1_D2" parent="1" style="shape=partialRectangle;whiteSpace=wrap;html=1;right=0;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontFamily=Lora;fontSize=12;align=left;spacingLeft=48;spacingRight=4;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" value="Kế hoạch và đợt NCKH" vertex="1">
+          <mxGeometry height="50" width="200" x="880" y="604" as="geometry" />
+        </mxCell>
+        <mxCell id="p1_d1_D2_i" parent="p1_d1_D2" style="shape=partialRectangle;whiteSpace=wrap;html=1;top=0;left=0;bottom=0;right=1;fillColor=none;strokeColor=#000000;strokeWidth=1.5;fontFamily=Lora;fontSize=13;fontStyle=1;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" value="D2" vertex="1">
+          <mxGeometry height="50" width="42" as="geometry" />
+        </mxCell>
+        <mxCell id="p1_k0" edge="1" parent="1" source="p1" style="html=1;rounded=0;endArrow=block;endFill=1;startArrow=block;startFill=1;strokeColor=#000000;strokeWidth=1.4;fontFamily=Lora;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.3600;exitY=1.0000;exitPerimeter=0;entryX=0.5000;entryY=0.0000;entryPerimeter=0;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" target="p1_d0_D1" value="">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint y="-35" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p1_k1" edge="1" parent="1" source="p1" style="html=1;rounded=0;endArrow=block;endFill=1;startArrow=block;startFill=1;strokeColor=#000000;strokeWidth=1.4;fontFamily=Lora;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.6400;exitY=1.0000;exitPerimeter=0;entryX=0.5000;entryY=0.0000;entryPerimeter=0;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" target="p1_d1_D2" value="">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint y="-35" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="fr2" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#9E9E9E;strokeWidth=1;dashed=1;dashPattern=6 4;fontFamily=Lora;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" value="" vertex="1">
+          <mxGeometry height="550" width="1620" x="1720" y="150" as="geometry" />
+        </mxCell>
+        <mxCell id="p2" parent="1" style="swimlane;html=1;startSize=28;rounded=1;arcSize=12;whiteSpace=wrap;fontFamily=Lora;fontSize=14;fontStyle=1;fillColor=#FFFFFF;swimlaneFillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;collapsible=0;horizontal=1;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" value="2.0" vertex="1">
+          <mxGeometry height="110" width="840" x="2110" y="414" as="geometry" />
+        </mxCell>
+        <mxCell id="p2_t" parent="p2" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;fontFamily=Lora;fontSize=14;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" value="Đăng ký đề tài &amp;amp; Quản lý nhóm" vertex="1">
+          <mxGeometry height="82" width="840" y="28" as="geometry" />
+        </mxCell>
+        <mxCell id="p2_e0_CN" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontFamily=Lora;fontSize=13;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" value="Sinh viên&lt;br&gt;chủ nhiệm đề tài" vertex="1">
+          <mxGeometry height="54" width="175" x="2120" y="190" as="geometry" />
+        </mxCell>
+        <mxCell id="p2_f0i" edge="1" parent="1" source="p2_e0_CN" style="html=1;rounded=0;endArrow=block;endFill=1;strokeColor=#000000;strokeWidth=1.4;fontFamily=Lora;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.2500;exitY=1.0000;exitPerimeter=0;entryX=0.0640;entryY=0.0000;entryPerimeter=0;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" target="p2" value="Hồ sơ đăng ký đề tài&lt;br&gt;&amp;amp; đề cương (Mẫu 2)">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint y="-35" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p2_f0o" edge="1" parent="1" source="p2" style="html=1;rounded=0;endArrow=block;endFill=1;strokeColor=#000000;strokeWidth=1.4;fontFamily=Lora;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.1682;exitY=0.0000;exitPerimeter=0;entryX=0.7500;entryY=1.0000;entryPerimeter=0;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" target="p2_e0_CN" value="Thông báo kết quả duyệt&lt;br&gt;&amp;amp; mã số đề tài">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint y="35" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p2_e0_TV" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontFamily=Lora;fontSize=13;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" value="Thành viên nhóm&lt;br&gt;sinh viên" vertex="1">
+          <mxGeometry height="54" width="170" x="2330" y="190" as="geometry" />
+        </mxCell>
+        <mxCell id="p2_f_tvo" edge="1" parent="1" source="p2" style="html=1;rounded=0;endArrow=block;endFill=1;strokeColor=#000000;strokeWidth=1.4;fontFamily=Lora;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.3125;exitY=0.0000;exitPerimeter=0;entryX=0.2500;entryY=1.0000;entryPerimeter=0;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" target="p2_e0_TV" value="Lời mời tham gia&lt;br&gt;nhóm nghiên cứu">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint y="35" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p2_f_tvi" edge="1" parent="1" source="p2_e0_TV" style="html=1;rounded=0;endArrow=block;endFill=1;strokeColor=#000000;strokeWidth=1.4;fontFamily=Lora;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.7500;exitY=1.0000;exitPerimeter=0;entryX=0.4137;entryY=0.0000;entryPerimeter=0;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" target="p2" value="Xác nhận tham gia&lt;br&gt;&amp;amp; tỷ lệ đóng góp">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint y="-35" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p2_e1_GV" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontFamily=Lora;fontSize=13;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" value="Giảng viên hướng dẫn" vertex="1">
+          <mxGeometry height="54" width="165" x="2530" y="190" as="geometry" />
+        </mxCell>
+        <mxCell id="p2_f1o" edge="1" parent="1" source="p2" style="html=1;rounded=0;endArrow=block;endFill=1;strokeColor=#000000;strokeWidth=1.4;fontFamily=Lora;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.5491;exitY=0.0000;exitPerimeter=0;entryX=0.2500;entryY=1.0000;entryPerimeter=0;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" target="p2_e1_GV" value="Thông tin nhóm &amp;amp;&lt;br&gt;bản thảo đề cương">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint y="35" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p2_f1i" edge="1" parent="1" source="p2_e1_GV" style="html=1;rounded=0;endArrow=block;endFill=1;strokeColor=#000000;strokeWidth=1.4;fontFamily=Lora;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.7500;exitY=1.0000;exitPerimeter=0;entryX=0.6473;entryY=0.0000;entryPerimeter=0;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" target="p2" value="Ý kiến xác nhận hướng dẫn&lt;br&gt;&amp;amp; duyệt đề cương">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint y="-35" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p2_e2_TK" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontFamily=Lora;fontSize=13;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" value="Thư ký Khoa / Viện" vertex="1">
+          <mxGeometry height="54" width="165" x="2725" y="190" as="geometry" />
+        </mxCell>
+        <mxCell id="p2_f2o" edge="1" parent="1" source="p2" style="html=1;rounded=0;endArrow=block;endFill=1;strokeColor=#000000;strokeWidth=1.4;fontFamily=Lora;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.7812;exitY=0.0000;exitPerimeter=0;entryX=0.2500;entryY=1.0000;entryPerimeter=0;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" target="p2_e2_TK" value="Danh sách hồ sơ đề tài&lt;br&gt;đăng ký của Khoa">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint y="35" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p2_f2i" edge="1" parent="1" source="p2_e2_TK" style="html=1;rounded=0;endArrow=block;endFill=1;strokeColor=#000000;strokeWidth=1.4;fontFamily=Lora;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.7500;exitY=1.0000;exitPerimeter=0;entryX=0.8795;entryY=0.0000;entryPerimeter=0;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" target="p2" value="Kết quả thẩm định đề cương&lt;br&gt;&amp;amp; phân công GVHD">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint y="-35" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p2_d0_D1" parent="1" style="shape=partialRectangle;whiteSpace=wrap;html=1;right=0;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontFamily=Lora;fontSize=12;align=left;spacingLeft=48;spacingRight=4;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" value="Tài khoản và hồ sơ người dùng" vertex="1">
+          <mxGeometry height="50" width="190" x="1820" y="604" as="geometry" />
+        </mxCell>
+        <mxCell id="p2_d0_D1_i" parent="p2_d0_D1" style="shape=partialRectangle;whiteSpace=wrap;html=1;top=0;left=0;bottom=0;right=1;fillColor=none;strokeColor=#000000;strokeWidth=1.5;fontFamily=Lora;fontSize=13;fontStyle=1;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" value="D1" vertex="1">
+          <mxGeometry height="50" width="42" as="geometry" />
+        </mxCell>
+        <mxCell id="p2_d1_D2" parent="1" style="shape=partialRectangle;whiteSpace=wrap;html=1;right=0;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontFamily=Lora;fontSize=12;align=left;spacingLeft=48;spacingRight=4;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" value="Kế hoạch và đợt NCKH" vertex="1">
+          <mxGeometry height="50" width="190" x="2040" y="604" as="geometry" />
+        </mxCell>
+        <mxCell id="p2_d1_D2_i" parent="p2_d1_D2" style="shape=partialRectangle;whiteSpace=wrap;html=1;top=0;left=0;bottom=0;right=1;fillColor=none;strokeColor=#000000;strokeWidth=1.5;fontFamily=Lora;fontSize=13;fontStyle=1;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" value="D2" vertex="1">
+          <mxGeometry height="50" width="42" as="geometry" />
+        </mxCell>
+        <mxCell id="p2_d2_D3" parent="1" style="shape=partialRectangle;whiteSpace=wrap;html=1;right=0;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontFamily=Lora;fontSize=12;align=left;spacingLeft=48;spacingRight=4;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" value="Đề tài và nhóm sinh viên" vertex="1">
+          <mxGeometry height="50" width="190" x="2870" y="604" as="geometry" />
+        </mxCell>
+        <mxCell id="p2_d2_D3_i" parent="p2_d2_D3" style="shape=partialRectangle;whiteSpace=wrap;html=1;top=0;left=0;bottom=0;right=1;fillColor=none;strokeColor=#000000;strokeWidth=1.5;fontFamily=Lora;fontSize=13;fontStyle=1;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" value="D3" vertex="1">
+          <mxGeometry height="50" width="42" as="geometry" />
+        </mxCell>
+        <mxCell id="p2_d3_D4" parent="1" style="shape=partialRectangle;whiteSpace=wrap;html=1;right=0;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontFamily=Lora;fontSize=12;align=left;spacingLeft=48;spacingRight=4;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" value="Đề cương và tiến độ" vertex="1">
+          <mxGeometry height="50" width="190" x="3090" y="604" as="geometry" />
+        </mxCell>
+        <mxCell id="p2_d3_D4_i" parent="p2_d3_D4" style="shape=partialRectangle;whiteSpace=wrap;html=1;top=0;left=0;bottom=0;right=1;fillColor=none;strokeColor=#000000;strokeWidth=1.5;fontFamily=Lora;fontSize=13;fontStyle=1;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" value="D4" vertex="1">
+          <mxGeometry height="50" width="42" as="geometry" />
+        </mxCell>
+        <mxCell id="p2_k0" edge="1" parent="1" source="p2_d0_D1" style="html=1;rounded=0;endArrow=block;endFill=1;strokeColor=#000000;strokeWidth=1.4;fontFamily=Lora;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.5000;exitY=0.0000;exitPerimeter=0;entryX=0.0800;entryY=1.0000;entryPerimeter=0;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" target="p2" value="">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint y="-35" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p2_k1" edge="1" parent="1" source="p2_d1_D2" style="html=1;rounded=0;endArrow=block;endFill=1;strokeColor=#000000;strokeWidth=1.4;fontFamily=Lora;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.5000;exitY=0.0000;exitPerimeter=0;entryX=0.2200;entryY=1.0000;entryPerimeter=0;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" target="p2" value="">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint y="-35" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p2_k2" edge="1" parent="1" source="p2" style="html=1;rounded=0;endArrow=block;endFill=1;startArrow=block;startFill=1;strokeColor=#000000;strokeWidth=1.4;fontFamily=Lora;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.7800;exitY=1.0000;exitPerimeter=0;entryX=0.5000;entryY=0.0000;entryPerimeter=0;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" target="p2_d2_D3" value="">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint y="-35" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p2_k3" edge="1" parent="1" source="p2" style="html=1;rounded=0;endArrow=block;endFill=1;startArrow=block;startFill=1;strokeColor=#000000;strokeWidth=1.4;fontFamily=Lora;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.9200;exitY=1.0000;exitPerimeter=0;entryX=0.5000;entryY=0.0000;entryPerimeter=0;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" target="p2_d3_D4" value="">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint y="-35" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="fr3" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#9E9E9E;strokeWidth=1;dashed=1;dashPattern=6 4;fontFamily=Lora;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" value="" vertex="1">
+          <mxGeometry height="550" width="1620" x="50" y="730" as="geometry" />
+        </mxCell>
+        <mxCell id="p3" parent="1" style="swimlane;html=1;startSize=28;rounded=1;arcSize=12;whiteSpace=wrap;fontFamily=Lora;fontSize=14;fontStyle=1;fillColor=#FFFFFF;swimlaneFillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;collapsible=0;horizontal=1;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" value="3.0" vertex="1">
+          <mxGeometry height="110" width="840" x="440" y="994" as="geometry" />
+        </mxCell>
+        <mxCell id="p3_t" parent="p3" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;fontFamily=Lora;fontSize=14;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" value="Xét duyệt &amp;amp; Ban hành Quyết định" vertex="1">
+          <mxGeometry height="82" width="840" y="28" as="geometry" />
+        </mxCell>
+        <mxCell id="p3_e0_HD" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontFamily=Lora;fontSize=13;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" value="Hội đồng Khoa" vertex="1">
+          <mxGeometry height="54" width="150" x="470" y="770" as="geometry" />
+        </mxCell>
+        <mxCell id="p3_f0o" edge="1" parent="1" source="p3" style="html=1;rounded=0;endArrow=block;endFill=1;strokeColor=#000000;strokeWidth=1.4;fontFamily=Lora;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.0804;exitY=0.0000;exitPerimeter=0;entryX=0.2500;entryY=1.0000;entryPerimeter=0;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" target="p3_e0_HD" value="Danh mục hồ sơ&lt;br&gt;đề tài thẩm định">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint y="35" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p3_f0i" edge="1" parent="1" source="p3_e0_HD" style="html=1;rounded=0;endArrow=block;endFill=1;strokeColor=#000000;strokeWidth=1.4;fontFamily=Lora;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.7500;exitY=1.0000;exitPerimeter=0;entryX=0.1696;entryY=0.0000;entryPerimeter=0;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" target="p3" value="Kết quả đánh giá,&lt;br&gt;xếp loại sơ tuyển">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint y="-35" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p3_e1_TK" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontFamily=Lora;fontSize=13;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" value="Thư ký Khoa / Viện" vertex="1">
+          <mxGeometry height="54" width="150" x="670" y="770" as="geometry" />
+        </mxCell>
+        <mxCell id="p3_f1o" edge="1" parent="1" source="p3" style="html=1;rounded=0;endArrow=block;endFill=1;strokeColor=#000000;strokeWidth=1.4;fontFamily=Lora;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.3185;exitY=0.0000;exitPerimeter=0;entryX=0.2500;entryY=1.0000;entryPerimeter=0;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" target="p3_e1_TK" value="Danh mục đề tài&lt;br&gt;đủ điều kiện xét duyệt">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint y="35" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p3_f1i" edge="1" parent="1" source="p3_e1_TK" style="html=1;rounded=0;endArrow=block;endFill=1;strokeColor=#000000;strokeWidth=1.4;fontFamily=Lora;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.7500;exitY=1.0000;exitPerimeter=0;entryX=0.4077;entryY=0.0000;entryPerimeter=0;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" target="p3" value="Biên bản họp Hội đồng Khoa&lt;br&gt;&amp;amp; Công văn Mẫu 1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint y="-35" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p3_e2_QL" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontFamily=Lora;fontSize=13;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" value="Phòng QLKHCN&amp;amp;HTQT" vertex="1">
+          <mxGeometry height="54" width="150" x="870" y="770" as="geometry" />
+        </mxCell>
+        <mxCell id="p3_f2o" edge="1" parent="1" source="p3" style="html=1;rounded=0;endArrow=block;endFill=1;strokeColor=#000000;strokeWidth=1.4;fontFamily=Lora;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.5565;exitY=0.0000;exitPerimeter=0;entryX=0.2500;entryY=1.0000;entryPerimeter=0;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" target="p3_e2_QL" value="Bản tổng hợp danh mục&lt;br&gt;toàn Học viện">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint y="35" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p3_f2i" edge="1" parent="1" source="p3_e2_QL" style="html=1;rounded=0;endArrow=block;endFill=1;strokeColor=#000000;strokeWidth=1.4;fontFamily=Lora;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.7500;exitY=1.0000;exitPerimeter=0;entryX=0.6458;entryY=0.0000;entryPerimeter=0;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" target="p3" value="Kết quả rà soát&lt;br&gt;danh mục Học viện">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint y="-35" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p3_e3_BG" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontFamily=Lora;fontSize=13;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" value="Ban Giám đốc Học viện" vertex="1">
+          <mxGeometry height="54" width="150" x="1070" y="770" as="geometry" />
+        </mxCell>
+        <mxCell id="p3_f3o" edge="1" parent="1" source="p3" style="html=1;rounded=0;endArrow=block;endFill=1;strokeColor=#000000;strokeWidth=1.4;fontFamily=Lora;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.7946;exitY=0.0000;exitPerimeter=0;entryX=0.2500;entryY=1.0000;entryPerimeter=0;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" target="p3_e3_BG" value="Tờ trình danh mục&lt;br&gt;&amp;amp; dự toán kinh phí">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint y="35" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p3_f3i" edge="1" parent="1" source="p3_e3_BG" style="html=1;rounded=0;endArrow=block;endFill=1;strokeColor=#000000;strokeWidth=1.4;fontFamily=Lora;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.7500;exitY=1.0000;exitPerimeter=0;entryX=0.8839;entryY=0.0000;entryPerimeter=0;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" target="p3" value="Quyết định giao&lt;br&gt;đề tài &amp;amp; kinh phí">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint y="-35" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p3_d0_D2" parent="1" style="shape=partialRectangle;whiteSpace=wrap;html=1;right=0;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontFamily=Lora;fontSize=12;align=left;spacingLeft=48;spacingRight=4;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" value="Kế hoạch và đợt NCKH" vertex="1">
+          <mxGeometry height="50" width="190" x="130" y="1184" as="geometry" />
+        </mxCell>
+        <mxCell id="p3_d0_D2_i" parent="p3_d0_D2" style="shape=partialRectangle;whiteSpace=wrap;html=1;top=0;left=0;bottom=0;right=1;fillColor=none;strokeColor=#000000;strokeWidth=1.5;fontFamily=Lora;fontSize=13;fontStyle=1;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" value="D2" vertex="1">
+          <mxGeometry height="50" width="42" as="geometry" />
+        </mxCell>
+        <mxCell id="p3_d1_D3" parent="1" style="shape=partialRectangle;whiteSpace=wrap;html=1;right=0;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontFamily=Lora;fontSize=12;align=left;spacingLeft=48;spacingRight=4;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" value="Đề tài và nhóm sinh viên" vertex="1">
+          <mxGeometry height="50" width="190" x="350" y="1184" as="geometry" />
+        </mxCell>
+        <mxCell id="p3_d1_D3_i" parent="p3_d1_D3" style="shape=partialRectangle;whiteSpace=wrap;html=1;top=0;left=0;bottom=0;right=1;fillColor=none;strokeColor=#000000;strokeWidth=1.5;fontFamily=Lora;fontSize=13;fontStyle=1;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" value="D3" vertex="1">
+          <mxGeometry height="50" width="42" as="geometry" />
+        </mxCell>
+        <mxCell id="p3_d2_D5" parent="1" style="shape=partialRectangle;whiteSpace=wrap;html=1;right=0;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontFamily=Lora;fontSize=12;align=left;spacingLeft=48;spacingRight=4;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" value="Hồ sơ xét duyệt &amp;amp; QĐ giao" vertex="1">
+          <mxGeometry height="50" width="190" x="1180" y="1184" as="geometry" />
+        </mxCell>
+        <mxCell id="p3_d2_D5_i" parent="p3_d2_D5" style="shape=partialRectangle;whiteSpace=wrap;html=1;top=0;left=0;bottom=0;right=1;fillColor=none;strokeColor=#000000;strokeWidth=1.5;fontFamily=Lora;fontSize=13;fontStyle=1;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" value="D5" vertex="1">
+          <mxGeometry height="50" width="42" as="geometry" />
+        </mxCell>
+        <mxCell id="p3_d3_D7" parent="1" style="shape=partialRectangle;whiteSpace=wrap;html=1;right=0;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontFamily=Lora;fontSize=12;align=left;spacingLeft=48;spacingRight=4;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" value="Kinh phí và quyết toán" vertex="1">
+          <mxGeometry height="50" width="190" x="1400" y="1184" as="geometry" />
+        </mxCell>
+        <mxCell id="p3_d3_D7_i" parent="p3_d3_D7" style="shape=partialRectangle;whiteSpace=wrap;html=1;top=0;left=0;bottom=0;right=1;fillColor=none;strokeColor=#000000;strokeWidth=1.5;fontFamily=Lora;fontSize=13;fontStyle=1;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" value="D7" vertex="1">
+          <mxGeometry height="50" width="42" as="geometry" />
+        </mxCell>
+        <mxCell id="p3_k0" edge="1" parent="1" source="p3_d0_D2" style="html=1;rounded=0;endArrow=block;endFill=1;strokeColor=#000000;strokeWidth=1.4;fontFamily=Lora;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.5000;exitY=0.0000;exitPerimeter=0;entryX=0.0800;entryY=1.0000;entryPerimeter=0;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" target="p3" value="">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint y="-35" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p3_k1" edge="1" parent="1" source="p3" style="html=1;rounded=0;endArrow=block;endFill=1;startArrow=block;startFill=1;strokeColor=#000000;strokeWidth=1.4;fontFamily=Lora;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.2500;exitY=1.0000;exitPerimeter=0;entryX=0.5000;entryY=0.0000;entryPerimeter=0;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" target="p3_d1_D3" value="">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint y="-35" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p3_k2" edge="1" parent="1" source="p3" style="html=1;rounded=0;endArrow=block;endFill=1;startArrow=block;startFill=1;strokeColor=#000000;strokeWidth=1.4;fontFamily=Lora;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.7500;exitY=1.0000;exitPerimeter=0;entryX=0.5000;entryY=0.0000;entryPerimeter=0;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" target="p3_d2_D5" value="">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint y="-35" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p3_k3" edge="1" parent="1" source="p3" style="html=1;rounded=0;endArrow=block;endFill=1;startArrow=block;startFill=1;strokeColor=#000000;strokeWidth=1.4;fontFamily=Lora;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.9200;exitY=1.0000;exitPerimeter=0;entryX=0.5000;entryY=0.0000;entryPerimeter=0;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" target="p3_d3_D7" value="">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint y="-35" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="fr4" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#9E9E9E;strokeWidth=1;dashed=1;dashPattern=6 4;fontFamily=Lora;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" value="" vertex="1">
+          <mxGeometry height="550" width="1620" x="1720" y="730" as="geometry" />
+        </mxCell>
+        <mxCell id="p4" parent="1" style="swimlane;html=1;startSize=28;rounded=1;arcSize=12;whiteSpace=wrap;fontFamily=Lora;fontSize=14;fontStyle=1;fillColor=#FFFFFF;swimlaneFillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;collapsible=0;horizontal=1;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" value="4.0" vertex="1">
+          <mxGeometry height="110" width="840" x="2110" y="994" as="geometry" />
+        </mxCell>
+        <mxCell id="p4_t" parent="p4" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;fontFamily=Lora;fontSize=14;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" value="Giám sát tiến độ thực hiện" vertex="1">
+          <mxGeometry height="82" width="840" y="28" as="geometry" />
+        </mxCell>
+        <mxCell id="p4_e0_SV" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontFamily=Lora;fontSize=13;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" value="Sinh viên" vertex="1">
+          <mxGeometry height="54" width="140" x="2120" y="770" as="geometry" />
+        </mxCell>
+        <mxCell id="p4_f0i" edge="1" parent="1" source="p4_e0_SV" style="html=1;rounded=0;endArrow=block;endFill=1;strokeColor=#000000;strokeWidth=1.4;fontFamily=Lora;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.2500;exitY=1.0000;exitPerimeter=0;entryX=0.0536;entryY=0.0000;entryPerimeter=0;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" target="p4" value="Báo cáo tiến độ định kỳ,&lt;br&gt;đơn xin gia hạn/hủy">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint y="-35" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p4_f0o" edge="1" parent="1" source="p4" style="html=1;rounded=0;endArrow=block;endFill=1;strokeColor=#000000;strokeWidth=1.4;fontFamily=Lora;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.1369;exitY=0.0000;exitPerimeter=0;entryX=0.7500;entryY=1.0000;entryPerimeter=0;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" target="p4_e0_SV" value="Nhận xét tiến độ,&lt;br&gt;kết quả xử lý đơn">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint y="35" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p4_e1_GV" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontFamily=Lora;fontSize=13;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" value="Giảng viên hướng dẫn" vertex="1">
+          <mxGeometry height="54" width="145" x="2280" y="770" as="geometry" />
+        </mxCell>
+        <mxCell id="p4_f1o" edge="1" parent="1" source="p4" style="html=1;rounded=0;endArrow=block;endFill=1;strokeColor=#000000;strokeWidth=1.4;fontFamily=Lora;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.2455;exitY=0.0000;exitPerimeter=0;entryX=0.2500;entryY=1.0000;entryPerimeter=0;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" target="p4_e1_GV" value="Bản báo cáo tiến độ&lt;br&gt;của nhóm sinh viên">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint y="35" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p4_f1i" edge="1" parent="1" source="p4_e1_GV" style="html=1;rounded=0;endArrow=block;endFill=1;strokeColor=#000000;strokeWidth=1.4;fontFamily=Lora;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.7500;exitY=1.0000;exitPerimeter=0;entryX=0.3318;entryY=0.0000;entryPerimeter=0;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" target="p4" value="Phiếu đánh giá tiến độ,&lt;br&gt;ý kiến đơn gia hạn">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint y="-35" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p4_e2_TK" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontFamily=Lora;fontSize=13;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" value="Thư ký Khoa / Viện" vertex="1">
+          <mxGeometry height="54" width="145" x="2445" y="770" as="geometry" />
+        </mxCell>
+        <mxCell id="p4_f2o" edge="1" parent="1" source="p4" style="html=1;rounded=0;endArrow=block;endFill=1;strokeColor=#000000;strokeWidth=1.4;fontFamily=Lora;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.4420;exitY=0.0000;exitPerimeter=0;entryX=0.2500;entryY=1.0000;entryPerimeter=0;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" target="p4_e2_TK" value="Kế hoạch sinh hoạt&lt;br&gt;khoa học cấp Khoa">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint y="35" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p4_f2i" edge="1" parent="1" source="p4_e2_TK" style="html=1;rounded=0;endArrow=block;endFill=1;strokeColor=#000000;strokeWidth=1.4;fontFamily=Lora;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.7500;exitY=1.0000;exitPerimeter=0;entryX=0.5283;entryY=0.0000;entryPerimeter=0;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" target="p4" value="Biên bản hội thảo&lt;br&gt;khoa học (Mẫu 3.5)">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint y="-35" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p4_e3_QL" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontFamily=Lora;fontSize=13;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" value="Phòng QLKHCN&amp;amp;HTQT" vertex="1">
+          <mxGeometry height="54" width="145" x="2610" y="770" as="geometry" />
+        </mxCell>
+        <mxCell id="p4_f3o" edge="1" parent="1" source="p4" style="html=1;rounded=0;endArrow=block;endFill=1;strokeColor=#000000;strokeWidth=1.4;fontFamily=Lora;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.6384;exitY=0.0000;exitPerimeter=0;entryX=0.2500;entryY=1.0000;entryPerimeter=0;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" target="p4_e3_QL" value="Hồ sơ đơn xin gia hạn/hủy&lt;br&gt;cần thẩm định">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint y="35" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p4_f3i" edge="1" parent="1" source="p4_e3_QL" style="html=1;rounded=0;endArrow=block;endFill=1;strokeColor=#000000;strokeWidth=1.4;fontFamily=Lora;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.7500;exitY=1.0000;exitPerimeter=0;entryX=0.7247;entryY=0.0000;entryPerimeter=0;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" target="p4" value="Kết quả thẩm định&lt;br&gt;đơn gia hạn/hủy">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint y="-35" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p4_e4_BG" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontFamily=Lora;fontSize=13;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" value="Ban Giám đốc Học viện" vertex="1">
+          <mxGeometry height="54" width="145" x="2775" y="770" as="geometry" />
+        </mxCell>
+        <mxCell id="p4_f4o" edge="1" parent="1" source="p4" style="html=1;rounded=0;endArrow=block;endFill=1;strokeColor=#000000;strokeWidth=1.4;fontFamily=Lora;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.8348;exitY=0.0000;exitPerimeter=0;entryX=0.2500;entryY=1.0000;entryPerimeter=0;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" target="p4_e4_BG" value="Tờ trình đề nghị&lt;br&gt;gia hạn/hủy đề tài">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint y="35" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p4_f4i" edge="1" parent="1" source="p4_e4_BG" style="html=1;rounded=0;endArrow=block;endFill=1;strokeColor=#000000;strokeWidth=1.4;fontFamily=Lora;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.7500;exitY=1.0000;exitPerimeter=0;entryX=0.9211;entryY=0.0000;entryPerimeter=0;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" target="p4" value="Quyết định gia hạn&lt;br&gt;/ hủy đề tài">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint y="-35" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p4_d0_D3" parent="1" style="shape=partialRectangle;whiteSpace=wrap;html=1;right=0;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontFamily=Lora;fontSize=12;align=left;spacingLeft=48;spacingRight=4;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" value="Đề tài và nhóm sinh viên" vertex="1">
+          <mxGeometry height="50" width="200" x="2330" y="1184" as="geometry" />
+        </mxCell>
+        <mxCell id="p4_d0_D3_i" parent="p4_d0_D3" style="shape=partialRectangle;whiteSpace=wrap;html=1;top=0;left=0;bottom=0;right=1;fillColor=none;strokeColor=#000000;strokeWidth=1.5;fontFamily=Lora;fontSize=13;fontStyle=1;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" value="D3" vertex="1">
+          <mxGeometry height="50" width="42" as="geometry" />
+        </mxCell>
+        <mxCell id="p4_d1_D4" parent="1" style="shape=partialRectangle;whiteSpace=wrap;html=1;right=0;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontFamily=Lora;fontSize=12;align=left;spacingLeft=48;spacingRight=4;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" value="Đề cương và tiến độ" vertex="1">
+          <mxGeometry height="50" width="200" x="2570" y="1184" as="geometry" />
+        </mxCell>
+        <mxCell id="p4_d1_D4_i" parent="p4_d1_D4" style="shape=partialRectangle;whiteSpace=wrap;html=1;top=0;left=0;bottom=0;right=1;fillColor=none;strokeColor=#000000;strokeWidth=1.5;fontFamily=Lora;fontSize=13;fontStyle=1;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" value="D4" vertex="1">
+          <mxGeometry height="50" width="42" as="geometry" />
+        </mxCell>
+        <mxCell id="p4_k0" edge="1" parent="1" source="p4_d0_D3" style="html=1;rounded=0;endArrow=block;endFill=1;strokeColor=#000000;strokeWidth=1.4;fontFamily=Lora;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.5000;exitY=0.0000;exitPerimeter=0;entryX=0.3600;entryY=1.0000;entryPerimeter=0;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" target="p4" value="">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint y="-35" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p4_k1" edge="1" parent="1" source="p4" style="html=1;rounded=0;endArrow=block;endFill=1;startArrow=block;startFill=1;strokeColor=#000000;strokeWidth=1.4;fontFamily=Lora;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.6400;exitY=1.0000;exitPerimeter=0;entryX=0.5000;entryY=0.0000;entryPerimeter=0;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" target="p4_d1_D4" value="">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint y="-35" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="fr5" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#9E9E9E;strokeWidth=1;dashed=1;dashPattern=6 4;fontFamily=Lora;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" value="" vertex="1">
+          <mxGeometry height="550" width="1620" x="50" y="1310" as="geometry" />
+        </mxCell>
+        <mxCell id="p5" parent="1" style="swimlane;html=1;startSize=28;rounded=1;arcSize=12;whiteSpace=wrap;fontFamily=Lora;fontSize=14;fontStyle=1;fillColor=#FFFFFF;swimlaneFillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;collapsible=0;horizontal=1;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" value="5.0" vertex="1">
+          <mxGeometry height="110" width="840" x="440" y="1574" as="geometry" />
+        </mxCell>
+        <mxCell id="p5_t" parent="p5" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;fontFamily=Lora;fontSize=14;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" value="Nghiệm thu &amp;amp; Chấm điểm" vertex="1">
+          <mxGeometry height="82" width="840" y="28" as="geometry" />
+        </mxCell>
+        <mxCell id="p5_e0_SV" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontFamily=Lora;fontSize=13;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" value="Sinh viên" vertex="1">
+          <mxGeometry height="54" width="140" x="450" y="1350" as="geometry" />
+        </mxCell>
+        <mxCell id="p5_f0i" edge="1" parent="1" source="p5_e0_SV" style="html=1;rounded=0;endArrow=block;endFill=1;strokeColor=#000000;strokeWidth=1.4;fontFamily=Lora;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.2500;exitY=1.0000;exitPerimeter=0;entryX=0.0536;entryY=0.0000;entryPerimeter=0;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" target="p5" value="Báo cáo tổng kết,&lt;br&gt;sản phẩm &amp;amp; bài báo NCKH">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint y="-35" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p5_f0o" edge="1" parent="1" source="p5" style="html=1;rounded=0;endArrow=block;endFill=1;strokeColor=#000000;strokeWidth=1.4;fontFamily=Lora;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.1369;exitY=0.0000;exitPerimeter=0;entryX=0.7500;entryY=1.0000;entryPerimeter=0;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" target="p5_e0_SV" value="Kết quả nghiệm thu,&lt;br&gt;điểm số và xếp loại">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint y="35" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p5_e1_GV" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontFamily=Lora;fontSize=13;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" value="Giảng viên hướng dẫn" vertex="1">
+          <mxGeometry height="54" width="140" x="610" y="1350" as="geometry" />
+        </mxCell>
+        <mxCell id="p5_f1o" edge="1" parent="1" source="p5" style="html=1;rounded=0;endArrow=block;endFill=1;strokeColor=#000000;strokeWidth=1.4;fontFamily=Lora;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.2440;exitY=0.0000;exitPerimeter=0;entryX=0.2500;entryY=1.0000;entryPerimeter=0;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" target="p5_e1_GV" value="Thông báo lịch bảo vệ&lt;br&gt;Hội đồng">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint y="35" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p5_f1i" edge="1" parent="1" source="p5_e1_GV" style="html=1;rounded=0;endArrow=block;endFill=1;strokeColor=#000000;strokeWidth=1.4;fontFamily=Lora;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.7500;exitY=1.0000;exitPerimeter=0;entryX=0.3274;entryY=0.0000;entryPerimeter=0;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" target="p5" value="Bản nhận xét &amp;amp; xác nhận&lt;br&gt;đủ điều kiện nghiệm thu">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint y="-35" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p5_e2_HD" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontFamily=Lora;fontSize=13;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" value="Hội đồng nghiệm thu" vertex="1">
+          <mxGeometry height="54" width="140" x="770" y="1350" as="geometry" />
+        </mxCell>
+        <mxCell id="p5_f2o" edge="1" parent="1" source="p5" style="html=1;rounded=0;endArrow=block;endFill=1;strokeColor=#000000;strokeWidth=1.4;fontFamily=Lora;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.4345;exitY=0.0000;exitPerimeter=0;entryX=0.2500;entryY=1.0000;entryPerimeter=0;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" target="p5_e2_HD" value="Hồ sơ toàn văn,&lt;br&gt;báo cáo tóm tắt chấm điểm">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint y="35" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p5_f2i" edge="1" parent="1" source="p5_e2_HD" style="html=1;rounded=0;endArrow=block;endFill=1;strokeColor=#000000;strokeWidth=1.4;fontFamily=Lora;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.7500;exitY=1.0000;exitPerimeter=0;entryX=0.5179;entryY=0.0000;entryPerimeter=0;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" target="p5" value="Phiếu chấm (Mẫu 4.1)&lt;br&gt;&amp;amp; 4 khung nhận xét">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint y="-35" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p5_e3_TK" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontFamily=Lora;fontSize=13;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" value="Thư ký Khoa / Viện" vertex="1">
+          <mxGeometry height="54" width="140" x="930" y="1350" as="geometry" />
+        </mxCell>
+        <mxCell id="p5_f3i" edge="1" parent="1" source="p5_e3_TK" style="html=1;rounded=0;endArrow=block;endFill=1;strokeColor=#000000;strokeWidth=1.4;fontFamily=Lora;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.2500;exitY=1.0000;exitPerimeter=0;entryX=0.6250;entryY=0.0000;entryPerimeter=0;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" target="p5" value="Quyết định thành lập HĐ,&lt;br&gt;lịch bảo vệ">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint y="-35" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p5_f3o" edge="1" parent="1" source="p5" style="html=1;rounded=0;endArrow=block;endFill=1;strokeColor=#000000;strokeWidth=1.4;fontFamily=Lora;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.7083;exitY=0.0000;exitPerimeter=0;entryX=0.7500;entryY=1.0000;entryPerimeter=0;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" target="p5_e3_TK" value="Biên bản nghiệm thu (Mẫu 4.2),&lt;br&gt;bảng điểm 4.3">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint y="35" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p5_e4_QL" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontFamily=Lora;fontSize=13;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" value="Phòng QLKHCN&amp;amp;HTQT" vertex="1">
+          <mxGeometry height="54" width="140" x="1090" y="1350" as="geometry" />
+        </mxCell>
+        <mxCell id="p5_f4o" edge="1" parent="1" source="p5" style="html=1;rounded=0;endArrow=block;endFill=1;strokeColor=#000000;strokeWidth=1.4;fontFamily=Lora;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.8155;exitY=0.0000;exitPerimeter=0;entryX=0.2500;entryY=1.0000;entryPerimeter=0;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" target="p5_e4_QL" value="Hồ sơ nghiệm thu tổng hợp&lt;br&gt;toàn Học viện">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint y="35" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p5_f4i" edge="1" parent="1" source="p5_e4_QL" style="html=1;rounded=0;endArrow=block;endFill=1;strokeColor=#000000;strokeWidth=1.4;fontFamily=Lora;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.7500;exitY=1.0000;exitPerimeter=0;entryX=0.8988;entryY=0.0000;entryPerimeter=0;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" target="p5" value="Văn bản phê duyệt&lt;br&gt;kết quả nghiệm thu">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint y="-35" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p5_d0_D3" parent="1" style="shape=partialRectangle;whiteSpace=wrap;html=1;right=0;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontFamily=Lora;fontSize=12;align=left;spacingLeft=48;spacingRight=4;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" value="Đề tài và nhóm sinh viên" vertex="1">
+          <mxGeometry height="50" width="190" x="420" y="1764" as="geometry" />
+        </mxCell>
+        <mxCell id="p5_d0_D3_i" parent="p5_d0_D3" style="shape=partialRectangle;whiteSpace=wrap;html=1;top=0;left=0;bottom=0;right=1;fillColor=none;strokeColor=#000000;strokeWidth=1.5;fontFamily=Lora;fontSize=13;fontStyle=1;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" value="D3" vertex="1">
+          <mxGeometry height="50" width="42" as="geometry" />
+        </mxCell>
+        <mxCell id="p5_d1_D4" parent="1" style="shape=partialRectangle;whiteSpace=wrap;html=1;right=0;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontFamily=Lora;fontSize=12;align=left;spacingLeft=48;spacingRight=4;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" value="Đề cương và tiến độ" vertex="1">
+          <mxGeometry height="50" width="190" x="640" y="1764" as="geometry" />
+        </mxCell>
+        <mxCell id="p5_d1_D4_i" parent="p5_d1_D4" style="shape=partialRectangle;whiteSpace=wrap;html=1;top=0;left=0;bottom=0;right=1;fillColor=none;strokeColor=#000000;strokeWidth=1.5;fontFamily=Lora;fontSize=13;fontStyle=1;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" value="D4" vertex="1">
+          <mxGeometry height="50" width="42" as="geometry" />
+        </mxCell>
+        <mxCell id="p5_d2_D6" parent="1" style="shape=partialRectangle;whiteSpace=wrap;html=1;right=0;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontFamily=Lora;fontSize=12;align=left;spacingLeft=48;spacingRight=4;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" value="Hồ sơ nghiệm thu &amp;amp; kết quả" vertex="1">
+          <mxGeometry height="50" width="210" x="860" y="1764" as="geometry" />
+        </mxCell>
+        <mxCell id="p5_d2_D6_i" parent="p5_d2_D6" style="shape=partialRectangle;whiteSpace=wrap;html=1;top=0;left=0;bottom=0;right=1;fillColor=none;strokeColor=#000000;strokeWidth=1.5;fontFamily=Lora;fontSize=13;fontStyle=1;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" value="D6" vertex="1">
+          <mxGeometry height="50" width="42" as="geometry" />
+        </mxCell>
+        <mxCell id="p5_k0" edge="1" parent="1" source="p5_d0_D3" style="html=1;rounded=0;endArrow=block;endFill=1;strokeColor=#000000;strokeWidth=1.4;fontFamily=Lora;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.5000;exitY=0.0000;exitPerimeter=0;entryX=0.2200;entryY=1.0000;entryPerimeter=0;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" target="p5" value="">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint y="-35" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p5_k1" edge="1" parent="1" source="p5_d1_D4" style="html=1;rounded=0;endArrow=block;endFill=1;strokeColor=#000000;strokeWidth=1.4;fontFamily=Lora;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.5000;exitY=0.0000;exitPerimeter=0;entryX=0.4400;entryY=1.0000;entryPerimeter=0;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" target="p5" value="">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint y="-35" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p5_k2" edge="1" parent="1" source="p5" style="html=1;rounded=0;endArrow=block;endFill=1;startArrow=block;startFill=1;strokeColor=#000000;strokeWidth=1.4;fontFamily=Lora;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.7200;exitY=1.0000;exitPerimeter=0;entryX=0.5000;entryY=0.0000;entryPerimeter=0;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" target="p5_d2_D6" value="">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint y="-35" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="fr6" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#9E9E9E;strokeWidth=1;dashed=1;dashPattern=6 4;fontFamily=Lora;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" value="" vertex="1">
+          <mxGeometry height="550" width="1620" x="1720" y="1310" as="geometry" />
+        </mxCell>
+        <mxCell id="p6" parent="1" style="swimlane;html=1;startSize=28;rounded=1;arcSize=12;whiteSpace=wrap;fontFamily=Lora;fontSize=14;fontStyle=1;fillColor=#FFFFFF;swimlaneFillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;collapsible=0;horizontal=1;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" value="6.0" vertex="1">
+          <mxGeometry height="110" width="840" x="2110" y="1574" as="geometry" />
+        </mxCell>
+        <mxCell id="p6_t" parent="p6" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;fontFamily=Lora;fontSize=14;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" value="Khen thưởng &amp;amp; Quyết toán kinh phí" vertex="1">
+          <mxGeometry height="82" width="840" y="28" as="geometry" />
+        </mxCell>
+        <mxCell id="p6_e0_SV" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontFamily=Lora;fontSize=13;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" value="Sinh viên" vertex="1">
+          <mxGeometry height="54" width="140" x="2120" y="1350" as="geometry" />
+        </mxCell>
+        <mxCell id="p6_f0i" edge="1" parent="1" source="p6_e0_SV" style="html=1;rounded=0;endArrow=block;endFill=1;strokeColor=#000000;strokeWidth=1.4;fontFamily=Lora;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.2500;exitY=1.0000;exitPerimeter=0;entryX=0.0536;entryY=0.0000;entryPerimeter=0;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" target="p6" value="Chứng từ, hóa đơn&lt;br&gt;quyết toán kinh phí">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint y="-35" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p6_f0o" edge="1" parent="1" source="p6" style="html=1;rounded=0;endArrow=block;endFill=1;strokeColor=#000000;strokeWidth=1.4;fontFamily=Lora;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.1369;exitY=0.0000;exitPerimeter=0;entryX=0.7500;entryY=1.0000;entryPerimeter=0;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" target="p6_e0_SV" value="Giấy chứng nhận NCKH&lt;br&gt;&amp;amp; kết quả quyết toán">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint y="35" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p6_e1_GV" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontFamily=Lora;fontSize=13;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" value="Giảng viên hướng dẫn" vertex="1">
+          <mxGeometry height="54" width="145" x="2280" y="1350" as="geometry" />
+        </mxCell>
+        <mxCell id="p6_f1_gvo" edge="1" parent="1" source="p6" style="html=1;rounded=0;endArrow=block;endFill=1;strokeColor=#000000;strokeWidth=1.4;fontFamily=Lora;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.2455;exitY=0.0000;exitPerimeter=0;entryX=0.2500;entryY=1.0000;entryPerimeter=0;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" target="p6_e1_GV" value="Giấy chứng nhận GVHD&lt;br&gt;đề tài NCKH">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint y="35" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p6_f1_gvi" edge="1" parent="1" source="p6_e1_GV" style="html=1;rounded=0;endArrow=block;endFill=1;strokeColor=#000000;strokeWidth=1.4;fontFamily=Lora;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.7500;exitY=1.0000;exitPerimeter=0;entryX=0.3318;entryY=0.0000;entryPerimeter=0;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" target="p6" value="Bản kê khai xác nhận&lt;br&gt;giờ hướng dẫn NCKH">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint y="-35" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p6_e1_TK" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontFamily=Lora;fontSize=13;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" value="Thư ký Khoa / Viện" vertex="1">
+          <mxGeometry height="54" width="145" x="2445" y="1350" as="geometry" />
+        </mxCell>
+        <mxCell id="p6_f1o" edge="1" parent="1" source="p6" style="html=1;rounded=0;endArrow=block;endFill=1;strokeColor=#000000;strokeWidth=1.4;fontFamily=Lora;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.4420;exitY=0.0000;exitPerimeter=0;entryX=0.2500;entryY=1.0000;entryPerimeter=0;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" target="p6_e1_TK" value="Danh sách đề tài&lt;br&gt;hoàn thành của Khoa">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint y="35" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p6_f1i" edge="1" parent="1" source="p6_e1_TK" style="html=1;rounded=0;endArrow=block;endFill=1;strokeColor=#000000;strokeWidth=1.4;fontFamily=Lora;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.7500;exitY=1.0000;exitPerimeter=0;entryX=0.5283;entryY=0.0000;entryPerimeter=0;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" target="p6" value="Biên bản xác nhận khối lượng&lt;br&gt;hoàn thành cấp Khoa">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint y="-35" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p6_e2_QL" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontFamily=Lora;fontSize=13;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" value="Phòng QLKHCN&amp;amp;HTQT" vertex="1">
+          <mxGeometry height="54" width="145" x="2610" y="1350" as="geometry" />
+        </mxCell>
+        <mxCell id="p6_f2o" edge="1" parent="1" source="p6" style="html=1;rounded=0;endArrow=block;endFill=1;strokeColor=#000000;strokeWidth=1.4;fontFamily=Lora;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.6384;exitY=0.0000;exitPerimeter=0;entryX=0.2500;entryY=1.0000;entryPerimeter=0;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" target="p6_e2_QL" value="Danh mục đề cử&lt;br&gt;dự thi cấp Bộ (Mẫu 5)">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint y="35" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p6_f2i" edge="1" parent="1" source="p6_e2_QL" style="html=1;rounded=0;endArrow=block;endFill=1;strokeColor=#000000;strokeWidth=1.4;fontFamily=Lora;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.7500;exitY=1.0000;exitPerimeter=0;entryX=0.7247;entryY=0.0000;entryPerimeter=0;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" target="p6" value="Kết quả rà soát&lt;br&gt;hồ sơ khen thưởng">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint y="-35" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p6_e3_BG" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontFamily=Lora;fontSize=13;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" value="Ban Giám đốc Học viện" vertex="1">
+          <mxGeometry height="54" width="145" x="2775" y="1350" as="geometry" />
+        </mxCell>
+        <mxCell id="p6_f3o" edge="1" parent="1" source="p6" style="html=1;rounded=0;endArrow=block;endFill=1;strokeColor=#000000;strokeWidth=1.4;fontFamily=Lora;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.8348;exitY=0.0000;exitPerimeter=0;entryX=0.2500;entryY=1.0000;entryPerimeter=0;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" target="p6_e3_BG" value="Tờ trình khen thưởng&lt;br&gt;và quyết toán kinh phí">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint y="35" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p6_f3i" edge="1" parent="1" source="p6_e3_BG" style="html=1;rounded=0;endArrow=block;endFill=1;strokeColor=#000000;strokeWidth=1.4;fontFamily=Lora;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.7500;exitY=1.0000;exitPerimeter=0;entryX=0.9211;entryY=0.0000;entryPerimeter=0;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" target="p6" value="Quyết định khen thưởng&lt;br&gt;&amp;amp; phê duyệt quyết toán">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint y="-35" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p6_sR_CTSV" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontFamily=Lora;fontSize=13;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" value="Phòng CT&amp;amp;CTSV" vertex="1">
+          <mxGeometry height="75" width="140" x="3080" y="1500" as="geometry" />
+        </mxCell>
+        <mxCell id="p6_sR_o1" edge="1" parent="1" source="p6" style="html=1;rounded=0;endArrow=block;endFill=1;strokeColor=#000000;strokeWidth=1.4;fontFamily=Lora;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=1.0000;exitY=0.2000;exitPerimeter=0;entryX=0.0000;entryY=0.3500;entryPerimeter=0;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" target="p6_sR_CTSV" value="Danh sách sinh viên&lt;br&gt;được cộng điểm thưởng">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint y="-10" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p6_sR_i1" edge="1" parent="1" source="p6_sR_CTSV" style="html=1;rounded=0;endArrow=block;endFill=1;strokeColor=#000000;strokeWidth=1.4;fontFamily=Lora;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.0000;exitY=0.7000;exitPerimeter=0;entryX=1.0000;entryY=0.3500;entryPerimeter=0;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" target="p6" value="Thông báo cập nhật&lt;br&gt;điểm rèn luyện, học bổng">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint y="10" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p6_sR_TCKT" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontFamily=Lora;fontSize=13;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" value="Phòng Tài chính Kế toán" vertex="1">
+          <mxGeometry height="75" width="140" x="3080" y="1610" as="geometry" />
+        </mxCell>
+        <mxCell id="p6_sR_o2" edge="1" parent="1" source="p6" style="html=1;rounded=0;endArrow=block;endFill=1;strokeColor=#000000;strokeWidth=1.4;fontFamily=Lora;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=1.0000;exitY=0.7500;exitPerimeter=0;entryX=0.0000;entryY=0.3500;entryPerimeter=0;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" target="p6_sR_TCKT" value="Hồ sơ thanh quyết toán&lt;br&gt;kinh phí đề tài">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint y="-10" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p6_sR_i2" edge="1" parent="1" source="p6_sR_TCKT" style="html=1;rounded=0;endArrow=block;endFill=1;strokeColor=#000000;strokeWidth=1.4;fontFamily=Lora;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.0000;exitY=0.7000;exitPerimeter=0;entryX=1.0000;entryY=0.8500;entryPerimeter=0;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" target="p6" value="Chứng từ chi tiền&lt;br&gt;và xác nhận quyết toán">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint y="10" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p6_d0_D3" parent="1" style="shape=partialRectangle;whiteSpace=wrap;html=1;right=0;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontFamily=Lora;fontSize=12;align=left;spacingLeft=48;spacingRight=4;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" value="Đề tài và nhóm sinh viên" vertex="1">
+          <mxGeometry height="50" width="190" x="1820" y="1764" as="geometry" />
+        </mxCell>
+        <mxCell id="p6_d0_D3_i" parent="p6_d0_D3" style="shape=partialRectangle;whiteSpace=wrap;html=1;top=0;left=0;bottom=0;right=1;fillColor=none;strokeColor=#000000;strokeWidth=1.5;fontFamily=Lora;fontSize=13;fontStyle=1;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" value="D3" vertex="1">
+          <mxGeometry height="50" width="42" as="geometry" />
+        </mxCell>
+        <mxCell id="p6_d1_D6" parent="1" style="shape=partialRectangle;whiteSpace=wrap;html=1;right=0;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontFamily=Lora;fontSize=12;align=left;spacingLeft=48;spacingRight=4;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" value="Hồ sơ nghiệm thu &amp;amp; kết quả" vertex="1">
+          <mxGeometry height="50" width="190" x="2040" y="1764" as="geometry" />
+        </mxCell>
+        <mxCell id="p6_d1_D6_i" parent="p6_d1_D6" style="shape=partialRectangle;whiteSpace=wrap;html=1;top=0;left=0;bottom=0;right=1;fillColor=none;strokeColor=#000000;strokeWidth=1.5;fontFamily=Lora;fontSize=13;fontStyle=1;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" value="D6" vertex="1">
+          <mxGeometry height="50" width="42" as="geometry" />
+        </mxCell>
+        <mxCell id="p6_d2_D7" parent="1" style="shape=partialRectangle;whiteSpace=wrap;html=1;right=0;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontFamily=Lora;fontSize=12;align=left;spacingLeft=48;spacingRight=4;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" value="Kinh phí và quyết toán" vertex="1">
+          <mxGeometry height="50" width="190" x="2260" y="1764" as="geometry" />
+        </mxCell>
+        <mxCell id="p6_d2_D7_i" parent="p6_d2_D7" style="shape=partialRectangle;whiteSpace=wrap;html=1;top=0;left=0;bottom=0;right=1;fillColor=none;strokeColor=#000000;strokeWidth=1.5;fontFamily=Lora;fontSize=13;fontStyle=1;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" value="D7" vertex="1">
+          <mxGeometry height="50" width="42" as="geometry" />
+        </mxCell>
+        <mxCell id="p6_d3_D8" parent="1" style="shape=partialRectangle;whiteSpace=wrap;html=1;right=0;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontFamily=Lora;fontSize=12;align=left;spacingLeft=48;spacingRight=4;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" value="Khen thưởng &amp;amp; giấy chứng nhận" vertex="1">
+          <mxGeometry height="50" width="210" x="2480" y="1764" as="geometry" />
+        </mxCell>
+        <mxCell id="p6_d3_D8_i" parent="p6_d3_D8" style="shape=partialRectangle;whiteSpace=wrap;html=1;top=0;left=0;bottom=0;right=1;fillColor=none;strokeColor=#000000;strokeWidth=1.5;fontFamily=Lora;fontSize=13;fontStyle=1;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" value="D8" vertex="1">
+          <mxGeometry height="50" width="42" as="geometry" />
+        </mxCell>
+        <mxCell id="p6_k0" edge="1" parent="1" source="p6_d0_D3" style="html=1;rounded=0;endArrow=block;endFill=1;strokeColor=#000000;strokeWidth=1.4;fontFamily=Lora;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.5000;exitY=0.0000;exitPerimeter=0;entryX=0.1200;entryY=1.0000;entryPerimeter=0;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" target="p6" value="">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint y="-35" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p6_k1" edge="1" parent="1" source="p6_d1_D6" style="html=1;rounded=0;endArrow=block;endFill=1;strokeColor=#000000;strokeWidth=1.4;fontFamily=Lora;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.5000;exitY=0.0000;exitPerimeter=0;entryX=0.2800;entryY=1.0000;entryPerimeter=0;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" target="p6" value="">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint y="-35" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p6_k2" edge="1" parent="1" source="p6" style="html=1;rounded=0;endArrow=block;endFill=1;startArrow=block;startFill=1;strokeColor=#000000;strokeWidth=1.4;fontFamily=Lora;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.5200;exitY=1.0000;exitPerimeter=0;entryX=0.5000;entryY=0.0000;entryPerimeter=0;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" target="p6_d2_D7" value="">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint y="-35" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p6_k3" edge="1" parent="1" source="p6" style="html=1;rounded=0;endArrow=block;endFill=1;startArrow=block;startFill=1;strokeColor=#000000;strokeWidth=1.4;fontFamily=Lora;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.7800;exitY=1.0000;exitPerimeter=0;entryX=0.5000;entryY=0.0000;entryPerimeter=0;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" target="p6_d3_D8" value="">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint y="-35" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="fr7" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#9E9E9E;strokeWidth=1;dashed=1;dashPattern=6 4;fontFamily=Lora;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" value="" vertex="1">
+          <mxGeometry height="550" width="1620" x="50" y="1890" as="geometry" />
+        </mxCell>
+        <mxCell id="p7" parent="1" style="swimlane;html=1;startSize=28;rounded=1;arcSize=12;whiteSpace=wrap;fontFamily=Lora;fontSize=14;fontStyle=1;fillColor=#FFFFFF;swimlaneFillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;collapsible=0;horizontal=1;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" value="7.0" vertex="1">
+          <mxGeometry height="110" width="840" x="440" y="2154" as="geometry" />
+        </mxCell>
+        <mxCell id="p7_t" parent="p7" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;fontFamily=Lora;fontSize=14;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" value="Thư viện số &amp;amp; Thống kê báo cáo" vertex="1">
+          <mxGeometry height="82" width="840" y="28" as="geometry" />
+        </mxCell>
+        <mxCell id="p7_e0_SV" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontFamily=Lora;fontSize=13;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" value="Sinh viên" vertex="1">
+          <mxGeometry height="54" width="150" x="460" y="1930" as="geometry" />
+        </mxCell>
+        <mxCell id="p7_f0i" edge="1" parent="1" source="p7_e0_SV" style="html=1;rounded=0;endArrow=block;endFill=1;strokeColor=#000000;strokeWidth=1.4;fontFamily=Lora;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.2500;exitY=1.0000;exitPerimeter=0;entryX=0.0685;entryY=0.0000;entryPerimeter=0;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" target="p7" value="Phiếu tra cứu công trình,&lt;br&gt;đề tài NCKH">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint y="-35" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p7_f0o" edge="1" parent="1" source="p7" style="html=1;rounded=0;endArrow=block;endFill=1;strokeColor=#000000;strokeWidth=1.4;fontFamily=Lora;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.1577;exitY=0.0000;exitPerimeter=0;entryX=0.7500;entryY=1.0000;entryPerimeter=0;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" target="p7_e0_SV" value="Kết quả tìm kiếm, tài liệu&lt;br&gt;toàn văn công trình">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint y="35" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p7_e1_GV" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontFamily=Lora;fontSize=13;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" value="Giảng viên" vertex="1">
+          <mxGeometry height="54" width="150" x="660" y="1930" as="geometry" />
+        </mxCell>
+        <mxCell id="p7_f1o" edge="1" parent="1" source="p7" style="html=1;rounded=0;endArrow=block;endFill=1;strokeColor=#000000;strokeWidth=1.4;fontFamily=Lora;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.3065;exitY=0.0000;exitPerimeter=0;entryX=0.2500;entryY=1.0000;entryPerimeter=0;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" target="p7_e1_GV" value="Bảng tổng hợp giờ NCKH&lt;br&gt;quy đổi của giảng viên">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint y="35" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p7_f1i" edge="1" parent="1" source="p7_e1_GV" style="html=1;rounded=0;endArrow=block;endFill=1;strokeColor=#000000;strokeWidth=1.4;fontFamily=Lora;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.7500;exitY=1.0000;exitPerimeter=0;entryX=0.3958;entryY=0.0000;entryPerimeter=0;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" target="p7" value="Phiếu tra cứu&lt;br&gt;giờ NCKH giảng viên">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint y="-35" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p7_e2_TK" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontFamily=Lora;fontSize=13;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" value="Thư ký Khoa / Viện" vertex="1">
+          <mxGeometry height="54" width="150" x="860" y="1930" as="geometry" />
+        </mxCell>
+        <mxCell id="p7_f2o" edge="1" parent="1" source="p7" style="html=1;rounded=0;endArrow=block;endFill=1;strokeColor=#000000;strokeWidth=1.4;fontFamily=Lora;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.5446;exitY=0.0000;exitPerimeter=0;entryX=0.2500;entryY=1.0000;entryPerimeter=0;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" target="p7_e2_TK" value="Báo cáo thống kê&lt;br&gt;đề tài theo năm học">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint y="35" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p7_f2i" edge="1" parent="1" source="p7_e2_TK" style="html=1;rounded=0;endArrow=block;endFill=1;strokeColor=#000000;strokeWidth=1.4;fontFamily=Lora;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.7500;exitY=1.0000;exitPerimeter=0;entryX=0.6339;entryY=0.0000;entryPerimeter=0;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" target="p7" value="Phiếu yêu cầu&lt;br&gt;số liệu thống kê Khoa">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint y="-35" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p7_e3_QL" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontFamily=Lora;fontSize=13;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" value="Phòng QLKHCN&amp;amp;HTQT" vertex="1">
+          <mxGeometry height="54" width="150" x="1060" y="1930" as="geometry" />
+        </mxCell>
+        <mxCell id="p7_f3o" edge="1" parent="1" source="p7" style="html=1;rounded=0;endArrow=block;endFill=1;strokeColor=#000000;strokeWidth=1.4;fontFamily=Lora;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.7827;exitY=0.0000;exitPerimeter=0;entryX=0.2500;entryY=1.0000;entryPerimeter=0;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" target="p7_e3_QL" value="Tập tin biểu mẫu chuẩn&lt;br&gt;(Word/PDF Mẫu 1-5)">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint y="35" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p7_f3i" edge="1" parent="1" source="p7_e3_QL" style="html=1;rounded=0;endArrow=block;endFill=1;strokeColor=#000000;strokeWidth=1.4;fontFamily=Lora;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.7500;exitY=1.0000;exitPerimeter=0;entryX=0.8720;entryY=0.0000;entryPerimeter=0;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" target="p7" value="Phiếu yêu cầu&lt;br&gt;biểu mẫu chuẩn QĐ 521">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint y="-35" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p7_sR_TV" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontFamily=Lora;fontSize=13;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" value="Thư viện số Học viện" vertex="1">
+          <mxGeometry height="110" width="150" x="1460" y="2154" as="geometry" />
+        </mxCell>
+        <mxCell id="p7_sRo" edge="1" parent="1" source="p7" style="html=1;rounded=0;endArrow=block;endFill=1;strokeColor=#000000;strokeWidth=1.4;fontFamily=Lora;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=1.0000;exitY=0.3800;exitPerimeter=0;entryX=0.0000;entryY=0.3800;entryPerimeter=0;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" target="p7_sR_TV" value="Toàn văn báo cáo khoa học,&lt;br&gt;kỷ yếu NCKH">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint y="-12" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p7_sRi" edge="1" parent="1" source="p7_sR_TV" style="html=1;rounded=0;endArrow=block;endFill=1;strokeColor=#000000;strokeWidth=1.4;fontFamily=Lora;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.0000;exitY=0.6800;exitPerimeter=0;entryX=1.0000;entryY=0.6800;entryPerimeter=0;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" target="p7" value="Mã chỉ mục tài liệu (Index),&lt;br&gt;chứng nhận số">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint y="12" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p7_d0_D1" parent="1" style="shape=partialRectangle;whiteSpace=wrap;html=1;right=0;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontFamily=Lora;fontSize=12;align=left;spacingLeft=48;spacingRight=4;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" value="Tài khoản và hồ sơ người dùng" vertex="1">
+          <mxGeometry height="50" width="170" x="380" y="2344" as="geometry" />
+        </mxCell>
+        <mxCell id="p7_d0_D1_i" parent="p7_d0_D1" style="shape=partialRectangle;whiteSpace=wrap;html=1;top=0;left=0;bottom=0;right=1;fillColor=none;strokeColor=#000000;strokeWidth=1.5;fontFamily=Lora;fontSize=13;fontStyle=1;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" value="D1" vertex="1">
+          <mxGeometry height="50" width="42" as="geometry" />
+        </mxCell>
+        <mxCell id="p7_d1_D3" parent="1" style="shape=partialRectangle;whiteSpace=wrap;html=1;right=0;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontFamily=Lora;fontSize=12;align=left;spacingLeft=48;spacingRight=4;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" value="Đề tài và nhóm sinh viên" vertex="1">
+          <mxGeometry height="50" width="170" x="570" y="2344" as="geometry" />
+        </mxCell>
+        <mxCell id="p7_d1_D3_i" parent="p7_d1_D3" style="shape=partialRectangle;whiteSpace=wrap;html=1;top=0;left=0;bottom=0;right=1;fillColor=none;strokeColor=#000000;strokeWidth=1.5;fontFamily=Lora;fontSize=13;fontStyle=1;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" value="D3" vertex="1">
+          <mxGeometry height="50" width="42" as="geometry" />
+        </mxCell>
+        <mxCell id="p7_d3_D4" parent="1" style="shape=partialRectangle;whiteSpace=wrap;html=1;right=0;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontFamily=Lora;fontSize=12;align=left;spacingLeft=48;spacingRight=4;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" value="Đề cương và tiến độ" vertex="1">
+          <mxGeometry height="50" width="170" x="760" y="2344" as="geometry" />
+        </mxCell>
+        <mxCell id="p7_d3_D4_i" parent="p7_d3_D4" style="shape=partialRectangle;whiteSpace=wrap;html=1;top=0;left=0;bottom=0;right=1;fillColor=none;strokeColor=#000000;strokeWidth=1.5;fontFamily=Lora;fontSize=13;fontStyle=1;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" value="D4" vertex="1">
+          <mxGeometry height="50" width="42" as="geometry" />
+        </mxCell>
+        <mxCell id="p7_d4_D5" parent="1" style="shape=partialRectangle;whiteSpace=wrap;html=1;right=0;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontFamily=Lora;fontSize=12;align=left;spacingLeft=48;spacingRight=4;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" value="Hồ sơ xét duyệt &amp;amp; QĐ giao" vertex="1">
+          <mxGeometry height="50" width="170" x="950" y="2344" as="geometry" />
+        </mxCell>
+        <mxCell id="p7_d4_D5_i" parent="p7_d4_D5" style="shape=partialRectangle;whiteSpace=wrap;html=1;top=0;left=0;bottom=0;right=1;fillColor=none;strokeColor=#000000;strokeWidth=1.5;fontFamily=Lora;fontSize=13;fontStyle=1;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" value="D5" vertex="1">
+          <mxGeometry height="50" width="42" as="geometry" />
+        </mxCell>
+        <mxCell id="p7_d2_D6" parent="1" style="shape=partialRectangle;whiteSpace=wrap;html=1;right=0;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontFamily=Lora;fontSize=12;align=left;spacingLeft=48;spacingRight=4;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" value="Hồ sơ nghiệm thu &amp;amp; kết quả" vertex="1">
+          <mxGeometry height="50" width="180" x="1140" y="2344" as="geometry" />
+        </mxCell>
+        <mxCell id="p7_d2_D6_i" parent="p7_d2_D6" style="shape=partialRectangle;whiteSpace=wrap;html=1;top=0;left=0;bottom=0;right=1;fillColor=none;strokeColor=#000000;strokeWidth=1.5;fontFamily=Lora;fontSize=13;fontStyle=1;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" value="D6" vertex="1">
+          <mxGeometry height="50" width="42" as="geometry" />
+        </mxCell>
+        <mxCell id="p7_k0" edge="1" parent="1" source="p7_d0_D1" style="html=1;rounded=0;endArrow=block;endFill=1;strokeColor=#000000;strokeWidth=1.4;fontFamily=Lora;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.5000;exitY=0.0000;exitPerimeter=0;entryX=0.1800;entryY=1.0000;entryPerimeter=0;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" target="p7" value="">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint y="-35" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p7_k1" edge="1" parent="1" source="p7_d1_D3" style="html=1;rounded=0;endArrow=block;endFill=1;strokeColor=#000000;strokeWidth=1.4;fontFamily=Lora;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.5000;exitY=0.0000;exitPerimeter=0;entryX=0.3600;entryY=1.0000;entryPerimeter=0;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" target="p7" value="">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint y="-35" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p7_k3" edge="1" parent="1" source="p7_d3_D4" style="html=1;rounded=0;endArrow=block;endFill=1;strokeColor=#000000;strokeWidth=1.4;fontFamily=Lora;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.5000;exitY=0.0000;exitPerimeter=0;entryX=0.5400;entryY=1.0000;entryPerimeter=0;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" target="p7" value="">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint y="-35" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p7_k4" edge="1" parent="1" source="p7_d4_D5" style="html=1;rounded=0;endArrow=block;endFill=1;strokeColor=#000000;strokeWidth=1.4;fontFamily=Lora;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.5000;exitY=0.0000;exitPerimeter=0;entryX=0.7200;entryY=1.0000;entryPerimeter=0;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" target="p7" value="">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint y="-35" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p7_k2" edge="1" parent="1" source="p7" style="html=1;rounded=0;endArrow=block;endFill=1;startArrow=block;startFill=1;strokeColor=#000000;strokeWidth=1.4;fontFamily=Lora;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.9000;exitY=1.0000;exitPerimeter=0;entryX=0.5000;entryY=0.0000;entryPerimeter=0;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" target="p7_d2_D6" value="">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint y="-35" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="fr8" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#9E9E9E;strokeWidth=1;dashed=1;dashPattern=6 4;fontFamily=Lora;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" value="" vertex="1">
+          <mxGeometry height="550" width="1620" x="1720" y="1890" as="geometry" />
+        </mxCell>
+        <mxCell id="p8" parent="1" style="swimlane;html=1;startSize=28;rounded=1;arcSize=12;whiteSpace=wrap;fontFamily=Lora;fontSize=14;fontStyle=1;fillColor=#FFFFFF;swimlaneFillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;collapsible=0;horizontal=1;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" value="8.0" vertex="1">
+          <mxGeometry height="110" width="840" x="2110" y="2154" as="geometry" />
+        </mxCell>
+        <mxCell id="p8_t" parent="p8" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;fontFamily=Lora;fontSize=14;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" value="Thông báo &amp;amp; Nhắc việc" vertex="1">
+          <mxGeometry height="82" width="840" y="28" as="geometry" />
+        </mxCell>
+        <mxCell id="p8_e0_SV" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontFamily=Lora;fontSize=13;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" value="Sinh viên" vertex="1">
+          <mxGeometry height="54" width="160" x="2120" y="1930" as="geometry" />
+        </mxCell>
+        <mxCell id="p8_f0o" edge="1" parent="1" source="p8" style="html=1;rounded=0;endArrow=block;endFill=1;strokeColor=#000000;strokeWidth=1.4;fontFamily=Lora;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.0595;exitY=0.0000;exitPerimeter=0;entryX=0.2500;entryY=1.0000;entryPerimeter=0;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" target="p8_e0_SV" value="Thông báo nhắc hạn nộp&lt;br&gt;báo cáo, hồ sơ">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint y="35" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p8_f0i" edge="1" parent="1" source="p8_e0_SV" style="html=1;rounded=0;endArrow=block;endFill=1;strokeColor=#000000;strokeWidth=1.4;fontFamily=Lora;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.7500;exitY=1.0000;exitPerimeter=0;entryX=0.1548;entryY=0.0000;entryPerimeter=0;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" target="p8" value="Xác nhận đã đọc &amp;amp;&lt;br&gt;phản hồi thông báo">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint y="-35" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p8_e0_GV" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontFamily=Lora;fontSize=13;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" value="Giảng viên hướng dẫn" vertex="1">
+          <mxGeometry height="54" width="160" x="2310" y="1930" as="geometry" />
+        </mxCell>
+        <mxCell id="p8_f0_gvo" edge="1" parent="1" source="p8" style="html=1;rounded=0;endArrow=block;endFill=1;strokeColor=#000000;strokeWidth=1.4;fontFamily=Lora;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.2857;exitY=0.0000;exitPerimeter=0;entryX=0.2500;entryY=1.0000;entryPerimeter=0;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" target="p8_e0_GV" value="Thông báo nhắc duyệt&lt;br&gt;đề cương &amp;amp; chấm điểm">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint y="35" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p8_f0_gvi" edge="1" parent="1" source="p8_e0_GV" style="html=1;rounded=0;endArrow=block;endFill=1;strokeColor=#000000;strokeWidth=1.4;fontFamily=Lora;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.7500;exitY=1.0000;exitPerimeter=0;entryX=0.3810;entryY=0.0000;entryPerimeter=0;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" target="p8" value="Xác nhận tiếp nhận&lt;br&gt;thông báo nhắc việc">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint y="-35" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p8_e1_TK" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontFamily=Lora;fontSize=13;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" value="Thư ký Khoa / Viện" vertex="1">
+          <mxGeometry height="54" width="170" x="2500" y="1930" as="geometry" />
+        </mxCell>
+        <mxCell id="p8_f1o" edge="1" parent="1" source="p8" style="html=1;rounded=0;endArrow=block;endFill=1;strokeColor=#000000;strokeWidth=1.4;fontFamily=Lora;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.5149;exitY=0.0000;exitPerimeter=0;entryX=0.2500;entryY=1.0000;entryPerimeter=0;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" target="p8_e1_TK" value="Báo cáo phát hành tin&lt;br&gt;&amp;amp; Cảnh báo chậm tiến độ">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint y="35" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p8_f1i" edge="1" parent="1" source="p8_e1_TK" style="html=1;rounded=0;endArrow=block;endFill=1;strokeColor=#000000;strokeWidth=1.4;fontFamily=Lora;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.7500;exitY=1.0000;exitPerimeter=0;entryX=0.6161;entryY=0.0000;entryPerimeter=0;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" target="p8" value="Nội dung thông báo&lt;br&gt;cần phát hành của Khoa">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint y="-35" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p8_e2_QL" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontFamily=Lora;fontSize=13;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" value="Phòng QLKHCN&amp;amp;HTQT" vertex="1">
+          <mxGeometry height="54" width="170" x="2700" y="1930" as="geometry" />
+        </mxCell>
+        <mxCell id="p8_f2o" edge="1" parent="1" source="p8" style="html=1;rounded=0;endArrow=block;endFill=1;strokeColor=#000000;strokeWidth=1.4;fontFamily=Lora;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.7530;exitY=0.0000;exitPerimeter=0;entryX=0.2500;entryY=1.0000;entryPerimeter=0;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" target="p8_e2_QL" value="Báo cáo trạng thái&lt;br&gt;gửi tin &amp;amp; phản hồi">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint y="35" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p8_f2i" edge="1" parent="1" source="p8_e2_QL" style="html=1;rounded=0;endArrow=block;endFill=1;strokeColor=#000000;strokeWidth=1.4;fontFamily=Lora;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.7500;exitY=1.0000;exitPerimeter=0;entryX=0.8542;entryY=0.0000;entryPerimeter=0;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" target="p8" value="Cấu hình lịch trình&lt;br&gt;các mốc hạn Học viện">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint y="-35" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p8_sR_MAIL" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontFamily=Lora;fontSize=13;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" value="Dịch vụ Email / SMS / Zalo OA" vertex="1">
+          <mxGeometry height="110" width="160" x="3080" y="2154" as="geometry" />
+        </mxCell>
+        <mxCell id="p8_sRo" edge="1" parent="1" source="p8" style="html=1;rounded=0;endArrow=block;endFill=1;strokeColor=#000000;strokeWidth=1.4;fontFamily=Lora;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=1.0000;exitY=0.3800;exitPerimeter=0;entryX=0.0000;entryY=0.3800;entryPerimeter=0;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" target="p8_sR_MAIL" value="Nội dung và danh sách&lt;br&gt;người nhận tin">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint y="-12" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p8_sRi" edge="1" parent="1" source="p8_sR_MAIL" style="html=1;rounded=0;endArrow=block;endFill=1;strokeColor=#000000;strokeWidth=1.4;fontFamily=Lora;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.0000;exitY=0.6800;exitPerimeter=0;entryX=1.0000;entryY=0.6800;entryPerimeter=0;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" target="p8" value="Trạng thái chuyển phát&lt;br&gt;tin nhắn">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint y="12" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p8_d0_D1" parent="1" style="shape=partialRectangle;whiteSpace=wrap;html=1;right=0;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontFamily=Lora;fontSize=12;align=left;spacingLeft=48;spacingRight=4;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" value="Tài khoản và hồ sơ người dùng" vertex="1">
+          <mxGeometry height="50" width="170" x="1820" y="2344" as="geometry" />
+        </mxCell>
+        <mxCell id="p8_d0_D1_i" parent="p8_d0_D1" style="shape=partialRectangle;whiteSpace=wrap;html=1;top=0;left=0;bottom=0;right=1;fillColor=none;strokeColor=#000000;strokeWidth=1.5;fontFamily=Lora;fontSize=13;fontStyle=1;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" value="D1" vertex="1">
+          <mxGeometry height="50" width="42" as="geometry" />
+        </mxCell>
+        <mxCell id="p8_d1_D2" parent="1" style="shape=partialRectangle;whiteSpace=wrap;html=1;right=0;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontFamily=Lora;fontSize=12;align=left;spacingLeft=48;spacingRight=4;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" value="Kế hoạch và đợt NCKH" vertex="1">
+          <mxGeometry height="50" width="170" x="2010" y="2344" as="geometry" />
+        </mxCell>
+        <mxCell id="p8_d1_D2_i" parent="p8_d1_D2" style="shape=partialRectangle;whiteSpace=wrap;html=1;top=0;left=0;bottom=0;right=1;fillColor=none;strokeColor=#000000;strokeWidth=1.5;fontFamily=Lora;fontSize=13;fontStyle=1;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" value="D2" vertex="1">
+          <mxGeometry height="50" width="42" as="geometry" />
+        </mxCell>
+        <mxCell id="p8_d4_D3" parent="1" style="shape=partialRectangle;whiteSpace=wrap;html=1;right=0;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontFamily=Lora;fontSize=12;align=left;spacingLeft=48;spacingRight=4;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" value="Đề tài và nhóm sinh viên" vertex="1">
+          <mxGeometry height="50" width="170" x="2200" y="2344" as="geometry" />
+        </mxCell>
+        <mxCell id="p8_d4_D3_i" parent="p8_d4_D3" style="shape=partialRectangle;whiteSpace=wrap;html=1;top=0;left=0;bottom=0;right=1;fillColor=none;strokeColor=#000000;strokeWidth=1.5;fontFamily=Lora;fontSize=13;fontStyle=1;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" value="D3" vertex="1">
+          <mxGeometry height="50" width="42" as="geometry" />
+        </mxCell>
+        <mxCell id="p8_d2_D4" parent="1" style="shape=partialRectangle;whiteSpace=wrap;html=1;right=0;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontFamily=Lora;fontSize=12;align=left;spacingLeft=48;spacingRight=4;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" value="Đề cương và tiến độ" vertex="1">
+          <mxGeometry height="50" width="170" x="2390" y="2344" as="geometry" />
+        </mxCell>
+        <mxCell id="p8_d2_D4_i" parent="p8_d2_D4" style="shape=partialRectangle;whiteSpace=wrap;html=1;top=0;left=0;bottom=0;right=1;fillColor=none;strokeColor=#000000;strokeWidth=1.5;fontFamily=Lora;fontSize=13;fontStyle=1;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" value="D4" vertex="1">
+          <mxGeometry height="50" width="42" as="geometry" />
+        </mxCell>
+        <mxCell id="p8_d3_D9" parent="1" style="shape=partialRectangle;whiteSpace=wrap;html=1;right=0;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontFamily=Lora;fontSize=12;align=left;spacingLeft=48;spacingRight=4;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" value="Lịch hạn và thông báo" vertex="1">
+          <mxGeometry height="50" width="170" x="2580" y="2344" as="geometry" />
+        </mxCell>
+        <mxCell id="p8_d3_D9_i" parent="p8_d3_D9" style="shape=partialRectangle;whiteSpace=wrap;html=1;top=0;left=0;bottom=0;right=1;fillColor=none;strokeColor=#000000;strokeWidth=1.5;fontFamily=Lora;fontSize=13;fontStyle=1;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" value="D9" vertex="1">
+          <mxGeometry height="50" width="42" as="geometry" />
+        </mxCell>
+        <mxCell id="p8_k0" edge="1" parent="1" source="p8_d0_D1" style="html=1;rounded=0;endArrow=block;endFill=1;strokeColor=#000000;strokeWidth=1.4;fontFamily=Lora;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.5000;exitY=0.0000;exitPerimeter=0;entryX=0.0800;entryY=1.0000;entryPerimeter=0;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" target="p8" value="">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint y="-35" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p8_k1" edge="1" parent="1" source="p8_d1_D2" style="html=1;rounded=0;endArrow=block;endFill=1;strokeColor=#000000;strokeWidth=1.4;fontFamily=Lora;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.5000;exitY=0.0000;exitPerimeter=0;entryX=0.2200;entryY=1.0000;entryPerimeter=0;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" target="p8" value="">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint y="-35" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p8_k4" edge="1" parent="1" source="p8_d4_D3" style="html=1;rounded=0;endArrow=block;endFill=1;strokeColor=#000000;strokeWidth=1.4;fontFamily=Lora;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.5000;exitY=0.0000;exitPerimeter=0;entryX=0.3800;entryY=1.0000;entryPerimeter=0;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" target="p8" value="">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint y="-35" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p8_k2" edge="1" parent="1" source="p8_d2_D4" style="html=1;rounded=0;endArrow=block;endFill=1;strokeColor=#000000;strokeWidth=1.4;fontFamily=Lora;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.5000;exitY=0.0000;exitPerimeter=0;entryX=0.5400;entryY=1.0000;entryPerimeter=0;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" target="p8" value="">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint y="-35" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p8_k3" edge="1" parent="1" source="p8" style="html=1;rounded=0;endArrow=block;endFill=1;startArrow=block;startFill=1;strokeColor=#000000;strokeWidth=1.4;fontFamily=Lora;fontSize=11;labelBackgroundColor=#FFFFFF;exitX=0.7800;exitY=1.0000;exitPerimeter=0;entryX=0.5000;entryY=0.0000;entryPerimeter=0;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" target="p8_d3_D9" value="">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint y="-35" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="fr_lg" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#9E9E9E;strokeWidth=1;dashed=1;dashPattern=6 4;fontFamily=Lora;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" value="" vertex="1">
+          <mxGeometry height="180" width="3290" x="50" y="2480" as="geometry" />
+        </mxCell>
+        <mxCell id="lg_t" parent="1" style="text;html=1;align=left;verticalAlign=middle;whiteSpace=wrap;fontFamily=Lora;fontSize=16;fontStyle=1;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" value="Chú giải ký hiệu (Gane – Sarson)" vertex="1">
+          <mxGeometry height="30" width="400" x="90" y="2495" as="geometry" />
+        </mxCell>
+        <mxCell id="lg_p" parent="1" style="swimlane;html=1;startSize=28;rounded=1;arcSize=12;whiteSpace=wrap;fontFamily=Lora;fontSize=14;fontStyle=1;fillColor=#FFFFFF;swimlaneFillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;collapsible=0;horizontal=1;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" value="x.0" vertex="1">
+          <mxGeometry height="62" width="140" x="90" y="2540" as="geometry" />
+        </mxCell>
+        <mxCell id="lg_pt" parent="lg_p" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;fontFamily=Lora;fontSize=14;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" value="Tên chức năng" vertex="1">
+          <mxGeometry height="40" width="140" y="22" as="geometry" />
+        </mxCell>
+        <mxCell id="lg_pd" parent="1" style="text;html=1;align=left;verticalAlign=middle;whiteSpace=wrap;fontFamily=Lora;fontSize=13;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" value="Tiến trình (chức năng cấp 1 của BFD, tên dạng Động từ - Bổ ngữ)" vertex="1">
+          <mxGeometry height="62" width="240" x="240" y="2540" as="geometry" />
+        </mxCell>
+        <mxCell id="lg_e" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontFamily=Lora;fontSize=13;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" value="Tác nhân ngoài" vertex="1">
+          <mxGeometry height="46" width="140" x="510" y="2548" as="geometry" />
+        </mxCell>
+        <mxCell id="lg_ed" parent="1" style="text;html=1;align=left;verticalAlign=middle;whiteSpace=wrap;fontFamily=Lora;fontSize=13;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" value="Tác nhân ngoài (người dùng / đơn vị / hệ thống ngoài, tên là Danh từ)" vertex="1">
+          <mxGeometry height="62" width="280" x="660" y="2540" as="geometry" />
+        </mxCell>
+        <mxCell id="lg_s" parent="1" style="shape=partialRectangle;whiteSpace=wrap;html=1;right=0;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontFamily=Lora;fontSize=12;align=left;spacingLeft=48;spacingRight=4;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" value="Kho dữ liệu" vertex="1">
+          <mxGeometry height="40" width="170" x="970" y="2551" as="geometry" />
+        </mxCell>
+        <mxCell id="lg_si" parent="lg_s" style="shape=partialRectangle;whiteSpace=wrap;html=1;top=0;left=0;bottom=0;right=1;fillColor=none;strokeColor=#000000;strokeWidth=1.5;fontFamily=Lora;fontSize=13;fontStyle=1;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" value="Dn" vertex="1">
+          <mxGeometry height="40" width="42" as="geometry" />
+        </mxCell>
+        <mxCell id="lg_sd" parent="1" style="text;html=1;align=left;verticalAlign=middle;whiteSpace=wrap;fontFamily=Lora;fontSize=13;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" value="Kho lưu trữ dữ liệu (D1 – D9, tên là Danh từ)" vertex="1">
+          <mxGeometry height="62" width="220" x="1150" y="2540" as="geometry" />
+        </mxCell>
+        <mxCell id="lg_ad" parent="1" style="text;html=1;align=left;verticalAlign=middle;whiteSpace=wrap;fontFamily=Lora;fontSize=13;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DLora;" value="Luồng dữ liệu một chiều (nhãn bắt buộc là Cụm danh từ mô tả dữ liệu);&lt;br&gt;mũi tên vào kho = ghi, ra khỏi kho = đọc, hai đầu = đọc/ghi (chỉ dùng giữa tiến trình và kho)" vertex="1">
+          <mxGeometry height="62" width="700" x="1400" y="2540" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

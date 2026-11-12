@@ -1,0 +1,217 @@
+<?xml version='1.0' encoding='utf-8'?>
+<mxfile host="app.diagrams.net">
+  <diagram id="d7" name="DFD 7.0 - Thư viện số &amp; Thống kê">
+    <mxGraphModel dx="1420" dy="860" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="2800" pageHeight="1700">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="hdr_title" value="SƠ ĐỒ LUỒNG DỮ LIỆU (DFD) MỨC 1 – PHÂN HỆ 7.0: THƯ VIỆN SỐ &amp; THỐNG KÊ BÁO CÁO" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;fontFamily=Times New Roman;fontSize=20;fontStyle=1;fontColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="80" y="40" width="2640" height="35" as="geometry" />
+        </mxCell>
+        <mxCell id="hdr_sub" value="Dòng chảy liền mạch 5 trạm: 7.1 Lưu trữ Thư viện số -&gt; 7.2 Tra cứu đề tài -&gt; 7.3 Thống kê giờ GV -&gt; 7.4 Thống kê đề tài Khoa -&gt; 7.5 Kết xuất biểu mẫu." style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;fontFamily=Times New Roman;fontSize=13;fontStyle=2;fontColor=#424242;" vertex="1" parent="1">
+          <mxGeometry x="80" y="75" width="2640" height="25" as="geometry" />
+        </mxCell>
+        <mxCell id="p7_1" value="7.1" style="swimlane;html=1;startSize=26;rounded=1;arcSize=12;whiteSpace=wrap;fontFamily=Times New Roman;fontSize=13;fontStyle=1;fillColor=#FFFFFF;swimlaneFillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;collapsible=0;horizontal=1;fontColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="350" y="440" width="240" height="86" as="geometry" />
+        </mxCell>
+        <mxCell id="p7_1_t" value="Lưu trữ công trình&lt;br&gt;vào thư viện số" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;fontFamily=Times New Roman;fontSize=12.5;fontColor=#000000;" vertex="1" parent="p7_1">
+          <mxGeometry x="0" y="26" width="240" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="p7_2" value="7.2" style="swimlane;html=1;startSize=26;rounded=1;arcSize=12;whiteSpace=wrap;fontFamily=Times New Roman;fontSize=13;fontStyle=1;fillColor=#FFFFFF;swimlaneFillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;collapsible=0;horizontal=1;fontColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="800" y="440" width="240" height="86" as="geometry" />
+        </mxCell>
+        <mxCell id="p7_2_t" value="Tra cứu công trình&lt;br&gt;khoa học &amp; đề tài" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;fontFamily=Times New Roman;fontSize=12.5;fontColor=#000000;" vertex="1" parent="p7_2">
+          <mxGeometry x="0" y="26" width="240" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="p7_3" value="7.3" style="swimlane;html=1;startSize=26;rounded=1;arcSize=12;whiteSpace=wrap;fontFamily=Times New Roman;fontSize=13;fontStyle=1;fillColor=#FFFFFF;swimlaneFillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;collapsible=0;horizontal=1;fontColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="1280" y="440" width="250" height="86" as="geometry" />
+        </mxCell>
+        <mxCell id="p7_3_t" value="Thống kê giờ NCKH&lt;br&gt;của giảng viên" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;fontFamily=Times New Roman;fontSize=12.5;fontColor=#000000;" vertex="1" parent="p7_3">
+          <mxGeometry x="0" y="26" width="250" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="p7_4" value="7.4" style="swimlane;html=1;startSize=26;rounded=1;arcSize=12;whiteSpace=wrap;fontFamily=Times New Roman;fontSize=13;fontStyle=1;fillColor=#FFFFFF;swimlaneFillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;collapsible=0;horizontal=1;fontColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="1760" y="440" width="250" height="86" as="geometry" />
+        </mxCell>
+        <mxCell id="p7_4_t" value="Thống kê đề tài&lt;br&gt;theo Khoa / Viện" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;fontFamily=Times New Roman;fontSize=12.5;fontColor=#000000;" vertex="1" parent="p7_4">
+          <mxGeometry x="0" y="26" width="250" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="p7_5" value="7.5" style="swimlane;html=1;startSize=26;rounded=1;arcSize=12;whiteSpace=wrap;fontFamily=Times New Roman;fontSize=13;fontStyle=1;fillColor=#FFFFFF;swimlaneFillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;collapsible=0;horizontal=1;fontColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="2240" y="440" width="250" height="86" as="geometry" />
+        </mxCell>
+        <mxCell id="p7_5_t" value="Kết xuất biểu mẫu&lt;br&gt;chuẩn (QĐ 521)" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;fontFamily=Times New Roman;fontSize=12.5;fontColor=#000000;" vertex="1" parent="p7_5">
+          <mxGeometry x="0" y="26" width="250" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="d7_e_TVS" value="Thư viện số Học viện" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontFamily=Times New Roman;fontSize=12.5;fontStyle=1;fontColor=#000000;verticalAlign=middle;align=center;" vertex="1" parent="1">
+          <mxGeometry x="350" y="200" width="240" height="58" as="geometry" />
+        </mxCell>
+        <mxCell id="d7_e_SV" value="Sinh viên&lt;br&gt;(Tra cứu tài liệu)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontFamily=Times New Roman;fontSize=12.5;fontStyle=1;fontColor=#000000;verticalAlign=middle;align=center;" vertex="1" parent="1">
+          <mxGeometry x="800" y="200" width="240" height="58" as="geometry" />
+        </mxCell>
+        <mxCell id="d7_e_GV" value="Giảng viên&lt;br&gt;(Thống kê giờ NCKH)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontFamily=Times New Roman;fontSize=12.5;fontStyle=1;fontColor=#000000;verticalAlign=middle;align=center;" vertex="1" parent="1">
+          <mxGeometry x="1280" y="200" width="250" height="58" as="geometry" />
+        </mxCell>
+        <mxCell id="d7_e_TK" value="Thư ký Khoa / Viện&lt;br&gt;(Báo cáo đề tài)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontFamily=Times New Roman;fontSize=12.5;fontStyle=1;fontColor=#000000;verticalAlign=middle;align=center;" vertex="1" parent="1">
+          <mxGeometry x="1760" y="200" width="250" height="58" as="geometry" />
+        </mxCell>
+        <mxCell id="d7_e_QL" value="Phòng QLKHCN&amp;HTQT&lt;br&gt;(Biểu mẫu chuẩn)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontFamily=Times New Roman;fontSize=12.5;fontStyle=1;fontColor=#000000;verticalAlign=middle;align=center;" vertex="1" parent="1">
+          <mxGeometry x="2240" y="200" width="250" height="58" as="geometry" />
+        </mxCell>
+        <mxCell id="d7_d_D6_1" value="Hồ sơ nghiệm thu &amp; kết quả" style="shape=partialRectangle;whiteSpace=wrap;html=1;right=0;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontFamily=Times New Roman;fontSize=12;align=left;spacingLeft=48;spacingRight=4;fontColor=#000000;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="350" y="700" width="240" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="d7_d_D6_1_i" value="D6" style="shape=partialRectangle;whiteSpace=wrap;html=1;top=0;left=0;bottom=0;right=1;fillColor=none;strokeColor=#000000;strokeWidth=1.5;fontFamily=Times New Roman;fontSize=13;fontStyle=1;fontColor=#000000;align=center;verticalAlign=middle;" vertex="1" parent="d7_d_D6_1">
+          <mxGeometry x="0" y="0" width="42" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="d7_d_D6_2" value="Hồ sơ nghiệm thu &amp; kết quả" style="shape=partialRectangle;whiteSpace=wrap;html=1;right=0;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontFamily=Times New Roman;fontSize=12;align=left;spacingLeft=48;spacingRight=4;fontColor=#000000;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="800" y="700" width="240" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="d7_d_D6_2_i" value="D6" style="shape=partialRectangle;whiteSpace=wrap;html=1;top=0;left=0;bottom=0;right=1;fillColor=none;strokeColor=#000000;strokeWidth=1.5;fontFamily=Times New Roman;fontSize=13;fontStyle=1;fontColor=#000000;align=center;verticalAlign=middle;" vertex="1" parent="d7_d_D6_2">
+          <mxGeometry x="0" y="0" width="42" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="d7_d_D1" value="Tài khoản và hồ sơ" style="shape=partialRectangle;whiteSpace=wrap;html=1;right=0;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontFamily=Times New Roman;fontSize=12;align=left;spacingLeft=48;spacingRight=4;fontColor=#000000;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="1160" y="700" width="210" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="d7_d_D1_i" value="D1" style="shape=partialRectangle;whiteSpace=wrap;html=1;top=0;left=0;bottom=0;right=1;fillColor=none;strokeColor=#000000;strokeWidth=1.5;fontFamily=Times New Roman;fontSize=13;fontStyle=1;fontColor=#000000;align=center;verticalAlign=middle;" vertex="1" parent="d7_d_D1">
+          <mxGeometry x="0" y="0" width="42" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="d7_d_D3_1" value="Đề tài và nhóm SV" style="shape=partialRectangle;whiteSpace=wrap;html=1;right=0;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontFamily=Times New Roman;fontSize=12;align=left;spacingLeft=48;spacingRight=4;fontColor=#000000;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="1400" y="700" width="210" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="d7_d_D3_1_i" value="D3" style="shape=partialRectangle;whiteSpace=wrap;html=1;top=0;left=0;bottom=0;right=1;fillColor=none;strokeColor=#000000;strokeWidth=1.5;fontFamily=Times New Roman;fontSize=13;fontStyle=1;fontColor=#000000;align=center;verticalAlign=middle;" vertex="1" parent="d7_d_D3_1">
+          <mxGeometry x="0" y="0" width="42" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="d7_d_D3_2" value="Đề tài và nhóm SV" style="shape=partialRectangle;whiteSpace=wrap;html=1;right=0;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontFamily=Times New Roman;fontSize=12;align=left;spacingLeft=48;spacingRight=4;fontColor=#000000;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="1640" y="700" width="210" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="d7_d_D3_2_i" value="D3" style="shape=partialRectangle;whiteSpace=wrap;html=1;top=0;left=0;bottom=0;right=1;fillColor=none;strokeColor=#000000;strokeWidth=1.5;fontFamily=Times New Roman;fontSize=13;fontStyle=1;fontColor=#000000;align=center;verticalAlign=middle;" vertex="1" parent="d7_d_D3_2">
+          <mxGeometry x="0" y="0" width="42" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="d7_d_D4" value="Đề cương và tiến độ" style="shape=partialRectangle;whiteSpace=wrap;html=1;right=0;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontFamily=Times New Roman;fontSize=12;align=left;spacingLeft=48;spacingRight=4;fontColor=#000000;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="1880" y="700" width="210" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="d7_d_D4_i" value="D4" style="shape=partialRectangle;whiteSpace=wrap;html=1;top=0;left=0;bottom=0;right=1;fillColor=none;strokeColor=#000000;strokeWidth=1.5;fontFamily=Times New Roman;fontSize=13;fontStyle=1;fontColor=#000000;align=center;verticalAlign=middle;" vertex="1" parent="d7_d_D4">
+          <mxGeometry x="0" y="0" width="42" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="d7_d_D5" value="Hồ sơ xét duyệt &amp; QĐ" style="shape=partialRectangle;whiteSpace=wrap;html=1;right=0;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontFamily=Times New Roman;fontSize=12;align=left;spacingLeft=48;spacingRight=4;fontColor=#000000;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="2120" y="700" width="220" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="d7_d_D5_i" value="D5" style="shape=partialRectangle;whiteSpace=wrap;html=1;top=0;left=0;bottom=0;right=1;fillColor=none;strokeColor=#000000;strokeWidth=1.5;fontFamily=Times New Roman;fontSize=13;fontStyle=1;fontColor=#000000;align=center;verticalAlign=middle;" vertex="1" parent="d7_d_D5">
+          <mxGeometry x="0" y="0" width="42" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="d7_d_D6_3" value="Hồ sơ nghiệm thu &amp; kết quả" style="shape=partialRectangle;whiteSpace=wrap;html=1;right=0;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontFamily=Times New Roman;fontSize=12;align=left;spacingLeft=48;spacingRight=4;fontColor=#000000;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="2370" y="700" width="240" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="d7_d_D6_3_i" value="D6" style="shape=partialRectangle;whiteSpace=wrap;html=1;top=0;left=0;bottom=0;right=1;fillColor=none;strokeColor=#000000;strokeWidth=1.5;fontFamily=Times New Roman;fontSize=13;fontStyle=1;fontColor=#000000;align=center;verticalAlign=middle;" vertex="1" parent="d7_d_D6_3">
+          <mxGeometry x="0" y="0" width="42" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="d7_f1" value="Toàn văn báo cáo khoa học,&lt;br&gt;kỷ yếu công trình NCKH" style="html=1;rounded=0;strokeColor=#000000;strokeWidth=1.5;fontFamily=Times New Roman;fontSize=11.5;labelBackgroundColor=#FFFFFF;exitX=0.3500;exitY=0.0000;exitPerimeter=0;entryX=0.3500;entryY=1.0000;entryPerimeter=0;endArrow=block;endFill=1;" edge="1" parent="1" source="p7_1" target="d7_e_TVS">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="-85" y="0" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="d7_f2" value="Mã chỉ mục tài liệu (Index),&lt;br&gt;chứng nhận số" style="html=1;rounded=0;strokeColor=#000000;strokeWidth=1.5;fontFamily=Times New Roman;fontSize=11.5;labelBackgroundColor=#FFFFFF;exitX=0.6500;exitY=1.0000;exitPerimeter=0;entryX=0.6500;entryY=0.0000;entryPerimeter=0;endArrow=block;endFill=1;" edge="1" parent="1" source="d7_e_TVS" target="p7_1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="85" y="0" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="d7_k1" value="Đồng bộ lưu trữ&lt;br&gt;toàn văn số" style="html=1;rounded=0;strokeColor=#000000;strokeWidth=1.5;fontFamily=Times New Roman;fontSize=11.5;labelBackgroundColor=#FFFFFF;exitX=0.5000;exitY=1.0000;exitPerimeter=0;entryX=0.5000;entryY=0.0000;entryPerimeter=0;startArrow=block;startFill=1;endArrow=block;endFill=1;" edge="1" parent="1" source="p7_1" target="d7_d_D6_1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="75" y="0" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="d7_f1_2" value="Chỉ mục công trình&lt;br&gt;đã công bố số" style="html=1;rounded=0;strokeColor=#000000;strokeWidth=1.5;fontFamily=Times New Roman;fontSize=11.5;labelBackgroundColor=#FFFFFF;exitX=1.0000;exitY=0.5000;exitPerimeter=0;entryX=0.0000;entryY=0.5000;entryPerimeter=0;endArrow=block;endFill=1;" edge="1" parent="1" source="p7_1" target="p7_2">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="0" y="-18" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="d7_f3" value="Phiếu tra cứu công trình,&lt;br&gt;đề tài NCKH" style="html=1;rounded=0;strokeColor=#000000;strokeWidth=1.5;fontFamily=Times New Roman;fontSize=11.5;labelBackgroundColor=#FFFFFF;exitX=0.3500;exitY=1.0000;exitPerimeter=0;entryX=0.3500;entryY=0.0000;entryPerimeter=0;endArrow=block;endFill=1;" edge="1" parent="1" source="d7_e_SV" target="p7_2">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="-80" y="0" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="d7_f4" value="Kết quả tìm kiếm,&lt;br&gt;tài liệu toàn văn đề tài" style="html=1;rounded=0;strokeColor=#000000;strokeWidth=1.5;fontFamily=Times New Roman;fontSize=11.5;labelBackgroundColor=#FFFFFF;exitX=0.6500;exitY=0.0000;exitPerimeter=0;entryX=0.6500;entryY=1.0000;entryPerimeter=0;endArrow=block;endFill=1;" edge="1" parent="1" source="p7_2" target="d7_e_SV">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="80" y="0" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="d7_k2" value="Tìm kiếm toàn văn&lt;br&gt;&amp; trích xuất đề tài" style="html=1;rounded=0;strokeColor=#000000;strokeWidth=1.5;fontFamily=Times New Roman;fontSize=11.5;labelBackgroundColor=#FFFFFF;exitX=0.5000;exitY=0.0000;exitPerimeter=0;entryX=0.5000;entryY=1.0000;entryPerimeter=0;endArrow=block;endFill=1;" edge="1" parent="1" source="d7_d_D6_2" target="p7_2">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="70" y="0" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="d7_f2_3" value="Dữ liệu đề tài &amp;&lt;br&gt;thông tin hướng dẫn" style="html=1;rounded=0;strokeColor=#000000;strokeWidth=1.5;fontFamily=Times New Roman;fontSize=11.5;labelBackgroundColor=#FFFFFF;exitX=1.0000;exitY=0.5000;exitPerimeter=0;entryX=0.0000;entryY=0.5000;entryPerimeter=0;endArrow=block;endFill=1;" edge="1" parent="1" source="p7_2" target="p7_3">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="0" y="-18" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="d7_f5" value="Phiếu tra cứu giờ NCKH&lt;br&gt;của giảng viên" style="html=1;rounded=0;strokeColor=#000000;strokeWidth=1.5;fontFamily=Times New Roman;fontSize=11.5;labelBackgroundColor=#FFFFFF;exitX=0.3500;exitY=1.0000;exitPerimeter=0;entryX=0.3500;entryY=0.0000;entryPerimeter=0;endArrow=block;endFill=1;" edge="1" parent="1" source="d7_e_GV" target="p7_3">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="-85" y="0" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="d7_f6" value="Bảng tổng hợp giờ NCKH&lt;br&gt;quy đổi của giảng viên" style="html=1;rounded=0;strokeColor=#000000;strokeWidth=1.5;fontFamily=Times New Roman;fontSize=11.5;labelBackgroundColor=#FFFFFF;exitX=0.6500;exitY=0.0000;exitPerimeter=0;entryX=0.6500;entryY=1.0000;entryPerimeter=0;endArrow=block;endFill=1;" edge="1" parent="1" source="p7_3" target="d7_e_GV">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="85" y="0" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="d7_k3" value="Đọc thông tin&lt;br&gt;giảng viên" style="html=1;rounded=0;strokeColor=#000000;strokeWidth=1.5;fontFamily=Times New Roman;fontSize=11.5;labelBackgroundColor=#FFFFFF;exitX=0.5000;exitY=0.0000;exitPerimeter=0;entryX=0.3000;entryY=1.0000;entryPerimeter=0;endArrow=block;endFill=1;" edge="1" parent="1" source="d7_d_D1" target="p7_3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="d7_k4" value="Tính giờ hướng dẫn&lt;br&gt;&amp; nghiệm thu" style="html=1;rounded=0;strokeColor=#000000;strokeWidth=1.5;fontFamily=Times New Roman;fontSize=11.5;labelBackgroundColor=#FFFFFF;exitX=0.5000;exitY=0.0000;exitPerimeter=0;entryX=0.7000;entryY=1.0000;entryPerimeter=0;endArrow=block;endFill=1;" edge="1" parent="1" source="d7_d_D3_1" target="p7_3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="d7_f3_4" value="Bảng tổng hợp giờ GV&lt;br&gt;&amp; số liệu Khoa" style="html=1;rounded=0;strokeColor=#000000;strokeWidth=1.5;fontFamily=Times New Roman;fontSize=11.5;labelBackgroundColor=#FFFFFF;exitX=1.0000;exitY=0.5000;exitPerimeter=0;entryX=0.0000;entryY=0.5000;entryPerimeter=0;endArrow=block;endFill=1;" edge="1" parent="1" source="p7_3" target="p7_4">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="0" y="-18" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="d7_f7" value="Phiếu yêu cầu số liệu&lt;br&gt;thống kê Khoa" style="html=1;rounded=0;strokeColor=#000000;strokeWidth=1.5;fontFamily=Times New Roman;fontSize=11.5;labelBackgroundColor=#FFFFFF;exitX=0.3500;exitY=1.0000;exitPerimeter=0;entryX=0.3500;entryY=0.0000;entryPerimeter=0;endArrow=block;endFill=1;" edge="1" parent="1" source="d7_e_TK" target="p7_4">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="-85" y="0" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="d7_f8" value="Báo cáo thống kê đề tài&lt;br&gt;theo năm học của Khoa" style="html=1;rounded=0;strokeColor=#000000;strokeWidth=1.5;fontFamily=Times New Roman;fontSize=11.5;labelBackgroundColor=#FFFFFF;exitX=0.6500;exitY=0.0000;exitPerimeter=0;entryX=0.6500;entryY=1.0000;entryPerimeter=0;endArrow=block;endFill=1;" edge="1" parent="1" source="p7_4" target="d7_e_TK">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="85" y="0" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="d7_k5" value="Tổng hợp đề tài&lt;br&gt;theo từng Khoa" style="html=1;rounded=0;strokeColor=#000000;strokeWidth=1.5;fontFamily=Times New Roman;fontSize=11.5;labelBackgroundColor=#FFFFFF;exitX=0.5000;exitY=0.0000;exitPerimeter=0;entryX=0.3000;entryY=1.0000;entryPerimeter=0;endArrow=block;endFill=1;" edge="1" parent="1" source="d7_d_D3_2" target="p7_4">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="d7_k6" value="Tổng hợp tiến độ&lt;br&gt;&amp; nghiệm thu" style="html=1;rounded=0;strokeColor=#000000;strokeWidth=1.5;fontFamily=Times New Roman;fontSize=11.5;labelBackgroundColor=#FFFFFF;exitX=0.5000;exitY=0.0000;exitPerimeter=0;entryX=0.7000;entryY=1.0000;entryPerimeter=0;endArrow=block;endFill=1;" edge="1" parent="1" source="d7_d_D4" target="p7_4">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="d7_f4_5" value="Số liệu thống kê&lt;br&gt;&amp; danh mục đề tài" style="html=1;rounded=0;strokeColor=#000000;strokeWidth=1.5;fontFamily=Times New Roman;fontSize=11.5;labelBackgroundColor=#FFFFFF;exitX=1.0000;exitY=0.5000;exitPerimeter=0;entryX=0.0000;entryY=0.5000;entryPerimeter=0;endArrow=block;endFill=1;" edge="1" parent="1" source="p7_4" target="p7_5">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="0" y="-18" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="d7_f9" value="Phiếu yêu cầu biểu mẫu&lt;br&gt;chuẩn QĐ 521" style="html=1;rounded=0;strokeColor=#000000;strokeWidth=1.5;fontFamily=Times New Roman;fontSize=11.5;labelBackgroundColor=#FFFFFF;exitX=0.3500;exitY=1.0000;exitPerimeter=0;entryX=0.3500;entryY=0.0000;entryPerimeter=0;endArrow=block;endFill=1;" edge="1" parent="1" source="d7_e_QL" target="p7_5">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="-85" y="0" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="d7_f10" value="Tập tin biểu mẫu chuẩn&lt;br&gt;(Word/PDF Mẫu 1-5)" style="html=1;rounded=0;strokeColor=#000000;strokeWidth=1.5;fontFamily=Times New Roman;fontSize=11.5;labelBackgroundColor=#FFFFFF;exitX=0.6500;exitY=0.0000;exitPerimeter=0;entryX=0.6500;entryY=1.0000;entryPerimeter=0;endArrow=block;endFill=1;" edge="1" parent="1" source="p7_5" target="d7_e_QL">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="85" y="0" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="d7_k7" value="Trích xuất mẫu QĐ&lt;br&gt;&amp; danh mục phê duyệt" style="html=1;rounded=0;strokeColor=#000000;strokeWidth=1.5;fontFamily=Times New Roman;fontSize=11.5;labelBackgroundColor=#FFFFFF;exitX=0.5000;exitY=0.0000;exitPerimeter=0;entryX=0.3000;entryY=1.0000;entryPerimeter=0;endArrow=block;endFill=1;" edge="1" parent="1" source="d7_d_D5" target="p7_5">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="d7_k8" value="Trích xuất mẫu nghiệm thu&lt;br&gt;&amp; biên bản đánh giá" style="html=1;rounded=0;strokeColor=#000000;strokeWidth=1.5;fontFamily=Times New Roman;fontSize=11.5;labelBackgroundColor=#FFFFFF;exitX=0.5000;exitY=0.0000;exitPerimeter=0;entryX=0.7000;entryY=1.0000;entryPerimeter=0;endArrow=block;endFill=1;" edge="1" parent="1" source="d7_d_D6_3" target="p7_5">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="lg_fr" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#BDBDBD;strokeWidth=1;dashed=1;dashPattern=6 4;" vertex="1" parent="1">
+          <mxGeometry x="80" y="1530" width="2640" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="lg_t" value="Quy chuẩn thiết kế DFD Mức 1 (Giáo trình HTTTQL slide bài giảng 3.3.5 &amp; BFD mở rộng):" style="text;html=1;align=left;verticalAlign=middle;whiteSpace=wrap;fontFamily=Times New Roman;fontSize=13;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="100" y="1538" width="650" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="lg_d" value="• Dòng chảy liền mạch liên hoàn 100%: Toàn bộ các tiến trình được kết nối thành một chuỗi luồng tuần tự xuyên suốt (Pipeline hoặc U-Shape), không có tiến trình nào bị đứt đoạn hay cô lập.&#10;• Nhãn mũi tên phân dòng 2 hàng chuẩn gọn: Mọi luồng dữ liệu đều được định dạng 2 hàng cân đối, dễ đọc, không chiếm diện tích ngang và không đè lên các khối hộp.&#10;• Triệt tiêu giao cắt tuyệt đối (Crossings = 0): Tác nhân ngoài và Kho dữ liệu được bố trí lặp cục bộ tương ứng từng tiến trình (Slide 3.3.5), đảm bảo thông thoáng và bảo toàn cân bằng luồng (Balancing) từ DFD Mức 0." style="text;html=1;align=left;verticalAlign=middle;whiteSpace=wrap;fontFamily=Times New Roman;fontSize=12;lineHeight=1.4;" vertex="1" parent="1">
+          <mxGeometry x="100" y="1564" width="2600" height="48" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

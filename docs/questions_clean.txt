@@ -1,0 +1,73 @@
+TOTAL PAGES: 2 --- PAGE 1 --- 
+
+=== 1. Góc nhìn ===
+ Organization – Tổ chức 
+-  Hệ thống được xây dựng nhằm giải quyết những vấn đề gì trong công tác quản lý đề tài nghiên cứu khoa học sinh viên? 
+-  Phạm vi quản lý của hệ thống bao gồm những hoạt động nào? 
+-  Cơ cấu tổ chức tham gia vào hoạt động nghiên cứu khoa học sinh viên như thế nào? 
+-  Đơn vị/bộ phận nào chịu trách nhiệm quản lý, xét duyệt và theo dõi các đề tài? 
+-  Quyền hạn và trách nhiệm của các đơn vị trong quá trình quản lý đề tài được phân chia như thế nào? 
+
+=== 2. Góc nhìn ===
+ People – Con người 
+-  Sinh viên tham gia hệ thống với những vai trò và nhiệm vụ nào? 
+-  Giảng viên/cán bộ hướng dẫn sử dụng hệ thống để thực hiện những công việc gì? 
+-  Cán bộ quản lý nghiên cứu khoa học thực hiện những công việc gì trên hệ thống? 
+-  Có cần vai trò của Hội đồng khoa học/người đánh giá đề tài hay không? Nếu có, họ thực hiện những nhiệm vụ gì? 
+-  Mỗi vai trò được phép xem, thêm, sửa, xóa hoặc phê duyệt những thông tin nào? 
+-  Dự kiến có bao nhiêu người sử dụng hệ thống và số lượng người dùng của từng vai trò là bao nhiêu? 
+
+=== 3. Góc nhìn ===
+ Process – Quy trình 
+-  Quy trình đăng ký đề tài nghiên cứu khoa học của sinh viên diễn ra như thế nào? 
+-  Quy trình xét duyệt và phê duyệt đề tài diễn ra như thế nào? 
+-  Quy trình phân công hoặc xác nhận giảng viên hướng dẫn như thế nào? 
+-  Quy trình theo dõi tiến độ thực hiện đề tài được thực hiện như thế nào? 
+-  Quy trình sinh viên nộp báo cáo/sản phẩm nghiên cứu như thế nào? 
+-  Quy trình đánh giá, chấm điểm và nghiệm thu đề tài diễn ra như thế nào? 
+-  Quy trình cập nhật kết quả và trạng thái của đề tài được thực hiện ra sao? 
+-  Hệ thống xử lý như thế nào đối với các đề tài bị từ chối, yêu cầu chỉnh sửa, quá hạn hoặc không hoàn thành? 
+-  Các bước nào trong quy trình cần sự phê duyệt của cán bộ quản lý hoặc hội đồng? 
+
+=== 4. Góc nhìn ===
+ Data – Dữ liệu 
+-  Hệ thống cần lưu trữ những thông tin gì về sinh viên? 
+-  Hệ thống cần lưu trữ những thông tin gì về giảng viên/cán bộ hướng dẫn? 
+-  Hệ thống cần lưu trữ những thông tin gì về đề tài nghiên cứu? 
+-  Hệ thống cần quản lý những thông tin gì về nhóm sinh viên thực hiện đề tài? 
+-  Hệ thống cần quản lý những thông tin gì về khoa/bộ môn/ngành? --- PAGE 2 --- 
+-  Hệ thống cần quản lý những thông tin gì về quá trình đăng ký và xét duyệt đề tài? 
+-  Hệ thống cần quản lý những thông tin gì về tiến độ thực hiện đề tài? 
+-  Hệ thống cần quản lý những thông tin gì về báo cáo, sản phẩm và tài liệu của đề tài? 
+-  Hệ thống cần lưu trữ thông tin về đánh giá, điểm số và kết quả nghiệm thu như thế nào? 
+-  Các đối tượng dữ liệu có mối quan hệ với nhau như thế nào? 
+-  Dữ liệu nào cần được phân quyền truy cập hoặc bảo mật? 
+
+=== 5. Góc nhìn ===
+ Technology – Công nghệ 
+-  Hệ thống cần sử dụng những loại phần cứng nào để triển khai và vận hành? 
+-  Hệ thống sẽ được triển khai dưới dạng web, mobile hay desktop? Vì sao? 
+-  Các phần mềm/công nghệ nào dự kiến được sử dụng để xây dựng hệ thống? 
+-  Ngôn ngữ lập trình và framework nào được sử dụng cho Frontend và Backend? 
+-  Hệ quản trị cơ sở dữ liệu nào được sử dụng để lưu trữ dữ liệu? 
+-  Hệ thống cần sử dụng những công nghệ mạng và giao thức nào? 
+-  Hệ thống có sử dụng Cloud/Infrastructure hay máy chủ nội bộ không? 
+-  Hệ thống cần những cơ chế nào để đảm bảo bảo mật và phân quyền người dùng? 
+-  Cần có cơ chế sao lưu và khôi phục dữ liệu như thế nào? 
+-  Hệ thống cần đáp ứng như thế nào về hiệu năng, khả năng mở rộng và tính sẵn sàng? 
+
+=== 6. Góc nhìn ===
+ Function / Application – Chức năng / Ứng dụng 
+-  Chức năng đăng nhập, đăng xuất và quản lý tài khoản được thực hiện như thế nào? 
+-  Chức năng quản lý thông tin sinh viên và giảng viên gồm những gì? 
+-  Chức năng quản lý đề tài nghiên cứu gồm những gì? 
+-  Chức năng đăng ký đề tài của sinh viên hoạt động như thế nào? 
+-  Chức năng quản lý nhóm sinh viên và giảng viên hướng dẫn như thế nào? 
+-  Chức năng xét duyệt/phê duyệt đề tài hoạt động như thế nào? 
+-  Chức năng quản lý và theo dõi tiến độ đề tài gồm những gì? 
+-  Chức năng nộp và quản lý báo cáo, tài liệu, sản phẩm nghiên cứu gồm những gì? 
+-  Chức năng đánh giá, chấm điểm và nghiệm thu đề tài hoạt động như thế nào? 
+-  Chức năng tìm kiếm, lọc và tra cứu đề tài hoạt động như thế nào? 
+-  Hệ thống có chức năng thống kê, báo cáo kết quả nghiên cứu khoa học hay không? 
+-  Hệ thống có gửi thông báo về hạn đăng ký, xét duyệt, tiến độ hoặc nộp báo cáo không? 
+-  Mỗi nhóm người dùng được sử dụng những chức năng nào?

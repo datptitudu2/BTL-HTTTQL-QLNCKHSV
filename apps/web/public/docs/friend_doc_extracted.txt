@@ -1,0 +1,403 @@
+=== PARAGRAPHS ===
+0: Phương pháp nghiên cứu tài liệu về hệ thống
+1: Mục đích lựa chọn phương pháp
+2: Nghiên cứu tài liệu về hệ thống là phương pháp thu thập thông tin thông qua việc tìm kiếm, đọc, phân tích và đánh giá các tài liệu có liên quan đến hệ thống cần xây dựng.
+3: Đối với đề tài “Hệ thống quản lý đề tài nghiên cứu khoa học sinh viên”, nhóm sử dụng phương pháp này để tìm hiểu các quy định, quy trình và biểu mẫu đang được sử dụng trong hoạt động quản lý đề tài NCKH sinh viên tại trường đại học.
+4: Thông qua việc nghiên cứu tài liệu, nhóm có thể xác định được các bước nghiệp vụ, đối tượng tham gia, dữ liệu cần quản lý và những quy định mà hệ thống mới cần đáp ứng.
+5: Mục tiêu nghiên cứu tài liệu
+6: Tìm hiểu quy trình quản lý đề tài NCKH sinh viên hiện tại
+7: Xác định các quy định về đăng ký, xét duyệt và thực hiện đề tài
+8: Xác định vai trò, trách nghiệm của sinh viên, giảng viên hướng dẫn và cán bộ quản lý
+9: Tìm hiểu các loại hồ sơ, biểu mẫu và thông tin cần lưu trữ.
+10: Xác định các bước theo dõi tiến độ, đánh giá và nghiệm thu đề tài.
+11: Tìm hiểu cách thức thông báo kết quả và lưu trữ hồ sơ đề tài.
+12: Làm cơ sở xác định yêu cầu nghiệp vụ và yêu cầu chức năng cho hệ thống mới.
+13: Đối tượng và phạm vị nghiên cứu
+14: Đối tượng nghiên cứu
+15: Quy chế, quy định về hoạt động NCKH sinh viên.
+16: Kế hoạch tổ chức hoạt động NCKH sinh viên.
+17: Biểu mẫu đăng ký đề tài.
+18: Biểu mẫu thuyết minh đề tài.
+19: Biểu mẫu theo dõi tiến độ thực hiện đề tài.
+20: Biểu mẫu đánh giá, nghiệm thu đề tài.
+21: Danh sách đề tài NCKH sinh viên.
+22: Báo cáo tổng kết hoạt động NCKH sinh viên.
+23: Phạm vi nghiên cứu
+24: Nhóm tập trung nghiên cứu quy trình quản lý đề tài NCKH sinh viên tại trường đại học, từ khi thông báo đăng ký đề tài đến khi đề tài được xét duyệt, triển khai thực hiện, nghiệm thu và lưu trữ kết quả.
+25: Phạm vi nghiên cứu bao gồm các thông tin về sinh viên, giảng viên hướng dẫn, đề tài, hồ sơ nghiên cứu, tiến độ thực hiện và kết quả nghiệm thu.
+26: Kế hoạch thu nhập tài liệu
+28: Quy trình thực hiện phương pháp nghiên cứu tài liệu
+31: Phiếu ghi nhận thông tin từ số liệu
+32: Thông tin chung về dữ liệu
+35: Nội dung thông tin cần ghi nhận
+38: Ghi nhận quy trình nghiệp vụ từ tài liệu
+41: Ghi nhận dữ liệu cần quản lý
+44: Đánh giá tài liệu
+48:  Bộ câu hỏi định hướng khi nghiên cứu tài liệu
+50: Dự kiến kết quả thu được từ phương pháp nghiên cứu
+51: Danh sách các đối tượng tham gia hệ thống.
+52: Danh sách dữ liệu cần quản lý.
+53: Danh sách biểu mẫu cần được hỗ trợ trên hệ thống.
+54: Các quy tắc nghiệp vụ cần tuân thủ.
+55: Các vấn đề cần tiếp tục xác minh thông qua phiếu điều tra.
+56: Phương pháp phiếu điều tra
+57: Mục đích lựa chọn phương pháp
+58: Phiếu điều tra là phương pháp thu thập thông tin bằng cách xây dựng một bộ câu hỏi có cấu trúc, sau đó gửi đến những người thuộc đối tượng khảo sát để thu thập ý kiến, đánh giá và nhu cầu của họ.
+59: Đối với đề tài này, nhóm sử dụng phiếu điều tra để khảo sát sinh viên nhằm tìm hiểu thực trạng tiếp cận thông tin NCKH, quá trình đăng ký và thực hiện đề tài, những khó khăn thường gặp cũng như nhu cầu sử dụng hệ thống quản lý đề tài trực tuyến.
+60: Thông tin thu thập được sẽ giúp nhóm xác định các chức năng cần thiết và mức độ ưu tiên của các chức năng trong hệ thống.
+61: Mục tiêu khảo sát
+62: Tìm hiểu mức độ tham gia và hiểu biết của sinh viên về hoạt động NCKH.
+63: Tìm hiểu cách sinh viên tiếp nhận thông báo về hoạt động NCKH.
+64: Tìm hiểu thực trạng đăng ký, theo dõi và cập nhật thông tin đề tài.
+65: Xác định những khó khăn sinh viên gặp phải trong quá trình thực hiện đề tài.
+66: Tìm hiểu nhu cầu tra cứu thông tin, theo dõi tiến độ và nhận thông báo.
+67: Khảo sát mức độ cần thiết của các chức năng dự kiến trong hệ thống.
+68: Thu thập ý kiến đóng góp để hoàn thiện hệ thống quản lý đề tài NCKH sinh viên.
+69: Đối tượng và phạm vi khảo sát
+70: Đối tượng
+71: Sinh viên đã từng tham gia NCKH.
+72: Sinh viên đang tham gia NCKH.
+73: Sinh viên chưa từng tham gia NCKH nhưng có quan tâm đến hoạt động này.
+74: Phạm vi
+75: Nhóm dự kiến khảo sát sinh viên thuộc các khoa, ngành và khóa học khác nhau tại trường. Nội dung khảo sát tập trung vào thực trạng tiếp cận thông tin NCKH, đăng ký đề tài, theo dõi tiến độ, trao đổi với giảng viên hướng dẫn, quản lý hồ sơ và nhu cầu sử dụng hệ thống quản lý đề tài.\
+76: Quy mô
+78: Kế hoạch thực hiện khảo sát
+80:  Phiều điều tra sinh viên
+81: Lời giới thiệu
+82: Xin chào các bạn!
+83: Chúng tôi là nhóm sinh viên đang thực hiện đề tài BTL “Hệ thống quản lý đề tài nghiên cứu khoa học sinh viên”.
+84: Phiếu khảo sát này được xây dựng nhằm tìm hiểu thực trạng tiếp cận thông tin, đăng ký, thực hiện và theo dõi đề tài nghiên cứu khoa học sinh viên; đồng thời tìm hiểu những khó khăn và nhu cầu của sinh viên đối với một hệ thống quản lý đề tài trực tuyến.
+85: Ý kiến của các bạn là cơ sở quan trọng giúp nhóm xác định yêu cầu và xây dựng hệ thống phù hợp với nhu cầu thực tế.
+86: Phiếu khảo sát chỉ phục vụ mục đích học tập và nghiên cứu. Các bạn vui lòng trả lời theo trải nghiệm thực tế của mình. Với những câu hỏi về trải nghiệm NCKH, nếu chưa từng tham gia, các bạn có thể chọn phương án “Chưa từng tham gia/Chưa có trải nghiệm”.
+87: Xin chân thành cảm ơn sự hỗ trợ của các bạn!
+89: Câu 1. Bạn hiện đang là sinh viên năm thứ mấy?
+90: Loại câu hỏi: Trắc nghiệm – Chọn một đáp án
+91: ☐ Năm thứ nhất
+92: ☐ Năm thứ hai
+93: ☐ Năm thứ ba
+94: ☐ Năm thứ tư
+95: ☐ Năm thứ năm trở lên
+96: Mục đích: Xác định cơ cấu đối tượng khảo sát theo năm học.
+97: Câu 2. Bạn thuộc khoa/ngành nào?
+98: Loại câu hỏi: Trả lời ngắn
+99: ☐ ........................................................
+100: Mục đích: Xác định sự phân bố đối tượng khảo sát theo khoa/ngành.
+101: Câu 3. Bạn đã từng tham gia hoạt động nghiên cứu khoa học sinh viên chưa?
+102: Loại câu hỏi: Trắc nghiệm – Chọn một đáp án
+103: ☐ Đang tham gia NCKH
+104: ☐ Đã từng tham gia NCKH
+105: ☐ Chưa từng tham gia nhưng có quan tâm
+106: ☐ Chưa từng tham gia và chưa có ý định
+107: Mục đích: Phân loại sinh viên theo kinh nghiệm tham gia NCKH để phân tích các câu trả lời phù hợp.
+108: PHẦN II. THỰC TRẠNG TIẾP CẬN THÔNG TIN VÀ QUẢN LÝ ĐỀ TÀI NCKH
+109: Câu 4. Bạn thường tiếp cận thông tin về hoạt động NCKH sinh viên từ những nguồn nào?
+110: Loại câu hỏi: Hộp kiểm – Có thể chọn nhiều đáp án
+111: ☐ Website chính thức của trường
+112: ☐ Website của khoa/viện
+113: ☐ Email sinh viên
+114: ☐ Giảng viên
+115: ☐ Cố vấn học tập
+116: ☐ Bạn bè
+117: ☐ Nhóm Facebook/Zalo hoặc mạng xã hội
+118: ☐ Các buổi hội thảo, tọa đàm
+119: ☐ Khác: ……………………
+120: ☐ Tôi chưa từng tiếp cận thông tin NCKH
+121: Mục đích: Xác định các kênh thông tin sinh viên đang sử dụng.
+122: Câu 5. Bạn đánh giá mức độ dễ dàng khi tìm kiếm thông tin về quy trình, điều kiện và thời hạn đăng ký đề tài NCKH như thế nào?
+123: Loại câu hỏi: Trắc nghiệm – Chọn một đáp án
+124: ☐ Rất dễ
+125: ☐ Dễ
+126: ☐ Bình thường
+127: ☐ Khó
+128: ☐ Rất khó
+129: ☐ Chưa từng tìm kiếm thông tin này
+130: Mục đích: Đánh giá khả năng tiếp cận thông tin NCKH của sinh viên.
+131: Câu 6. Nếu đã hoặc đang tham gia NCKH, bạn đã đăng ký đề tài bằng hình thức nào?
+132: Loại câu hỏi: Trắc nghiệm – Chọn một đáp án
+133: ☐ Đăng ký trực tiếp bằng hồ sơ giấy
+134: ☐ Đăng ký qua email
+135: ☐ Đăng ký qua biểu mẫu trực tuyến
+136: ☐ Đăng ký qua hệ thống/phần mềm của trường
+137: ☐ Hình thức khác: ……………………
+138: ☐ Chưa từng đăng ký đề tài
+139: Mục đích: Tìm hiểu hình thức đăng ký đề tài hiện tại.
+140: Câu 7. Trong quá trình đăng ký đề tài, bạn đã gặp những khó khăn nào?
+141: Loại câu hỏi: Hộp kiểm – Có thể chọn nhiều đáp án
+142: ☐ Không biết tìm thông tin đăng ký ở đâu
+143: ☐ Không nắm rõ điều kiện đăng ký
+144: ☐ Không rõ thời hạn đăng ký
+145: ☐ Không biết cách điền biểu mẫu
+146: ☐ Khó khăn khi chuẩn bị hồ sơ
+147: ☐ Khó liên hệ giảng viên hướng dẫn
+148: ☐ Không biết tình trạng xét duyệt hồ sơ
+149: ☐ Phải bổ sung hoặc chỉnh sửa hồ sơ nhiều lần
+150: ☐ Không gặp khó khăn
+151: ☐ Chưa từng đăng ký đề tài
+152: ☐ Khác: ……………………
+153: Mục đích: Xác định những khó khăn phát sinh trong quá trình đăng ký đề tài.
+154: Câu 8. Bạn thường theo dõi tiến độ và tình trạng đề tài NCKH bằng cách nào?
+155: Loại câu hỏi: Hộp kiểm – Có thể chọn nhiều đáp án
+156: ☐ Trao đổi trực tiếp với giảng viên hướng dẫn
+157: ☐ Trao đổi qua email
+158: ☐ Trao đổi qua Zalo hoặc ứng dụng nhắn tin
+159: ☐ Tự theo dõi bằng Excel/Word
+160: ☐ Theo dõi trên hệ thống/phần mềm của trường
+161: ☐ Theo dõi qua thông báo của khoa/đơn vị phụ trách
+162: ☐ Hình thức khác: ……………………
+163: ☐ Chưa từng tham gia thực hiện đề tài
+164: Mục đích: Tìm hiểu cách thức theo dõi tiến độ và trạng thái đề tài hiện tại.
+165: Câu 9. Bạn đánh giá mức độ thuận tiện của việc theo dõi tiến độ và tình trạng đề tài hiện nay như thế nào?
+166: Loại câu hỏi: Trắc nghiệm – Chọn một đáp án
+167: ☐ Rất thuận tiện
+168: ☐ Thuận tiện
+169: ☐ Bình thường
+170: ☐ Không thuận tiện
+171: ☐ Rất không thuận tiện
+172: ☐ Chưa từng tham gia thực hiện đề tài
+173: Mục đích: Đánh giá mức độ thuận tiện của quy trình theo dõi đề tài hiện tại.
+174: Câu 10. Trong quá trình tham gia NCKH, bạn đã gặp những khó khăn nào sau đây?
+175: Loại câu hỏi: Hộp kiểm – Có thể chọn nhiều đáp án
+176: ☐ Khó tìm kiếm thông tin về đề tài NCKH
+177: ☐ Khó tìm kiếm giảng viên hướng dẫn phù hợp
+178: ☐ Khó theo dõi tình trạng xét duyệt đề tài
+179: ☐ Khó cập nhật tiến độ thực hiện đề tài
+180: ☐ Khó quản lý các tài liệu nghiên cứu
+181: ☐ Khó nhận thông báo về thời hạn hoặc lịch nghiệm thu
+182: ☐ Khó tra cứu kết quả đánh giá/nghiệm thu
+183: ☐ Khó khăn trong việc trao đổi thông tin với các bên liên quan
+184: ☐ Không gặp khó khăn
+185: ☐ Chưa từng tham gia NCKH
+186: ☐ Khác: ……………………
+187: Mục đích: Xác định các vấn đề sinh viên gặp phải trong quá trình quản lý và thực hiện đề tài.
+188: Câu 11. Theo bạn, việc quản lý đề tài NCKH sinh viên hiện nay có cần được cải thiện không?
+189: Loại câu hỏi: Trắc nghiệm – Chọn một đáp án
+190: ☐ Rất cần thiết
+191: ☐ Cần thiết
+192: ☐ Bình thường
+193: ☐ Không cần thiết
+194: ☐ Chưa có đủ thông tin để đánh giá
+195: Mục đích: Thu thập đánh giá của sinh viên về nhu cầu cải thiện hoạt động quản lý đề tài.
+196: Câu 12. Bạn có mong muốn sử dụng một hệ thống trực tuyến để quản lý đề tài NCKH sinh viên không?
+197: Loại câu hỏi: Trắc nghiệm – Chọn một đáp án
+198: ☐ Rất mong muốn
+199: ☐ Mong muốn
+200: ☐ Bình thường
+201: ☐ Không mong muốn
+202: ☐ Chưa có ý kiến
+203: Mục đích: Xác định mức độ sẵn sàng sử dụng hệ thống quản lý đề tài trực tuyến.
+204: Câu 13. Theo bạn, hệ thống quản lý đề tài NCKH sinh viên cần có những chức năng nào?
+205: Loại câu hỏi: Hộp kiểm – Có thể chọn nhiều đáp án
+206: ☐ Đăng nhập tài khoản sinh viên
+207: ☐ Xem thông báo và kế hoạch NCKH
+208: ☐ Tra cứu quy chế, quy trình và điều kiện đăng ký
+209: ☐ Đăng ký đề tài trực tuyến
+210: ☐ Cập nhật thông tin đề tài
+211: ☐ Theo dõi trạng thái xét duyệt đề tài
+212: ☐ Tìm kiếm giảng viên hướng dẫn
+213: ☐ Nộp và quản lý hồ sơ, tài liệu nghiên cứu
+214: ☐ Cập nhật và theo dõi tiến độ thực hiện
+215: ☐ Nhận thông báo về thời hạn và lịch nghiệm thu
+216: ☐ Tra cứu kết quả đánh giá, nghiệm thu
+217: ☐ Tra cứu các đề tài NCKH đã thực hiện
+218: ☐ Tra cứu thống kê hoạt động NCKH
+219: ☐ Khác: ……………………
+220: Mục đích: Xác định các chức năng mà sinh viên mong muốn hệ thống hỗ trợ.
+221: Câu 14. Bạn đánh giá mức độ cần thiết của các chức năng sau đối với hệ thống quản lý đề tài NCKH sinh viên như thế nào?
+222: Loại câu hỏi: Lưới trắc nghiệm – Mỗi hàng chọn một đáp án
+223: Mục đích: Đo lường mức độ cần thiết của từng chức năng, hỗ trợ xác định mức độ ưu tiên.
+224: Câu 15. Bạn mong muốn nhận thông báo từ hệ thống qua hình thức nào?
+225: Loại câu hỏi: Hộp kiểm – Có thể chọn nhiều đáp án
+226: ☐ Thông báo trực tiếp trên hệ thống
+227: ☐ Email sinh viên
+228: ☐ Thông báo qua ứng dụng di động
+229: ☐ Tin nhắn SMS
+230: ☐ Khác: ……………………
+231: Mục đích: Xác định nhu cầu về hình thức thông báo của hệ thống.
+232: Câu 16. Bạn có đề xuất hoặc mong muốn nào khác đối với hệ thống quản lý đề tài NCKH sinh viên?
+233: Loại câu hỏi: Đoạn văn – Câu hỏi mở
+234: ☐ ................................................................
+235: Mục đích: Thu thập ý kiến đóng góp ngoài các phương án đã được xây dựng.
+236: Hướng dẫn tạo phiếu trên gg forms
+238: Phiếu kiểm tra và tổng hợp kết quả khảo sát
+239: Phiếu kiểm tra tính hợp lệ của câu trả lời
+242: Bảng tổng hợp kết quả khảo sát
+244: Dự kiến kết quả thu được
+245: hông tin về mức độ tham gia NCKH của sinh viên.
+246: Các kênh thông tin NCKH sinh viên đang sử dụng.
+247: Đánh giá của sinh viên về mức độ thuận tiện của quy trình hiện tại.
+248: Danh sách những khó khăn sinh viên gặp phải khi đăng ký và thực hiện đề tài.
+249: Nhu cầu sử dụng hệ thống quản lý đề tài trực tuyến.
+250: Danh sách các chức năng sinh viên mong muốn hệ thống hỗ trợ.
+251: Mức độ cần thiết của từng chức năng.
+252: Ý kiến đóng góp để hoàn thiện hệ thống.
+
+=== TABLES ===
+
+--- Table 1: 9 rows x 4 cols ---
+Row 0: ['STT', 'Tên tài liệu cần thu thập', 'Nội dung cần tìm hiểu', 'Nguồn thu thập dự kiến']
+Row 1: ['1', 'Quy chế quản lý hoạt động NCKH sinh viên', 'Điều kiện đăng ký, quy định thực hiện, trách nhiệm các bên', 'Website trường, đơn vị phụ trách NCKH']
+Row 2: ['2', 'Kế hoạch tổ chức NCKH sinh viên', 'Thời gian đăng ký, xét duyệt, thực hiện và nghiệm thu', 'Website trường, khoa']
+Row 3: ['3', 'Biểu mẫu đăng ký đề tài', 'Thông tin sinh viên, tên đề tài, giảng viên hướng dẫn', 'Website trường, khoa']
+Row 4: ['4', 'Biểu mẫu thuyết minh đề tài', 'Mục tiêu, nội dung, phương pháp và kế hoạch nghiên cứu', 'Website trường, khoa']
+Row 5: ['5', 'Biểu mẫu theo dõi tiến độ', 'Các mốc thực hiện, nội dung báo cáo, tình hình tiến độ', 'Đơn vị quản lý NCKH']
+Row 6: ['6', 'Biểu mẫu nghiệm thu đề tài', 'Hội đồng nghiệm thu, tiêu chí đánh giá, kết quả', 'Website trường, khoa']
+Row 7: ['7', 'Danh sách đề tài NCKH đã thực hiện', 'Tên đề tài, sinh viên, giảng viên, năm thực hiện, kết quả', 'Website trường, khoa']
+Row 8: ['8', 'Báo cáo tổng kết hoạt động NCKH', 'Số lượng đề tài, tình hình thực hiện, kết quả nghiên cứu', 'Đơn vị phụ trách NCKH']
+
+--- Table 2: 8 rows x 3 cols ---
+Row 0: ['Bước', 'Công việc thực hiện', 'Kết quả cần đạt']
+Row 1: ['1', 'Xác định mục tiêu và phạm vi nghiên cứu tài liệu', 'Xác định rõ thông tin cần tìm hiểu']
+Row 2: ['2', 'Lập danh mục tài liệu cần thu thập', 'Danh sách tài liệu cần tìm']
+Row 3: ['3', 'Tìm kiếm tài liệu từ website trường, khoa hoặc đơn vị phụ trách NCKH', 'Tập hợp tài liệu liên quan']
+Row 4: ['4', 'Đọc và phân tích nội dung từng tài liệu', 'Xác định thông tin về quy trình, quy định, biểu mẫu']
+Row 5: ['5', 'Ghi nhận thông tin vào phiếu nghiên cứu tài liệu', 'Có dữ liệu phục vụ phân tích hệ thống']
+Row 6: ['6', 'Đối chiếu thông tin giữa các tài liệu', 'Phát hiện thông tin chưa thống nhất hoặc còn thiếu']
+Row 7: ['7', 'Tổng hợp kết quả nghiên cứu', 'Xác định yêu cầu sơ bộ cho hệ thống']
+
+--- Table 3: 12 rows x 2 cols ---
+Row 0: ['Nội dung', 'Thông tin ghi nhận']
+Row 1: ['Mã tài liệu', '']
+Row 2: ['Tên tài liệu', '']
+Row 3: ['Loại tài liệu', '']
+Row 4: ['Đơn vị ban hành/cung cấp', '']
+Row 5: ['Người cung cấp tài liệu (nếu có)', '']
+Row 6: ['Ngày ban hành (nếu có)', '']
+Row 7: ['Ngày thu thập', '']
+Row 8: ['Người thực hiện nghiên cứu', '']
+Row 9: ['Nguồn tài liệu/đường dẫn lưu trữ', '']
+Row 10: ['Tình trạng tài liệu (bản giấy/bản điện tử/khác)', '']
+Row 11: ['Mục đích sử dụng tài liệu', '']
+
+--- Table 4: 16 rows x 4 cols ---
+Row 0: ['STT', 'Nội dung cần nghiên cứu', 'Thông tin ghi nhận từ tài liệu', 'Vị trí thông tin trong tài liệu']
+Row 1: ['1', 'Mục đích của tài liệu', '', '']
+Row 2: ['2', 'Đối tượng áp dụng', '', '']
+Row 3: ['3', 'Các bên tham gia quy trình', '', '']
+Row 4: ['4', 'Điều kiện đăng ký đề tài', '', '']
+Row 5: ['5', 'Quy trình đăng ký đề tài', '', '']
+Row 6: ['6', 'Quy trình xét duyệt đề tài', '', '']
+Row 7: ['7', 'Quy trình giao nhiệm vụ và triển khai', '', '']
+Row 8: ['8', 'Quy định theo dõi tiến độ', '', '']
+Row 9: ['9', 'Quy trình nghiệm thu đề tài', '', '']
+Row 10: ['10', 'Quy định đánh giá kết quả', '', '']
+Row 11: ['11', 'Các loại hồ sơ, biểu mẫu sử dụng', '', '']
+Row 12: ['12', 'Các thông tin cần lưu trữ', '', '']
+Row 13: ['13', 'Thời hạn xử lý hoặc thời gian thực hiện', '', '']
+Row 14: ['14', 'Quy định thông báo kết quả', '', '']
+Row 15: ['15', 'Quy định lưu trữ hồ sơ', '', '']
+
+--- Table 5: 6 rows x 6 cols ---
+Row 0: ['STT', 'Bước nghiệp vụ', 'Người/bộ phận thực hiện', 'Thông tin đầu vào', 'Công việc xử lý', 'Kết quả đầu ra']
+Row 1: ['1', '', '', '', '', '']
+Row 2: ['2', '', '', '', '', '']
+Row 3: ['3', '', '', '', '', '']
+Row 4: ['4', '', '', '', '', '']
+Row 5: ['5', '', '', '', '', '']
+
+--- Table 6: 9 rows x 4 cols ---
+Row 0: ['STT', 'Nhóm dữ liệu', 'Các trường thông tin được xác định từ tài liệu', 'Mục đích quản lý']
+Row 1: ['1', 'Sinh viên', '', '']
+Row 2: ['2', 'Giảng viên hướng dẫn', '', '']
+Row 3: ['3', 'Đề tài nghiên cứu', '', '']
+Row 4: ['4', 'Hồ sơ đăng ký', '', '']
+Row 5: ['5', 'Tiến độ thực hiện', '', '']
+Row 6: ['6', 'Hội đồng nghiệm thu', '', '']
+Row 7: ['7', 'Kết quả đánh giá', '', '']
+Row 8: ['8', 'Tài liệu nghiên cứu', '', '']
+
+--- Table 7: 8 rows x 2 cols ---
+Row 0: ['Nội dung đánh giá', 'Kết quả ghi nhận']
+Row 1: ['Tài liệu có phù hợp với đề tài không?', 'Có / Không / Một phần']
+Row 2: ['Nội dung tài liệu có đầy đủ không?', '']
+Row 3: ['Tài liệu có còn phù hợp với quy trình hiện tại không?', '']
+Row 4: ['Thông tin nào chưa rõ hoặc cần xác minh?', '']
+Row 5: ['Tài liệu có mâu thuẫn với tài liệu khác không?', '']
+Row 6: ['Những vấn đề cần tiếp tục khảo sát', '']
+Row 7: ['Nhận xét của người nghiên cứu', '']
+
+--- Table 8: 15 rows x 3 cols ---
+Row 0: ['STT', 'Câu hỏi nghiên cứu', 'Mục đích']
+Row 1: ['1', 'Quy trình quản lý đề tài NCKH sinh viên gồm những giai đoạn nào?', 'Xác định quy trình nghiệp vụ']
+Row 2: ['2', 'Sinh viên cần đáp ứng điều kiện gì để đăng ký đề tài?', 'Xác định quy tắc đăng ký']
+Row 3: ['3', 'Một đề tài cần cung cấp những thông tin nào khi đăng ký?', 'Xác định dữ liệu đầu vào']
+Row 4: ['4', 'Ai là người tiếp nhận và kiểm tra hồ sơ đăng ký?', 'Xác định vai trò người dùng']
+Row 5: ['5', 'Quy trình xét duyệt đề tài được thực hiện như thế nào?', 'Xác định quy trình xét duyệt']
+Row 6: ['6', 'Những trạng thái nào có thể có của một đề tài?', 'Xác định trạng thái nghiệp vụ']
+Row 7: ['7', 'Sinh viên phải báo cáo tiến độ vào những thời điểm nào?', 'Xác định yêu cầu theo dõi tiến độ']
+Row 8: ['8', 'Giảng viên hướng dẫn có trách nhiệm gì trong quá trình thực hiện đề tài?', 'Xác định quyền và trách nhiệm']
+Row 9: ['9', 'Hồ sơ nghiệm thu gồm những thành phần nào?', 'Xác định dữ liệu nghiệm thu']
+Row 10: ['10', 'Kết quả nghiệm thu được ghi nhận và thông báo như thế nào?', 'Xác định yêu cầu quản lý kết quả']
+Row 11: ['11', 'Các tài liệu nghiên cứu được lưu trữ ở đâu và theo cách nào?', 'Xác định yêu cầu lưu trữ']
+Row 12: ['12', 'Có quy định nào về thời hạn xử lý hồ sơ hoặc báo cáo không?', 'Xác định yêu cầu thời gian']
+Row 13: ['13', 'Những biểu mẫu nào đang được sử dụng trong quá trình quản lý?', 'Xác định biểu mẫu cần số hóa']
+Row 14: ['14', 'Những thông tin nào được tổng hợp trong báo cáo NCKH?', 'Xác định yêu cầu báo cáo, thống kê']
+
+--- Table 9: 8 rows x 2 cols ---
+Row 0: ['Nội dung', 'Kế hoạch dự kiến']
+Row 1: ['Đối tượng', 'Sinh viên đại học']
+Row 2: ['Số lượng phiếu mong muốn', 'Khoảng 100 phiếu hợp lệ']
+Row 3: ['Hình thức khảo sát', 'Trực tuyến bằng Google Forms']
+Row 4: ['Cách gửi phiếu', 'Chia sẻ đường dẫn khảo sát đến sinh viên']
+Row 5: ['Thời gian khảo sát', 'Dự kiến 5–7 ngày']
+Row 6: ['Phương pháp tổng hợp', 'Google Forms, Excel']
+Row 7: ['Nguyên tắc xử lý', 'Chỉ sử dụng các phiếu hợp lệ, không tự tạo dữ liệu khảo sát']
+
+--- Table 10: 9 rows x 3 cols ---
+Row 0: ['Bước', 'Công việc', 'Kết quả cần đạt']
+Row 1: ['1', 'Xác định mục tiêu, đối tượng và phạm vi khảo sát', 'Kế hoạch khảo sát']
+Row 2: ['2', 'Xây dựng bộ câu hỏi khảo sát', 'Bộ câu hỏi hoàn chỉnh']
+Row 3: ['3', 'Kiểm tra nội dung, thử nghiệm phiếu với một số sinh viên', 'Phát hiện câu hỏi khó hiểu hoặc chưa phù hợp']
+Row 4: ['4', 'Chỉnh sửa và tạo Google Forms', 'Phiếu khảo sát chính thức']
+Row 5: ['5', 'Gửi phiếu khảo sát đến sinh viên', 'Thu thập câu trả lời']
+Row 6: ['6', 'Kiểm tra tính hợp lệ của câu trả lời', 'Bộ dữ liệu khảo sát']
+Row 7: ['7', 'Tổng hợp và phân tích kết quả', 'Bảng thống kê, biểu đồ']
+Row 8: ['8', 'Rút ra kết luận về thực trạng và nhu cầu', 'Cơ sở xác định yêu cầu hệ thống']
+
+--- Table 11: 11 rows x 6 cols ---
+Row 0: ['Chức năng', 'Rất không cần thiết', 'Không cần thiết', 'Bình thường', 'Cần thiết', 'Rất cần thiết']
+Row 1: ['Xem thông báo và kế hoạch NCKH', '☐', '☐', '☐', '☐', '☐']
+Row 2: ['Tra cứu quy trình, quy chế NCKH', '☐', '☐', '☐', '☐', '☐']
+Row 3: ['Đăng ký đề tài trực tuyến', '☐', '☐', '☐', '☐', '☐']
+Row 4: ['Theo dõi trạng thái xét duyệt', '☐', '☐', '☐', '☐', '☐']
+Row 5: ['Tìm kiếm giảng viên hướng dẫn', '☐', '☐', '☐', '☐', '☐']
+Row 6: ['Nộp và quản lý hồ sơ trực tuyến', '☐', '☐', '☐', '☐', '☐']
+Row 7: ['Cập nhật và theo dõi tiến độ', '☐', '☐', '☐', '☐', '☐']
+Row 8: ['Nhận thông báo về thời hạn, lịch nghiệm thu', '☐', '☐', '☐', '☐', '☐']
+Row 9: ['Tra cứu kết quả nghiệm thu', '☐', '☐', '☐', '☐', '☐']
+Row 10: ['Tra cứu các đề tài đã thực hiện', '☐', '☐', '☐', '☐', '☐']
+
+--- Table 12: 12 rows x 2 cols ---
+Row 0: ['Bước', 'Công việc']
+Row 1: ['1', 'Truy cập Google Forms và tạo biểu mẫu mới.']
+Row 2: ['2', 'Đặt tiêu đề khảo sát theo nội dung đề tài.']
+Row 3: ['3', 'Nhập phần giới thiệu và mục đích khảo sát.']
+Row 4: ['4', 'Tạo 3 phần: Thông tin chung; Thực trạng; Nhu cầu hệ thống.']
+Row 5: ['5', 'Nhập 16 câu hỏi theo nội dung phiếu điều tra.']
+Row 6: ['6', 'Chọn đúng loại câu hỏi: trắc nghiệm, hộp kiểm, lưới trắc nghiệm hoặc đoạn văn.']
+Row 7: ['7', 'Thiết lập câu hỏi bắt buộc đối với các nội dung cần thiết.']
+Row 8: ['8', 'Kiểm tra biểu mẫu bằng cách gửi thử một số câu trả lời.']
+Row 9: ['9', 'Chỉnh sửa nếu câu hỏi chưa rõ ràng hoặc khó trả lời.']
+Row 10: ['10', 'Gửi đường dẫn khảo sát đến sinh viên.']
+Row 11: ['11', 'Theo dõi số lượng câu trả lời và xuất dữ liệu để phân tích.']
+
+--- Table 13: 7 rows x 3 cols ---
+Row 0: ['STT', 'Tiêu chí kiểm tra', 'Kết quả']
+Row 1: ['1', 'Người trả lời có thuộc đối tượng sinh viên cần khảo sát không?', 'Đạt / Không đạt']
+Row 2: ['2', 'Các câu hỏi bắt buộc đã được trả lời chưa?', 'Đạt / Không đạt']
+Row 3: ['3', 'Câu trả lời có bị bỏ trống quá nhiều không?', 'Có / Không']
+Row 4: ['4', 'Câu trả lời có mâu thuẫn rõ ràng không?', 'Có / Không']
+Row 5: ['5', 'Có dấu hiệu gửi nhiều câu trả lời trùng lặp không?', 'Có / Không / Chưa xác định']
+Row 6: ['6', 'Kết luận về tính hợp lệ', 'Hợp lệ / Cần kiểm tra / Loại']
+
+--- Table 14: 11 rows x 5 cols ---
+Row 0: ['STT', 'Nội dung cần phân tích', 'Câu hỏi liên quan', 'Số lượng', 'Tỷ lệ (%)']
+Row 1: ['1', 'Sinh viên đã/đang tham gia NCKH', 'Câu 3', '', '']
+Row 2: ['2', 'Sinh viên gặp khó khăn khi tìm thông tin', 'Câu 5', '', '']
+Row 3: ['3', 'Sinh viên gặp khó khăn khi đăng ký đề tài', 'Câu 7', '', '']
+Row 4: ['4', 'Sinh viên chưa thuận tiện khi theo dõi tiến độ', 'Câu 9', '', '']
+Row 5: ['5', 'Sinh viên gặp khó khăn trong quá trình thực hiện', 'Câu 10', '', '']
+Row 6: ['6', 'Sinh viên cho rằng cần cải thiện quản lý đề tài', 'Câu 11', '', '']
+Row 7: ['7', 'Sinh viên mong muốn sử dụng hệ thống trực tuyến', 'Câu 12', '', '']
+Row 8: ['8', 'Sinh viên lựa chọn chức năng đăng ký trực tuyến', 'Câu 13', '', '']
+Row 9: ['9', 'Sinh viên đánh giá chức năng theo dõi tiến độ là cần thiết', 'Câu 14', '', '']
+Row 10: ['10', 'Sinh viên có nhu cầu nhận thông báo từ hệ thống', 'Câu 15', '', '']

@@ -1,0 +1,28 @@
+{
+  "name": "srms-ptit",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Hệ thống Quản lý Đề tài NCKH Sinh viên Học viện PTIT (SRMS)",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "lint": "turbo run lint",
+    "test": "turbo run test",
+    "prisma:generate": "pnpm --filter @srms/api exec prisma generate --schema=../../prisma/schema.prisma",
+    "prisma:migrate": "pnpm --filter @srms/api exec prisma migrate dev --schema=../../prisma/schema.prisma",
+    "prisma:seed": "pnpm --filter @srms/api exec ts-node ../../prisma/seed.ts",
+    "docker:up": "docker compose up -d",
+    "docker:down": "docker compose down"
+  },
+  "devDependencies": {
+    "@prisma/client": "5.14.0",
+    "prisma": "5.14.0",
+    "turbo": "^2.4.4",
+    "typescript": "^5.7.3"
+  },
+  "packageManager": "pnpm@12.18.0"
+}

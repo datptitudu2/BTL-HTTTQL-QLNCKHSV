@@ -1,0 +1,719 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// ==========================================
+// KHO D1: TÀI KHOẢN & HỒ SƠ NGƯỜI DÙNG
+// ==========================================
+
+model Role {
+  roleId      Int      @id @default(autoincrement()) @map("role_id")
+  roleCode    String   @unique @db.VarChar(30) @map("role_code")
+  roleName    String   @db.VarChar(100) @map("role_name")
+  description String?  @db.VarChar(255) @map("description")
+  users       User[]
+
+  @@map("roles")
+}
+
+model User {
+  userId         Int           @id @default(autoincrement()) @map("user_id")
+  roleId         Int           @map("role_id")
+  ssoUsername    String        @unique @db.VarChar(50) @map("sso_username")
+  fullName       String        @db.VarChar(100) @map("full_name")
+  email          String        @unique @db.VarChar(100) @map("email")
+  phone          String?       @db.VarChar(15) @map("phone")
+  status         String        @default("ACTIVE") @db.VarChar(20) @map("status")
+  createdAt      DateTime      @default(now()) @map("created_at")
+  updatedAt      DateTime      @updatedAt @map("updated_at")
+
+  role           Role          @relation(fields: [roleId], references: [roleId])
+  student        Student?
+  lecturer       Lecturer?
+  credentials    UserCredential?
+  refreshTokens  RefreshToken[]
+  notifications  Notification[]
+  certificates   Certificate[]
+  positions      DeptPosition[]
+  auditLogs      AuditLog[]
+  scheduleEvents ScheduleEvent[]
+
+  @@map("users")
+}
+
+model Department {
+  deptId        Int            @id @default(autoincrement()) @map("dept_id")
+  deptCode      String         @unique @db.VarChar(20) @map("dept_code")
+  deptName      String         @db.VarChar(150) @map("dept_name")
+  campus        String         @default("HN") @db.VarChar(10) @map("campus")
+  headName      String?        @db.VarChar(100) @map("head_name")
+  secretaryName String?        @db.VarChar(100) @map("secretary_name")
+
+  students      Student[]
+  lecturers     Lecturer[]
+  positions     DeptPosition[]
+  projects      Project[]
+  dossiers      FacultyDossier[]
+
+  @@map("departments")
+}
+
+model DeptPosition {
+  positionId Int       @id @default(autoincrement()) @map("position_id")
+  userId     Int       @map("user_id")
+  deptId     Int       @map("dept_id")
+  roleType   String    @db.VarChar(30) @map("role_type") // DEAN, VICE_DEAN, SECRETARY, COUNCIL_CHAIR
+  startDate  DateTime  @default(now()) @map("start_date")
+  endDate    DateTime? @map("end_date")
+  isActive   Boolean   @default(true) @map("is_active")
+
+  user       User       @relation(fields: [userId], references: [userId])
+  department Department @relation(fields: [deptId], references: [deptId])
+
+  @@map("dept_positions")
+}
+
+model Student {
+  studentId     String         @id @db.VarChar(15) @map("student_id") // B23DCCC034
+  userId        Int            @unique @map("user_id")
+  deptId        Int            @map("dept_id")
+  dateOfBirth   DateTime?      @map("date_of_birth") @db.Date
+  gender        String?        @db.VarChar(10) @map("gender")
+  ethnicity     String?        @db.VarChar(30) @map("ethnicity")
+  className     String?        @db.VarChar(25) @map("class_name")
+  cohort        String?        @db.VarChar(15) @map("cohort") // D23
+  studyYear     Int?           @map("study_year")
+  gpa           Decimal?       @db.Decimal(3, 2) @map("gpa")
+
+  user          User           @relation(fields: [userId], references: [userId])
+  department    Department     @relation(fields: [deptId], references: [deptId])
+  memberships   ProjectMember[]
+  bonuses       StudentBonus[]
+
+  @@map("students")
+}
+
+model Lecturer {
+  lecturerId         String          @id @db.VarChar(15) @map("lecturer_id")
+  userId             Int             @unique @map("user_id")
+  deptId             Int             @map("dept_id")
+  academicRank       String?         @db.VarChar(15) @map("academic_rank") // GS, PGS
+  degree             String?         @db.VarChar(15) @map("degree") // TS, ThS
+  researchField      String?         @db.VarChar(200) @map("research_field")
+  activeProjectCount Int             @default(0) @map("active_project_count")
+
+  user               User            @relation(fields: [userId], references: [userId])
+  department         Department      @relation(fields: [deptId], references: [deptId])
+  advisoryRoles      ProjectAdvisor[]
+  councilMembers     CouncilMember[]
+  hours              LecturerHour[]
+
+  @@map("lecturers")
+}
+
+// ==========================================
+// KHO D2: KẾ HOẠCH & ĐỢT NCKH
+// ==========================================
+
+model NckhPeriod {
+  periodId         Int               @id @default(autoincrement()) @map("period_id")
+  academicYear     String            @db.VarChar(9) @map("academic_year") // 2026-2027
+  periodName       String            @db.VarChar(150) @map("period_name")
+  startDate        DateTime          @map("start_date") @db.Date
+  endDate          DateTime          @map("end_date") @db.Date
+  quotaProjects    Int?              @map("quota_projects")
+  totalBudgetLimit Decimal?          @db.Decimal(15, 0) @map("total_budget_limit")
+  status           String            @default("ACTIVE") @db.VarChar(20) @map("status")
+
+  milestones       PeriodMilestone[]
+  criteria         EvaluationCriteria[]
+  projects         Project[]
+  dossiers         FacultyDossier[]
+  decisions        Decision[]
+
+  @@map("nckh_periods")
+}
+
+model PeriodMilestone {
+  pmId             Int              @id @default(autoincrement()) @map("pm_id")
+  periodId         Int              @map("period_id")
+  milestoneType    String           @db.VarChar(30) @map("milestone_type")
+  milestoneName    String           @db.VarChar(150) @map("milestone_name")
+  dueDate          DateTime         @map("due_date") @db.Date
+  remindDaysBefore Int              @default(3) @map("remind_days_before")
+  remindChannels   String           @default("WEB,EMAIL") @db.VarChar(50) @map("remind_channels")
+
+  period           NckhPeriod       @relation(fields: [periodId], references: [periodId])
+  reports          ProgressReport[]
+
+  @@map("period_milestones")
+}
+
+model EvaluationCriteria {
+  criteriaId  Int         @id @default(autoincrement()) @map("criteria_id")
+  periodId    Int         @map("period_id")
+  orderNo     Int         @map("order_no")
+  title       String      @db.VarChar(255) @map("title")
+  description String?     @db.Text @map("description")
+  maxScore    Decimal     @db.Decimal(4, 1) @map("max_score")
+
+  period      NckhPeriod  @relation(fields: [periodId], references: [periodId])
+  sheetScores SheetScore[]
+
+  @@map("evaluation_criteria")
+}
+
+// ==========================================
+// KHO D3: ĐỀ TÀI & NHÓM NGHIÊN CỨU
+// ==========================================
+
+model Project {
+  projectId          String          @id @db.VarChar(30) @map("project_id") // SV-YYYY-KHOA-XXX
+  periodId           Int             @map("period_id")
+  deptId             Int             @map("dept_id")
+  dossierId          Int?            @map("dossier_id")
+  decisionId         Int?            @map("decision_id")
+  titleVi            String          @db.VarChar(300) @map("title_vi")
+  titleEn            String?         @db.VarChar(300) @map("title_en")
+  researchField      String          @db.VarChar(150) @map("research_field")
+  objectives         String          @db.Text @map("objectives")
+  content            String          @db.Text @map("content")
+  methodology        String          @db.Text @map("methodology")
+  expectedResult     String          @db.Text @map("expected_result")
+  prelimScore        Decimal?        @db.Decimal(5, 2) @map("prelim_score")
+  prelimRank         String?         @db.VarChar(20) @map("prelim_rank")
+  status             String          @default("Draft") @db.VarChar(30) @map("status")
+  registeredAt       DateTime        @default(now()) @map("registered_at")
+  updatedAt          DateTime        @updatedAt @map("updated_at")
+
+  period             NckhPeriod      @relation(fields: [periodId], references: [periodId])
+  department         Department      @relation(fields: [deptId], references: [deptId])
+  dossier            FacultyDossier? @relation(fields: [dossierId], references: [dossierId])
+  decision           Decision?       @relation(fields: [decisionId], references: [decisionId])
+
+  members            ProjectMember[]
+  advisors           ProjectAdvisor[]
+  outlines           Outline[]
+  progressReports    ProgressReport[]
+  seminars           Seminar[]
+  changeRequests     ChangeRequest[]
+  documents          ProjectDocument[]
+  acceptance         Acceptance?
+  budget             Budget?
+  awardNominations   AwardNomination[]
+  certificates       Certificate[]
+  studentBonuses     StudentBonus[]
+  lecturerHours      LecturerHour[]
+
+  @@map("projects")
+}
+
+model ProjectMember {
+  memberId        Int      @id @default(autoincrement()) @map("member_id")
+  projectId       String   @db.VarChar(30) @map("project_id")
+  studentId       String   @db.VarChar(15) @map("student_id")
+  memberRole      String   @default("MEMBER") @db.VarChar(20) @map("member_role") // LEAD, MEMBER
+  contributionPct Decimal  @default(0) @db.Decimal(5, 2) @map("contribution_pct")
+  assignedTask    String?  @db.VarChar(255) @map("assigned_task")
+  confirmStatus   String   @default("PENDING") @db.VarChar(20) @map("confirm_status")
+
+  project         Project  @relation(fields: [projectId], references: [projectId])
+  student         Student  @relation(fields: [studentId], references: [studentId])
+
+  @@map("project_members")
+}
+
+model ProjectAdvisor {
+  advisorAssignmentId Int       @id @default(autoincrement()) @map("advisor_assignment_id")
+  projectId           String    @db.VarChar(30) @map("project_id")
+  lecturerId          String    @db.VarChar(15) @map("lecturer_id")
+  assignedBy          String    @default("STUDENT") @db.VarChar(20) @map("assigned_by") // STUDENT, FACULTY
+  status              String    @default("ACTIVE") @db.VarChar(20) @map("status") // INVITED, ACTIVE, REPLACED, REJECTED
+  replaceReason       String?   @db.VarChar(255) @map("replace_reason")
+  assignedAt          DateTime  @default(now()) @map("assigned_at")
+  endedAt             DateTime? @map("ended_at")
+
+  project             Project   @relation(fields: [projectId], references: [projectId])
+  lecturer            Lecturer  @relation(fields: [lecturerId], references: [lecturerId])
+  lecturerHours       LecturerHour[]
+
+  @@map("project_advisors")
+}
+
+// ==========================================
+// KHO D4: ĐỀ CƯƠNG & TIẾN ĐỘ THỰC HIỆN
+// ==========================================
+
+model Outline {
+  outlineId       Int               @id @default(autoincrement()) @map("outline_id")
+  projectId       String            @db.VarChar(30) @map("project_id")
+  versionNo       Int               @default(1) @map("version_no")
+  fileUrl         String            @db.VarChar(255) @map("file_url")
+  advisorComment  String?           @db.VarChar(500) @map("advisor_comment")
+  approvalStatus  String            @default("PENDING") @db.VarChar(20) @map("approval_status")
+  submittedAt     DateTime          @default(now()) @map("submitted_at")
+
+  project         Project           @relation(fields: [projectId], references: [projectId])
+  approvals       OutlineApproval[]
+
+  @@map("outlines")
+}
+
+model OutlineApproval {
+  approvalId     Int       @id @default(autoincrement()) @map("approval_id")
+  outlineId      Int       @map("outline_id")
+  approverUserId Int       @map("approver_user_id")
+  role           String    @db.VarChar(30) @map("role") // ADVISOR, FACULTY_LEADER
+  decision       String    @db.VarChar(20) @map("decision") // APPROVED, REVISION_REQUIRED, REJECTED
+  mode           String    @default("DIRECT") @db.VarChar(20) @map("mode") // DIRECT, PROXY
+  comment        String?   @db.Text @map("comment")
+  decidedAt      DateTime  @default(now()) @map("decided_at")
+
+  outline        Outline   @relation(fields: [outlineId], references: [outlineId])
+
+  @@map("outline_approvals")
+}
+
+model ProgressReport {
+  reportId        Int             @id @default(autoincrement()) @map("report_id")
+  projectId       String          @db.VarChar(30) @map("project_id")
+  pmId            Int             @map("pm_id")
+  reportContent   String          @db.Text @map("report_content")
+  productUrl      String?         @db.VarChar(255) @map("product_url")
+  advisorComment  String?         @db.VarChar(500) @map("advisor_comment")
+  assessment      String?         @db.VarChar(20) @map("assessment") // PASS, WARNING_DELAY
+  submittedAt     DateTime        @default(now()) @map("submitted_at")
+
+  project         Project         @relation(fields: [projectId], references: [projectId])
+  milestone       PeriodMilestone @relation(fields: [pmId], references: [pmId])
+
+  @@map("progress_reports")
+}
+
+model Seminar {
+  seminarId       Int              @id @default(autoincrement()) @map("seminar_id")
+  projectId       String           @db.VarChar(30) @map("project_id")
+  planTitle       String?          @db.VarChar(200) @map("plan_title")
+  heldAt          DateTime         @map("held_at")
+  location        String           @db.VarChar(150) @map("location")
+  feedback        String?          @db.Text @map("feedback")
+  minutesFileUrl  String?          @db.VarChar(255) @map("minutes_file_url")
+
+  project         Project          @relation(fields: [projectId], references: [projectId])
+  members         SeminarMember[]
+
+  @@map("seminars")
+}
+
+model SeminarMember {
+  memberId     Int      @id @default(autoincrement()) @map("member_id")
+  seminarId    Int      @map("seminar_id")
+  attendeeName String   @db.VarChar(100) @map("attendee_name")
+  role         String   @db.VarChar(50) @map("role") // CHAIR, SECRETARY, ATTENDEE
+
+  seminar      Seminar  @relation(fields: [seminarId], references: [seminarId])
+
+  @@map("seminar_members")
+}
+
+model ChangeRequest {
+  requestId     Int               @id @default(autoincrement()) @map("request_id")
+  projectId     String            @db.VarChar(30) @map("project_id")
+  requestType   String            @db.VarChar(20) @map("request_type") // ADJUSTMENT, EXTENSION, CANCELLATION, CHANGE_ADVISOR
+  reason        String            @db.Text @map("reason")
+  newDueDate    DateTime?         @map("new_due_date") @db.Date
+  decisionNo    String?           @db.VarChar(30) @map("decision_no")
+  resultStatus  String            @default("PENDING") @db.VarChar(20) @map("result_status")
+  createdAt     DateTime          @default(now()) @map("created_at")
+
+  project       Project           @relation(fields: [projectId], references: [projectId])
+  approvals     RequestApproval[]
+
+  @@map("change_requests")
+}
+
+model RequestApproval {
+  approvalId     Int           @id @default(autoincrement()) @map("approval_id")
+  requestId      Int           @map("request_id")
+  approverUserId Int           @map("approver_user_id")
+  stage          String        @db.VarChar(30) @map("stage") // ADVISOR, FACULTY_LEADER, QLKHCN
+  decision       String        @db.VarChar(20) @map("decision") // APPROVED, REVISION_REQUIRED, REJECTED
+  comment        String?       @db.Text @map("comment")
+  decidedAt      DateTime      @default(now()) @map("decided_at")
+
+  request        ChangeRequest @relation(fields: [requestId], references: [requestId])
+
+  @@map("request_approvals")
+}
+
+// ==========================================
+// KHO D5: HỒ SƠ XÉT DUYỆT & QUYẾT ĐỊNH
+// ==========================================
+
+model FacultyDossier {
+  dossierId        Int        @id @default(autoincrement()) @map("dossier_id")
+  periodId         Int        @map("period_id")
+  deptId           Int        @map("dept_id")
+  officialLetterNo String?    @db.VarChar(50) @map("official_letter_no") // Công văn Mẫu 1
+  minutesUrl       String?    @db.VarChar(255) @map("minutes_url")
+  reviewStatus     String     @default("PENDING") @db.VarChar(20) @map("review_status")
+  submittedAt      DateTime   @default(now()) @map("submitted_at")
+
+  period           NckhPeriod @relation(fields: [periodId], references: [periodId])
+  department       Department @relation(fields: [deptId], references: [deptId])
+  projects         Project[]
+
+  @@map("faculty_dossiers")
+}
+
+model Decision {
+  decisionId   Int        @id @default(autoincrement()) @map("decision_id")
+  periodId     Int        @map("period_id")
+  decisionNo   String     @unique @db.VarChar(50) @map("decision_no")
+  decisionType String     @default("ASSIGN") @db.VarChar(30) @map("decision_type")
+  submissionNo String?    @db.VarChar(50) @map("submission_no")
+  issuedDate   DateTime   @map("issued_date") @db.Date
+  totalBudget  Decimal    @default(0) @db.Decimal(15, 0) @map("total_budget")
+  fileUrl      String?    @db.VarChar(255) @map("file_url")
+
+  period       NckhPeriod @relation(fields: [periodId], references: [periodId])
+  projects     Project[]
+
+  @@map("decisions")
+}
+
+// ==========================================
+// KHO D6: HỒ SƠ NGHIỆM THU & KẾT QUẢ
+// ==========================================
+
+model ProjectDocument {
+  docId            Int      @id @default(autoincrement()) @map("doc_id")
+  projectId        String   @db.VarChar(30) @map("project_id")
+  docType          String   @db.VarChar(30) @map("doc_type") // SUMMARY_REPORT, PRODUCT, PAPER, SOURCE_CODE
+  fileUrl          String   @db.VarChar(255) @map("file_url")
+  advisorReviewUrl String?  @db.VarChar(255) @map("advisor_review_url")
+  plagiarismRate   Decimal? @db.Decimal(5, 2) @map("plagiarism_rate")
+  libraryCode      String?  @db.VarChar(50) @map("library_code")
+  visibility       String   @default("INTERNAL") @db.VarChar(20) @map("visibility") // PUBLIC, INTERNAL
+  uploadedAt       DateTime @default(now()) @map("uploaded_at")
+
+  project          Project  @relation(fields: [projectId], references: [projectId])
+
+  @@map("project_documents")
+}
+
+model Council {
+  councilId   Int             @id @default(autoincrement()) @map("council_id")
+  councilName String          @db.VarChar(150) @map("council_name")
+  decisionNo  String?         @db.VarChar(50) @map("decision_no")
+  defenseDate DateTime        @map("defense_date")
+  location    String          @db.VarChar(150) @map("location")
+
+  members     CouncilMember[]
+  acceptances Acceptance[]
+
+  @@map("councils")
+}
+
+model CouncilMember {
+  cmId        Int               @id @default(autoincrement()) @map("cm_id")
+  councilId   Int               @map("council_id")
+  lecturerId  String            @db.VarChar(15) @map("lecturer_id")
+  councilRole String            @db.VarChar(30) @map("council_role") // CHAIR, SECRETARY, MEMBER
+
+  council     Council           @relation(fields: [councilId], references: [councilId])
+  lecturer    Lecturer          @relation(fields: [lecturerId], references: [lecturerId])
+  sheets      EvaluationSheet[]
+
+  @@map("council_members")
+}
+
+model Acceptance {
+  acceptanceId    Int               @id @default(autoincrement()) @map("acceptance_id")
+  projectId       String            @unique @db.VarChar(30) @map("project_id")
+  councilId       Int               @map("council_id")
+  defenseTime     DateTime          @default(now()) @map("defense_time")
+  avgScore        Decimal?          @db.Decimal(5, 2) @map("avg_score")
+  grade           String?           @db.VarChar(20) @map("grade") // EXCELLENT, GOOD, FAIR, PASS, FAIL
+  minutesNo       String?           @db.VarChar(50) @map("minutes_no")
+  minutesUrl      String?           @db.VarChar(255) @map("minutes_url")
+  summarySheetUrl String?           @db.VarChar(255) @map("summary_sheet_url")
+  approvalDocNo   String?           @db.VarChar(50) @map("approval_doc_no")
+
+  project         Project           @relation(fields: [projectId], references: [projectId])
+  council         Council           @relation(fields: [councilId], references: [councilId])
+  sheets          EvaluationSheet[]
+
+  @@map("acceptances")
+}
+
+model EvaluationSheet {
+  sheetId         Int           @id @default(autoincrement()) @map("sheet_id")
+  acceptanceId    Int           @map("acceptance_id")
+  cmId            Int           @map("cm_id")
+  scorePaperBonus Decimal       @default(0) @db.Decimal(4, 1) @map("score_paper_bonus")
+  totalScore      Decimal       @default(0) @db.Decimal(5, 1) @map("total_score")
+  strengths       String?       @db.Text @map("strengths")
+  limitations     String?       @db.Text @map("limitations")
+  qaNotes         String?       @db.Text @map("qa_notes")
+  recommendAward  Boolean       @default(false) @map("recommend_award")
+  submittedAt     DateTime?     @map("submitted_at")
+
+  acceptance      Acceptance    @relation(fields: [acceptanceId], references: [acceptanceId])
+  councilMember   CouncilMember @relation(fields: [cmId], references: [cmId])
+  scores          SheetScore[]
+
+  @@map("evaluation_sheets")
+}
+
+model SheetScore {
+  scoreId    Int                @id @default(autoincrement()) @map("score_id")
+  sheetId    Int                @map("sheet_id")
+  criteriaId Int                @map("criteria_id")
+  score      Decimal            @db.Decimal(4, 1) @map("score")
+
+  sheet      EvaluationSheet    @relation(fields: [sheetId], references: [sheetId])
+  criteria   EvaluationCriteria @relation(fields: [criteriaId], references: [criteriaId])
+
+  @@map("sheet_scores")
+}
+
+// ==========================================
+// KHO D7: KINH PHÍ & QUYẾT TOÁN
+// ==========================================
+
+model Budget {
+  budgetId         Int          @id @default(autoincrement()) @map("budget_id")
+  projectId        String       @unique @db.VarChar(30) @map("project_id")
+  requestedAmount  Decimal      @default(0) @db.Decimal(15, 0) @map("requested_amount")
+  facultyProposed  Decimal      @default(0) @db.Decimal(15, 0) @map("faculty_proposed")
+  approvedAmount   Decimal      @default(0) @db.Decimal(15, 0) @map("approved_amount")
+  status           String       @default("PENDING") @db.VarChar(20) @map("status")
+
+  project          Project      @relation(fields: [projectId], references: [projectId])
+  settlements      Settlement[]
+
+  @@map("budgets")
+}
+
+model Settlement {
+  settlementId     Int       @id @default(autoincrement()) @map("settlement_id")
+  budgetId         Int       @map("budget_id")
+  voucherNo        String    @db.VarChar(50) @map("voucher_no")
+  amount           Decimal   @db.Decimal(15, 0) @map("amount")
+  voucherFileUrl   String?   @db.VarChar(255) @map("voucher_file_url")
+  facultyConfirmed Boolean   @default(false) @map("faculty_confirmed")
+  settledAt        DateTime? @map("settled_at")
+
+  budget           Budget    @relation(fields: [budgetId], references: [budgetId])
+
+  @@map("settlements")
+}
+
+// ==========================================
+// KHO D8: KHEN THƯỞNG & CHỨNG NHẬN
+// ==========================================
+
+model Certificate {
+  certId          Int      @id @default(autoincrement()) @map("cert_id")
+  projectId       String   @db.VarChar(30) @map("project_id")
+  recipientUserId Int      @map("recipient_user_id")
+  recipientType   String   @db.VarChar(15) @map("recipient_type") // STUDENT, ADVISOR
+  certCode        String   @unique @db.VarChar(50) @map("cert_code")
+  grade           String   @db.VarChar(20) @map("grade")
+  issuedDate      DateTime @default(now()) @map("issued_date") @db.Date
+
+  project         Project  @relation(fields: [projectId], references: [projectId])
+  recipient       User     @relation(fields: [recipientUserId], references: [userId])
+
+  @@map("certificates")
+}
+
+model LecturerHour {
+  hourId             Int            @id @default(autoincrement()) @map("hour_id")
+  lecturerId         String         @db.VarChar(15) @map("lecturer_id")
+  projectId          String         @db.VarChar(30) @map("project_id")
+  advisorAssignmentId Int?          @map("advisor_assignment_id")
+  academicYear       String         @db.VarChar(9) @map("academic_year")
+  convertedHours     Decimal        @db.Decimal(6, 1) @map("converted_hours")
+  declarationStatus  String         @default("PENDING") @db.VarChar(20) @map("declaration_status")
+
+  lecturer           Lecturer       @relation(fields: [lecturerId], references: [lecturerId])
+  project            Project        @relation(fields: [projectId], references: [projectId])
+  advisorAssignment  ProjectAdvisor? @relation(fields: [advisorAssignmentId], references: [advisorAssignmentId])
+
+  @@map("lecturer_hours")
+}
+
+model StudentBonus {
+  bonusId             Int      @id @default(autoincrement()) @map("bonus_id")
+  studentId           String   @db.VarChar(15) @map("student_id")
+  projectId           String   @db.VarChar(30) @map("project_id")
+  bonusPoints         Decimal  @default(0) @db.Decimal(4, 1) @map("bonus_points")
+  trainingScore       Decimal  @default(0) @db.Decimal(4, 1) @map("training_score")
+  scholarshipPriority Boolean  @default(false) @map("scholarship_priority")
+
+  student             Student  @relation(fields: [studentId], references: [studentId])
+  project             Project  @relation(fields: [projectId], references: [projectId])
+
+  @@map("student_bonus")
+}
+
+model AwardNomination {
+  nominationId     Int      @id @default(autoincrement()) @map("nomination_id")
+  projectId        String   @db.VarChar(30) @map("project_id")
+  awardLevel       String   @db.VarChar(20) @map("award_level") // INSTITUTE, MINISTRY
+  rewardDecisionNo String?  @db.VarChar(50) @map("reward_decision_no")
+  prizeGrade       String?  @db.VarChar(50) @map("prize_grade")
+  rewardAmount     Decimal? @db.Decimal(12, 0) @map("reward_amount")
+  supportFund      Decimal? @db.Decimal(10, 0) @map("support_fund")
+  status           String   @default("PENDING") @db.VarChar(20) @map("status")
+
+  project          Project  @relation(fields: [projectId], references: [projectId])
+
+  @@map("award_nominations")
+}
+
+// ==========================================
+// KHO D9: LỊCH HẠN & THÔNG BÁO
+// ==========================================
+
+model Notification {
+  notifId        Int       @id @default(autoincrement()) @map("notif_id")
+  userId         Int       @map("user_id")
+  scheduleRef    String?   @db.VarChar(50) @map("schedule_ref")
+  title          String    @db.VarChar(200) @map("title")
+  content        String    @db.Text @map("content")
+  channel        String    @default("WEB") @db.VarChar(20) @map("channel") // WEB, EMAIL, SMS, ZALO
+  deliveryStatus String    @default("SENT") @db.VarChar(20) @map("delivery_status")
+  sentAt         DateTime  @default(now()) @map("sent_at")
+  readAt         DateTime? @map("read_at")
+  isConfirmed    Boolean   @default(false) @map("is_confirmed")
+  responseText   String?   @db.Text @map("response_text")
+  urgent         Boolean   @default(false) @map("urgent")
+  targetUrl      String?   @db.VarChar(255) @map("target_url")
+  type           String?   @default("SYSTEM") @db.VarChar(50) @map("type") // 'DEADLINE', 'SEMINAR', 'ACCEPTANCE', 'BONUS', 'GENERAL'
+
+  user           User      @relation(fields: [userId], references: [userId])
+
+  @@map("notifications")
+}
+
+// ==========================================
+// BẢNG KỸ THUẬT (TECHNICAL TABLES)
+// ==========================================
+
+model UserCredential {
+  credentialId   Int       @id @default(autoincrement()) @map("credential_id")
+  userId         Int       @unique @map("user_id")
+  passwordHash   String    @db.VarChar(255) @map("password_hash")
+  failedAttempts Int       @default(0) @map("failed_attempts")
+  lockedUntil    DateTime? @map("locked_until")
+  mustChangePass Boolean   @default(false) @map("must_change_pass")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  user           User      @relation(fields: [userId], references: [userId])
+
+  @@map("user_credentials")
+}
+
+model RefreshToken {
+  tokenId   Int      @id @default(autoincrement()) @map("token_id")
+  userId    Int      @map("user_id")
+  tokenHash String   @unique @db.VarChar(255) @map("token_hash")
+  expiresAt DateTime @map("expires_at")
+  revoked   Boolean  @default(false) @map("revoked")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user      User     @relation(fields: [userId], references: [userId])
+
+  @@map("refresh_tokens")
+}
+
+model PasswordResetToken {
+  tokenId   Int      @id @default(autoincrement()) @map("token_id")
+  userId    Int      @map("user_id")
+  token     String   @unique @db.VarChar(255) @map("token")
+  expiresAt DateTime @map("expires_at")
+  used      Boolean  @default(false) @map("used")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("password_reset_tokens")
+}
+
+model ProjectCodeCounter {
+  counterId Int    @id @default(autoincrement()) @map("counter_id")
+  year      Int    @map("year")
+  deptCode  String @db.VarChar(20) @map("dept_code")
+  lastNo    Int    @default(0) @map("last_no")
+
+  @@unique([year, deptCode])
+  @@map("project_code_counters")
+}
+
+model SystemSetting {
+  settingKey   String  @id @db.VarChar(50) @map("setting_key")
+  settingValue String  @db.Text @map("setting_value")
+  description  String? @db.VarChar(255) @map("description")
+
+  @@map("system_settings")
+}
+
+model NotificationTemplate {
+  templateCode String @id @db.VarChar(50) @map("template_code")
+  title        String @db.VarChar(200) @map("title")
+  content      String @db.Text @map("content")
+  channels     String @db.VarChar(50) @map("channels")
+
+  @@map("notification_templates")
+}
+
+model AuditLog {
+  logId     Int      @id @default(autoincrement()) @map("log_id")
+  userId    Int?     @map("user_id")
+  action    String   @db.VarChar(100) @map("action")
+  entity    String   @db.VarChar(50) @map("entity")
+  entityId  String   @db.VarChar(50) @map("entity_id")
+  oldValue  String?  @db.Text @map("old_value")
+  newValue  String?  @db.Text @map("new_value")
+  ipAddress String?  @db.VarChar(45) @map("ip_address")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user      User?    @relation(fields: [userId], references: [userId])
+
+  @@map("audit_logs")
+}
+
+model ScheduleEvent {
+  eventId         Int      @id @default(autoincrement()) @map("event_id")
+  title           String   @db.VarChar(255) @map("title")
+  eventType       String   @db.VarChar(50) @map("event_type") // 'Mốc hạn NCKH', 'Hội đồng thẩm định', 'Sinh hoạt KH', 'Làm việc với GVHD', 'Họp nhóm NCKH', 'Tác nghiệp CTSV', 'Quyết toán TCKT', 'Giao ban Quản lý'
+  startDate       String   @db.VarChar(20) @map("start_date")
+  startTime       String   @db.VarChar(10) @map("start_time")
+  endDate         String   @db.VarChar(20) @map("end_date")
+  endTime         String   @db.VarChar(10) @map("end_time")
+  location        String   @db.VarChar(255) @map("location")
+  regulatoryBasis String?  @db.Text @map("regulatory_basis")
+  participants    String?  @db.Text @map("participants")
+  projectId       String?  @db.VarChar(50) @map("project_id")
+  note            String?  @db.Text @map("note")
+  dayIndex        Int      @default(0) @map("day_index")
+  startHour       Int      @default(8) @map("start_hour")
+  durationHours   Int      @default(2) @map("duration_hours")
+  targetRoles     String   @default("ALL") @map("target_roles") // JSON string: '["ALL"]' hoặc '["STUDENT","LECTURER"]'
+  scopeLevel      String   @default("Toàn Học viện") @db.VarChar(100) @map("scope_level")
+  broadcastBy     String?  @db.VarChar(150) @map("broadcast_by")
+  createdByUserId Int?     @map("created_by_user_id")
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  user            User?    @relation(fields: [createdByUserId], references: [userId])
+
+  @@map("schedule_events")
+}
+
+
