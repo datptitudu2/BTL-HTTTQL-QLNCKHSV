@@ -511,15 +511,16 @@ export const DashboardPage: React.FC = () => {
             background: 'linear-gradient(105deg, #FFF1F0 0%, #FFE4E6 50%, #FFD1D6 100%)',
             border: '1px solid #FFD4D0',
             borderRadius: 8,
-            padding: '24px 30px',
+            padding: '0 20px 0 30px',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
+            gap: 12,
             position: 'relative',
             overflow: 'hidden',
           }}
         >
-          <div>
+          <div style={{ padding: '22px 0' }}>
             <div style={{ fontSize: 13, color: '#C62828', fontWeight: 600, textTransform: 'uppercase', marginBottom: 4 }}>
               Cổng dịch vụ nghiên cứu khoa học sinh viên (SRMS)
             </div>
@@ -535,8 +536,69 @@ export const DashboardPage: React.FC = () => {
             </div>
           </div>
 
-          <div style={{ fontSize: 50, userSelect: 'none', filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.1))' }}>
-            ✌️
+          <div className="peace-hand-box" title="Xin chào!">
+            <svg className="peace-hand-svg" viewBox="0 0 180 220" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="73" y="128" width="32" height="42" fill="#FBB7AF" stroke="#6E2C1E" strokeWidth="1.5" />
+              <path
+                d="M63 155 C63 151, 66 148, 70 148 H108 C112 148, 115 151, 115 155 V225 H63 V155 Z"
+                fill="#A62D0C"
+                stroke="#6E2C1E"
+                strokeWidth="1.5"
+              />
+              <g className="v-fingers">
+                <path
+                  d="M71 95 C65 78, 56 63, 46 51 C42 46, 42 40, 47 37 C52 34, 57 38, 61 44 C70 57, 78 72, 82 90 Z"
+                  fill="#FBB7AF"
+                  stroke="#6E2C1E"
+                  strokeWidth="1.5"
+                  strokeLinejoin="round"
+                />
+                <path
+                  d="M84 89 C83 71, 80 54, 78 40 C77 33, 81 29, 86 29 C91 29, 94 34, 95 41 C97 56, 99 73, 100 90 Z"
+                  fill="#FBB7AF"
+                  stroke="#6E2C1E"
+                  strokeWidth="1.5"
+                  strokeLinejoin="round"
+                />
+              </g>
+              <path
+                d="M68 89 C73 80, 88 77, 102 81 C117 85, 125 100, 122 116 C119 132, 105 142, 89 142 C75 142, 65 134, 60 122 L68 89 Z"
+                fill="#FBB7AF"
+                stroke="#6E2C1E"
+                strokeWidth="1.5"
+                strokeLinejoin="round"
+              />
+              <rect
+                x="97"
+                y="77"
+                width="16"
+                height="33"
+                rx="8"
+                transform="rotate(18 105 92)"
+                fill="#FBB7AF"
+                stroke="#6E2C1E"
+                strokeWidth="1.5"
+              />
+              <rect
+                x="108"
+                y="87"
+                width="15"
+                height="30"
+                rx="7.5"
+                transform="rotate(24 115 101)"
+                fill="#FBB7AF"
+                stroke="#6E2C1E"
+                strokeWidth="1.5"
+              />
+              <path
+                d="M61 122 C55 121, 51 116, 52 110 C53 103, 59 99, 67 97 L80 94 C87 92, 92 96, 92 102 C92 108, 87 112, 80 114 L71 116"
+                fill="#FBB7AF"
+                stroke="#6E2C1E"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
           </div>
         </div>
 

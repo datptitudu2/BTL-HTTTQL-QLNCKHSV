@@ -268,3 +268,40 @@ body {
   }
 }
 
+/* S-Link Welcome Banner Waving Peace Hand SVG */
+.peace-hand-box {
+  display: inline-flex;
+  align-items: flex-end;
+  justify-content: center;
+  overflow: hidden;
+  width: 136px;
+  height: 148px;
+  flex-shrink: 0;
+  align-self: flex-end;
+}
+
+.peace-hand-svg {
+  width: 120px;
+  height: auto;
+  display: block;
+}
+
+.v-fingers {
+  transform-origin: 83px 82px;
+  animation: fingers-wave 2.1s ease-in-out infinite;
+}
+
+@keyframes fingers-wave {
+  0%, 100% {
+    transform: rotate(-6deg);
+  }
+  50% {
+    transform: rotate(7deg);
+  }
+}
+
+.peace-hand-box:hover .v-fingers {
+  animation-duration: 0.8s;
+}
+
+
