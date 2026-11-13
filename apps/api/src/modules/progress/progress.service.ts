@@ -13,7 +13,7 @@ export class ProgressService {
 
   private readonly STAFF_ROLES = ['FACULTY_SECRETARY', 'FACULTY_LEADER', 'QLKHCN', 'ADMIN'];
 
-  async getOverview() {
+  async getOverview(user?: any) {
     const activePeriod = await this.prisma.nckhPeriod.findFirst({
       where: { status: 'ACTIVE' },
       include: {
@@ -21,8 +21,90 @@ export class ProgressService {
       },
     });
 
+    const roleCode = user?.roleCode;
+    if (roleCode === 'FINANCE' || roleCode === 'STUDENT_AFFAIRS') {
+      return {
+        period: activePeriod,
+        milestones: activePeriod?.milestones || [],
+        reports: [],
+        seminars: [],
+        changeRequests: [],
+      };
+    }
+
+    let reportsWhere: any = {};
+    let seminarsWhere: any = {};
+    let changeRequestsWhere: any = {};
+
+    if (roleCode === 'STUDENT') {
+      const studentProjectFilter = {
+        members: {
+          some: {
+            student: {
+              OR: [
+                ...(user?.userId ? [{ userId: user.userId }] : []),
+                ...(user?.studentId ? [{ studentId: user.studentId }] : []),
+              ],
+            },
+          },
+        },
+      };
+      const attendeeFilter = {
+        members: {
+          some: {
+            OR: [
+              ...(user?.userId ? [{ userId: user.userId }] : []),
+              ...(user?.fullName ? [{ attendeeName: user.fullName }] : []),
+            ],
+          },
+        },
+      };
+      reportsWhere = { project: studentProjectFilter };
+      changeRequestsWhere = { project: studentProjectFilter };
+      seminarsWhere = { OR: [{ project: studentProjectFilter }, attendeeFilter] };
+    } else if (roleCode === 'LECTURER') {
+      const lecturerProjectFilter = {
+        advisors: {
+          some: {
+            lecturer: {
+              OR: [
+                ...(user?.userId ? [{ userId: user.userId }] : []),
+                ...(user?.lecturerId ? [{ lecturerId: user.lecturerId }] : []),
+              ],
+            },
+          },
+        },
+      };
+      const attendeeFilter = {
+        members: {
+          some: {
+            OR: [
+              ...(user?.userId ? [{ userId: user.userId }] : []),
+              ...(user?.fullName ? [{ attendeeName: user.fullName }] : []),
+            ],
+          },
+        },
+      };
+      reportsWhere = { project: lecturerProjectFilter };
+      changeRequestsWhere = { project: lecturerProjectFilter };
+      seminarsWhere = { OR: [{ project: lecturerProjectFilter }, attendeeFilter] };
+    } else if ((roleCode === 'FACULTY_LEADER' || roleCode === 'FACULTY_SECRETARY') && user?.userId) {
+      const deptPositions = await this.prisma.deptPosition.findMany({
+        where: { userId: user.userId, isActive: true },
+        select: { deptId: true },
+      });
+      const deptIds = deptPositions.map((d) => d.deptId);
+      if (deptIds.length > 0) {
+        const deptFilter = { project: { deptId: { in: deptIds } } };
+        reportsWhere = deptFilter;
+        seminarsWhere = deptFilter;
+        changeRequestsWhere = deptFilter;
+      }
+    }
+
     const [reports, seminars, changeRequests] = await Promise.all([
       this.prisma.progressReport.findMany({
+        where: reportsWhere,
         include: {
           milestone: true,
           project: {
@@ -36,6 +118,7 @@ export class ProgressService {
         orderBy: { submittedAt: 'desc' },
       }),
       this.prisma.seminar.findMany({
+        where: seminarsWhere,
         include: {
           members: { orderBy: { memberId: 'asc' } },
           project: {
@@ -49,6 +132,7 @@ export class ProgressService {
         orderBy: { heldAt: 'desc' },
       }),
       this.prisma.changeRequest.findMany({
+        where: changeRequestsWhere,
         include: {
           approvals: { orderBy: { decidedAt: 'asc' } },
           project: {
@@ -80,6 +164,9 @@ export class ProgressService {
       where: { projectId: dto.projectId },
     });
     if (!project) throw new NotFoundException(`Không tìm thấy đề tài ${dto.projectId}`);
+    if (!['ONGOING', 'APPROVED', 'OUTLINE_SUBMITTED'].includes(project.status)) {
+      throw new BadRequestException('Đề tài không ở giai đoạn thực hiện nên không thể nộp thêm báo cáo tiến độ định kỳ');
+    }
 
     if (user.roleCode === 'STUDENT') {
       const isMember = await this.prisma.projectMember.findFirst({
@@ -143,11 +230,25 @@ export class ProgressService {
       where: { projectId: dto.projectId },
       include: {
         department: true,
+        acceptance: true,
+        period: { include: { milestones: true } },
         members: { include: { student: { include: { user: true } } } },
         advisors: { include: { lecturer: { include: { user: true } } } },
       },
     });
     if (!project) throw new NotFoundException(`Không tìm thấy đề tài ${dto.projectId}`);
+    if (!['ONGOING', 'APPROVED', 'OUTLINE_SUBMITTED'].includes(project.status) || project.acceptance) {
+      throw new BadRequestException(
+        'Chỉ được lập lịch Hội thảo khoa học (Mẫu 3.5) cho đề tài đang thực hiện trước giai đoạn nộp hồ sơ Nghiệm thu',
+      );
+    }
+
+    const acceptanceMilestone = project.period?.milestones?.find((m) => m.milestoneType === 'ACCEPTANCE');
+    if (acceptanceMilestone && new Date(dto.heldAt) > new Date(acceptanceMilestone.dueDate)) {
+      throw new BadRequestException(
+        `Thời gian tổ chức Hội thảo khoa học phải diễn ra trước hạn nộp hồ sơ Nghiệm thu (${new Date(acceptanceMilestone.dueDate).toLocaleDateString('vi-VN')})`,
+      );
+    }
 
     const defaultMembers: Array<{
       userId?: number;
@@ -236,6 +337,11 @@ export class ProgressService {
       include: { members: true, project: { include: { department: true } } },
     });
     if (!seminar) throw new NotFoundException('Không tìm thấy phiên sinh hoạt khoa học');
+    if (seminar.status === 'COMPLETED' || ['SUBMITTED', 'ACCEPTED', 'REJECTED'].includes(seminar.project.status)) {
+      throw new BadRequestException(
+        'Hội thảo đã kết thúc hoặc đề tài đã chuyển sang giai đoạn nghiệm thu, không thể phát hành thêm Thư mời',
+      );
+    }
 
     if (Array.isArray(dto?.invitees) && dto.invitees.length > 0) {
       for (const inv of dto.invitees) {
@@ -297,9 +403,12 @@ export class ProgressService {
 
     const seminar = await this.prisma.seminar.findUnique({
       where: { seminarId },
-      include: { members: true },
+      include: { members: true, project: true },
     });
     if (!seminar) throw new NotFoundException('Không tìm thấy phiên sinh hoạt khoa học');
+    if (seminar.status === 'COMPLETED' || ['SUBMITTED', 'ACCEPTED', 'REJECTED'].includes(seminar.project.status)) {
+      throw new BadRequestException('Phiên Sinh hoạt khoa học đã kết thúc, cổng xác nhận tham dự (RSVP) đã đóng');
+    }
 
     const member = seminar.members.find(
       (m) => m.userId === user.userId || m.attendeeName === user.fullName,
@@ -342,7 +451,7 @@ export class ProgressService {
     const seminar = await this.prisma.seminar.findUnique({ where: { seminarId } });
     if (!seminar) throw new NotFoundException('Không tìm thấy phiên sinh hoạt khoa học');
 
-    return this.prisma.seminar.update({
+    const completed = await this.prisma.seminar.update({
       where: { seminarId },
       data: {
         feedback: dto.feedback,
@@ -351,6 +460,20 @@ export class ProgressService {
       },
       include: { members: true },
     });
+
+    await this.prisma.notification.updateMany({
+      where: {
+        type: 'SEMINAR',
+        isConfirmed: false,
+        OR: [
+          { content: { contains: seminar.projectId } },
+          ...(seminar.invitationCode ? [{ content: { contains: seminar.invitationCode } }] : []),
+        ],
+      },
+      data: { isConfirmed: true },
+    });
+
+    return completed;
   }
 
   async createChangeRequest(
@@ -359,6 +482,9 @@ export class ProgressService {
   ) {
     const project = await this.prisma.project.findUnique({ where: { projectId: dto.projectId } });
     if (!project) throw new NotFoundException(`Không tìm thấy đề tài ${dto.projectId}`);
+    if (!['ONGOING', 'APPROVED', 'OUTLINE_SUBMITTED'].includes(project.status)) {
+      throw new BadRequestException('Chỉ đề tài đang trong giai đoạn thực hiện mới được gửi đơn điều chỉnh / gia hạn');
+    }
 
     if (user.roleCode === 'STUDENT') {
       const isMember = await this.prisma.projectMember.findFirst({
@@ -440,3 +566,4 @@ export class ProgressService {
     return approval;
   }
 }
+

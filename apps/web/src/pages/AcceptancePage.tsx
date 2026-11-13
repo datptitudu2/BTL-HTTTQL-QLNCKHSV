@@ -17,6 +17,7 @@ import {
   message,
   DatePicker,
   Checkbox,
+  Empty,
 } from 'antd';
 import {
   CheckCircleOutlined,
@@ -82,6 +83,8 @@ export const AcceptancePage: React.FC = () => {
   const [scoreForm] = Form.useForm();
   const [councilForm] = Form.useForm();
 
+  const isStudent = roleCode === 'STUDENT';
+  const isLecturer = roleCode === 'LECTURER';
   const canCreateCouncil = ['QLKHCN', 'FACULTY_LEADER', 'BOARD', 'ADMIN'].includes(roleCode);
   const canApproveFinal = ['QLKHCN', 'BOARD', 'ADMIN'].includes(roleCode);
 
@@ -222,19 +225,25 @@ export const AcceptancePage: React.FC = () => {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, flexWrap: 'wrap', gap: 12 }}>
         <div>
           <Title level={4} style={{ margin: 0, color: '#262626', fontWeight: 700 }}>
-            Hội đồng Nghiệm thu & Chấm điểm Đề tài (QĐ 521/QĐ-HV)
+            {isStudent ? 'Hội đồng Nghiệm thu & Kết quả Đề tài của tôi (QĐ 521)' : 'Hội đồng Nghiệm thu & Chấm điểm Đề tài (QĐ 521/QĐ-HV)'}
           </Title>
           <Text type="secondary" style={{ fontSize: 13 }}>
-            Quản lý phiên bảo vệ theo Khoa & Đề tài: 7 tiêu chí chuẩn (100đ), tự động loại trừ phiếu chênh lệch &gt; 15 điểm (Mẫu 4.2), phê duyệt P.QLKHCN.
+            {isStudent
+              ? 'Theo dõi lịch bảo vệ, danh sách thành viên Hội đồng và kết quả nghiệm thu chính thức cho đề tài nhóm bạn tham gia.'
+              : isLecturer
+              ? 'Danh sách các Hội đồng Nghiệm thu bạn là thành viên chấm điểm (Mẫu 4.1) hoặc đề tài bạn trực tiếp hướng dẫn.'
+              : 'Quản lý phiên bảo vệ theo Khoa & Đề tài: 7 tiêu chí chuẩn (100đ), tự động loại trừ phiếu chênh lệch > 15 điểm (Mẫu 4.2), phê duyệt P.QLKHCN.'}
           </Text>
         </div>
         <Space>
-          <Select value={deptFilter} onChange={setDeptFilter} style={{ width: 170 }}>
-            <Select.Option value="ALL">Tất cả các Khoa ({acceptances.length})</Select.Option>
-            {departments.map((d) => (
-              <Select.Option key={d} value={d}>Khoa {d}</Select.Option>
-            ))}
-          </Select>
+          {!isStudent && departments.length > 1 && (
+            <Select value={deptFilter} onChange={setDeptFilter} style={{ width: 170 }}>
+              <Select.Option value="ALL">Tất cả các Khoa ({acceptances.length})</Select.Option>
+              {departments.map((d) => (
+                <Select.Option key={d} value={d}>Khoa {d}</Select.Option>
+              ))}
+            </Select>
+          )}
           <Button icon={<ReloadOutlined />} onClick={fetchAll} loading={loading}>
             Làm mới
           </Button>
@@ -251,44 +260,55 @@ export const AcceptancePage: React.FC = () => {
         </Space>
       </div>
 
-      <Row gutter={[16, 16]} style={{ marginBottom: 16 }}>
-        <Col xs={12} sm={6}>
-          <Card bordered={false} style={{ borderRadius: 8 }}>
-            <Statistic title="Tổng Hồ sơ Nghiệm thu" value={acceptances.length} prefix={<AuditOutlined />} />
-          </Card>
-        </Col>
-        <Col xs={12} sm={6}>
-          <Card bordered={false} style={{ borderRadius: 8 }}>
-            <Statistic
-              title="Đã phê duyệt P.QLKHCN"
-              value={acceptances.filter((a) => Boolean(a.approvalDocNo)).length}
-              valueStyle={{ color: '#389E0D' }}
-              prefix={<CheckCircleOutlined />}
-            />
-          </Card>
-        </Col>
-        <Col xs={12} sm={6}>
-          <Card bordered={false} style={{ borderRadius: 8 }}>
-            <Statistic
-              title="Đạt Xuất sắc / Tốt"
-              value={acceptances.filter((a) => ['XUAT_SAC', 'TOT'].includes(a.grade)).length}
-              valueStyle={{ color: '#C62828' }}
-              prefix={<TrophyOutlined />}
-            />
-          </Card>
-        </Col>
-        <Col xs={12} sm={6}>
-          <Card bordered={false} style={{ borderRadius: 8 }}>
-            <Statistic
-              title="Có phiếu lệch > 15đ (Mẫu 4.2)"
-              value={acceptances.filter((a) => a.sheets?.some((s: any) => s.isOutlier)).length}
-              valueStyle={{ color: '#D48806' }}
-              prefix={<WarningOutlined />}
-            />
-          </Card>
-        </Col>
-      </Row>
+      {!isStudent && (
+        <Card bordered={false} size="small" style={{ marginBottom: 16, borderRadius: 8 }} bodyStyle={{ padding: '14px 20px' }}>
+          <Row gutter={[24, 12]}>
+            <Col xs={12} sm={6}>
+              <Statistic
+                title={isLecturer ? 'Hội đồng phụ trách' : 'Tổng Hồ sơ Nghiệm thu'}
+                value={acceptances.length}
+                prefix={<AuditOutlined />}
+              />
+            </Col>
+            <Col xs={12} sm={6}>
+              <Statistic
+                title="Đã phê duyệt P.QLKHCN"
+                value={acceptances.filter((a) => Boolean(a.approvalDocNo)).length}
+                valueStyle={{ color: '#389E0D' }}
+                prefix={<CheckCircleOutlined />}
+              />
+            </Col>
+            <Col xs={12} sm={6}>
+              <Statistic
+                title="Đạt Xuất sắc / Tốt"
+                value={acceptances.filter((a) => ['XUAT_SAC', 'TOT'].includes(a.grade)).length}
+                valueStyle={{ color: '#C62828' }}
+                prefix={<TrophyOutlined />}
+              />
+            </Col>
+            <Col xs={12} sm={6}>
+              <Statistic
+                title="Có phiếu lệch > 15đ (Mẫu 4.2)"
+                value={acceptances.filter((a) => a.sheets?.some((s: any) => s.isOutlier)).length}
+                valueStyle={{ color: '#D48806' }}
+                prefix={<WarningOutlined />}
+              />
+            </Col>
+          </Row>
+        </Card>
+      )}
 
+      {!loading && filteredAcceptances.length === 0 ? (
+        <Card bordered={false} style={{ borderRadius: 8 }}>
+          <Empty
+            description={
+              isStudent
+                ? 'Đề tài của bạn hiện chưa có lịch Hội đồng Nghiệm thu.'
+                : 'Chưa có hồ sơ Hội đồng Nghiệm thu nào thuộc phạm vi phụ trách của bạn.'
+            }
+          />
+        </Card>
+      ) : (
       <Space direction="vertical" style={{ width: '100%' }} size={16}>
         {filteredAcceptances.map((acc) => {
           const gradeInfo = GRADE_LABEL[acc.grade || 'PENDING'] || GRADE_LABEL.PENDING;
@@ -298,6 +318,7 @@ export const AcceptancePage: React.FC = () => {
           const hasOutlier = acc.sheets?.some((s: any) => s.isOutlier);
           const myMember = getMyCouncilMember(acc);
           const mySheet = myMember ? (acc.sheets || []).find((s: any) => s.cmId === myMember.cmId) : null;
+          const isFinalized = Boolean(acc.approvalDocNo) || (acc.grade && acc.grade !== 'PENDING');
 
           return (
             <Card
@@ -393,14 +414,16 @@ export const AcceptancePage: React.FC = () => {
                       {
                         title: 'Tổng điểm',
                         key: 'score',
-                        width: 120,
+                        width: 140,
                         render: (_: any, m: any) =>
-                          m.sheet ? (
+                          !m.sheet ? (
+                            <Text type="secondary">Chưa chấm</Text>
+                          ) : m.sheet.totalScore == null ? (
+                            <Text type="secondary">Đã chấm (Bảo mật)</Text>
+                          ) : (
                             <Text strong style={{ color: m.sheet.isOutlier ? '#CF1322' : '#262626', textDecoration: m.sheet.isOutlier ? 'line-through' : 'none' }}>
                               {Number(m.sheet.totalScore).toFixed(1)}đ
                             </Text>
-                          ) : (
-                            <Text type="secondary">Chưa chấm</Text>
                           ),
                       },
                       {
@@ -410,6 +433,8 @@ export const AcceptancePage: React.FC = () => {
                         render: (_: any, m: any) =>
                           !m.sheet ? (
                             <Tag>Chờ</Tag>
+                          ) : m.sheet.totalScore == null ? (
+                            <Tag color="blue">Đã nộp phiếu</Tag>
                           ) : m.sheet.isOutlier ? (
                             <Tag color="red">Loại (&gt;15đ)</Tag>
                           ) : (
@@ -422,9 +447,11 @@ export const AcceptancePage: React.FC = () => {
               </Row>
 
               <div style={{ marginTop: 14, paddingTop: 12, borderTop: '1px solid #f0f0f0', display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
-                <Button icon={<PrinterOutlined />} onClick={() => setDetailAcc(acc)}>
-                  Biên bản Mẫu 4.2 & Chi tiết 7 tiêu chí
-                </Button>
+                {(!isStudent || isFinalized) && (
+                  <Button icon={<PrinterOutlined />} onClick={() => setDetailAcc(acc)}>
+                    Biên bản Mẫu 4.2 & Chi tiết 7 tiêu chí
+                  </Button>
+                )}
                 {myMember && !acc.approvalDocNo && (
                   <Button
                     type="primary"
@@ -435,8 +462,8 @@ export const AcceptancePage: React.FC = () => {
                     {mySheet ? 'Cập nhật Phiếu 4.1 của tôi' : `Chấm điểm Phiếu 4.1 (${getCouncilRoleInfo(myMember.councilRole).label})`}
                   </Button>
                 )}
-                {roleCode === 'LECTURER' && !myMember && (
-                  <Tag style={{ margin: 0 }}>Bạn không thuộc danh sách thành viên Hội đồng này</Tag>
+                {isLecturer && !myMember && (
+                  <Tag color="blue" style={{ margin: 0 }}>Bạn là GVHD hướng dẫn đề tài này (Không chấm điểm Hội đồng)</Tag>
                 )}
                 {canApproveFinal && !acc.approvalDocNo && acc.avgScore && (
                   <Button
@@ -453,6 +480,7 @@ export const AcceptancePage: React.FC = () => {
           );
         })}
       </Space>
+      )}
 
       {/* Modal Chấm điểm 7 tiêu chí (Mẫu 4.1) */}
       <Modal
@@ -550,10 +578,10 @@ export const AcceptancePage: React.FC = () => {
               rowKey="sheetId"
               dataSource={detailAcc.sheets || []}
               columns={[
-                { title: 'Ủy viên Hội đồng', render: (_: any, s: any) => s.councilMember?.lecturer?.user?.fullName },
-                { title: 'Điểm tổng', render: (_: any, s: any) => `${Number(s.totalScore).toFixed(1)}đ` },
-                { title: 'Hiệu lực', render: (_: any, s: any) => (s.isOutlier ? 'Loại trừ (>15đ)' : 'Hợp lệ') },
-                { title: 'Nhận xét', dataIndex: 'strengths' },
+                { title: 'Ủy viên Hội đồng', render: (_: any, s: any) => s.councilMember?.lecturer?.user?.fullName || 'Thành viên Hội đồng' },
+                { title: 'Điểm tổng', render: (_: any, s: any) => (s.totalScore != null ? `${Number(s.totalScore).toFixed(1)}đ` : 'Đã chấm (Bảo mật)') },
+                { title: 'Hiệu lực', render: (_: any, s: any) => (s.totalScore == null ? 'Đang tổng hợp' : s.isOutlier ? 'Loại trừ (>15đ)' : 'Hợp lệ') },
+                { title: 'Nhận xét', render: (_: any, s: any) => s.strengths || '—' },
               ]}
             />
           </div>

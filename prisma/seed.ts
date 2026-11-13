@@ -569,6 +569,54 @@ async function main() {
     },
   });
 
+  await prisma.outline.create({
+    data: {
+      projectId: 'SV-2026-DPT-001',
+      versionNo: 1,
+      fileUrl: '/storage/outlines/SV-2026-DPT-001_v1.pdf',
+      approvalStatus: 'FACULTY_APPROVED',
+      submittedAt: new Date('2026-10-09'),
+      approvals: {
+        create: [
+          { approverUserId: userMap['gv002'], role: 'ADVISOR', mode: 'DIRECT', decision: 'APPROVED', comment: 'Đề cương Mobile AR đầy đủ mục tiêu, kịch bản thử nghiệm và dự toán.' },
+          { approverUserId: userMap['lead001'], role: 'FACULTY_LEADER', mode: 'PROXY', decision: 'APPROVED', comment: 'Phê duyệt đề cương triển khai nghiên cứu.' },
+        ],
+      },
+    },
+  });
+
+  await prisma.outline.create({
+    data: {
+      projectId: 'SV-2026-QTKD1-001',
+      versionNo: 1,
+      fileUrl: '/storage/outlines/SV-2026-QTKD1-001_v1.pdf',
+      approvalStatus: 'FACULTY_APPROVED',
+      submittedAt: new Date('2026-10-11'),
+      approvals: {
+        create: [
+          { approverUserId: userMap['gv003'], role: 'ADVISOR', mode: 'DIRECT', decision: 'APPROVED', comment: 'Phương pháp khảo sát và mô hình Smart Contract khả thi.' },
+          { approverUserId: userMap['lead001'], role: 'FACULTY_LEADER', mode: 'PROXY', decision: 'APPROVED', comment: 'Phê duyệt đề cương triển khai nghiên cứu.' },
+        ],
+      },
+    },
+  });
+
+  await prisma.outline.create({
+    data: {
+      projectId: 'SV-2026-ATTT-001',
+      versionNo: 1,
+      fileUrl: '/storage/outlines/SV-2026-ATTT-001_v1.pdf',
+      approvalStatus: 'FACULTY_APPROVED',
+      submittedAt: new Date('2026-10-10'),
+      approvals: {
+        create: [
+          { approverUserId: userMap['gv004'], role: 'ADVISOR', mode: 'DIRECT', decision: 'APPROVED', comment: 'Đề cương nghiên cứu IoT Zero-day với Deep ResNet đạt yêu cầu Mẫu 2.' },
+          { approverUserId: userMap['lead001'], role: 'FACULTY_LEADER', mode: 'PROXY', decision: 'APPROVED', comment: 'Nhất trí phê duyệt cấp Khoa, chuyển triển khai thực hiện.' },
+        ],
+      },
+    },
+  });
+
   // 2. Progress Reports
   await prisma.progressReport.createMany({
     data: [
@@ -589,6 +637,87 @@ async function main() {
         advisorComment: 'Cần bổ sung đánh giá độ trễ phản hồi LLM trong kỳ báo cáo tới.',
         assessment: 'PASS',
         submittedAt: new Date('2026-12-19'),
+      },
+      {
+        projectId: 'SV-2026-CNTT1-003',
+        pmId: 2,
+        reportContent: 'Hoàn thành tiền xử lý chuỗi thời gian POS và trích xuất 24 đặc trưng mùa vụ cho doanh nghiệp SME.',
+        productUrl: 'https://github.com/ptit-ds/pos-sme-forecast',
+        advisorComment: 'Đạt tiến độ Mốc 2, tiếp tục tối ưu mô hình dự báo.',
+        assessment: 'PASS',
+        submittedAt: new Date('2026-12-18'),
+      },
+      {
+        projectId: 'SV-2026-DPT-001',
+        pmId: 2,
+        reportContent: 'Hoàn thành nguyên mẫu Mobile AR và phiếu khảo sát 250 người dùng trẻ.',
+        productUrl: 'https://github.com/ptit-dpt/mobile-ar-impulse',
+        advisorComment: 'Kết quả thử nghiệm bước đầu rất khả quan.',
+        assessment: 'PASS',
+        submittedAt: new Date('2026-12-17'),
+      },
+      {
+        projectId: 'SV-2026-QTKD1-001',
+        pmId: 2,
+        reportContent: 'Triển khai thử nghiệm Smart Contract truy xuất nguồn gốc nông sản trên mạng Testnet.',
+        productUrl: 'https://github.com/ptit-biz/agritech-smart-contract',
+        advisorComment: 'Đạt yêu cầu tiến độ đợt 1.',
+        assessment: 'PASS',
+        submittedAt: new Date('2026-12-19'),
+      },
+      {
+        projectId: 'SV-2026-ATTT-001',
+        pmId: 2,
+        reportContent: 'Hoàn thành thu thập bộ dữ liệu lưu lượng mạng IoT (CICIoT) và huấn luyện mô hình ResNet phát hiện Zero-day.',
+        productUrl: 'https://github.com/ptit-sec/iot-zeroday-resnet',
+        advisorComment: 'Độ chính xác phát hiện đạt 94.2%, đạt tiến độ đề cương.',
+        assessment: 'PASS',
+        submittedAt: new Date('2026-12-18'),
+      },
+      {
+        projectId: 'SV-2026-CNTT1-001',
+        pmId: 4,
+        reportContent: 'Nộp đầy đủ Hồ sơ nghiệm thu Mẫu 3.1 - 3.4, sản phẩm phần mềm hoàn chỉnh và bài báo Tạp chí KH PTIT.',
+        productUrl: 'https://github.com/datptitudu2/BTL-HTTTQL-QLNCKHSV',
+        advisorComment: 'Đủ điều kiện đưa ra Hội đồng nghiệm thu.',
+        assessment: 'PASS',
+        submittedAt: new Date('2027-04-05'),
+      },
+      {
+        projectId: 'SV-2026-CNTT1-003',
+        pmId: 4,
+        reportContent: 'Hoàn thiện Báo cáo tổng kết Mẫu 3.2 - 3.4 và mã nguồn kiểm thử, kiểm tra đạo văn < 10%.',
+        productUrl: 'https://github.com/ptit-ds/pos-sme-forecast',
+        advisorComment: 'Xác nhận đủ điều kiện nghiệm thu.',
+        assessment: 'PASS',
+        submittedAt: new Date('2027-04-07'),
+      },
+      {
+        projectId: 'SV-2026-DPT-001',
+        pmId: 4,
+        reportContent: 'Nộp sản phẩm Mobile AR, báo cáo SPSS và bài báo IEEE.',
+        productUrl: 'https://github.com/ptit-dpt/mobile-ar-impulse',
+        advisorComment: 'Đạt yêu cầu nghiệm thu cấp Học viện.',
+        assessment: 'PASS',
+        submittedAt: new Date('2027-04-06'),
+      },
+      {
+        projectId: 'SV-2026-QTKD1-001',
+        pmId: 4,
+        reportContent: 'Nộp Báo cáo tổng kết, hợp đồng thông minh và báo cáo thực nghiệm chuỗi cung ứng nông sản.',
+        productUrl: 'https://github.com/ptit-biz/agritech-smart-contract',
+        advisorComment: 'Đủ điều kiện lập Hội đồng nghiệm thu.',
+        assessment: 'PASS',
+        submittedAt: new Date('2027-04-08'),
+      },
+      {
+        projectId: 'SV-2026-ATTT-001',
+        pmId: 4,
+        reportContent: 'Nộp hoàn chỉnh Báo cáo tổng kết (Mẫu 3.1 - 3.4), mã nguồn ResNet Zero-day (tỷ lệ trùng lặp 9.5%).',
+        productUrl: 'https://github.com/ptit-sec/iot-zeroday-resnet',
+        advisorComment: 'Xác nhận hoàn thành sản phẩm, đủ điều kiện nghiệm thu.',
+        assessment: 'PASS',
+        submittedAt: new Date('2027-04-08'),
       },
     ],
   });
@@ -637,6 +766,51 @@ async function main() {
         ],
       },
     },
+  });
+
+  await prisma.seminar.createMany({
+    data: [
+      {
+        projectId: 'SV-2026-CNTT1-003',
+        planTitle: 'Sinh hoạt khoa học Bộ môn Khoa học dữ liệu - Dự báo POS (Mẫu 3.5)',
+        heldAt: new Date('2026-12-20T09:00:00Z'),
+        location: 'Phòng Hội thảo 301 - Nhà A2, Học viện PTIT',
+        invitationCode: '135/GM-CNTT1',
+        status: 'COMPLETED',
+        feedback: 'Đã nghiệm thu tiến độ bước 1, mô hình trích xuất đặc trưng đạt độ chính xác tốt.',
+        minutesFileUrl: '/storage/seminars/BB_3_5_CNTT1_003.pdf',
+      },
+      {
+        projectId: 'SV-2026-DPT-001',
+        planTitle: 'Hội thảo khoa học Khoa Đa phương tiện - Mobile AR (Mẫu 3.5)',
+        heldAt: new Date('2026-12-19T14:00:00Z'),
+        location: 'Phòng Lab Đa phương tiện 302 - Nhà A2',
+        invitationCode: '129/GM-DPT',
+        status: 'COMPLETED',
+        feedback: 'Sản phẩm Mobile AR hoạt động ổn định trên Android/iOS.',
+        minutesFileUrl: '/storage/seminars/BB_3_5_DPT_001.pdf',
+      },
+      {
+        projectId: 'SV-2026-QTKD1-001',
+        planTitle: 'Hội thảo khoa học Khoa QTKD 1 - Blockchain Nông sản (Mẫu 3.5)',
+        heldAt: new Date('2026-12-21T09:00:00Z'),
+        location: 'Phòng Hội thảo Khoa QTKD1 - Nhà A3',
+        invitationCode: '134/GM-QTKD1',
+        status: 'COMPLETED',
+        feedback: 'Hoàn thành tốt nội dung sinh hoạt khoa học cấp Khoa.',
+        minutesFileUrl: '/storage/seminars/BB_3_5_QTKD1_001.pdf',
+      },
+      {
+        projectId: 'SV-2026-ATTT-001',
+        planTitle: 'Hội thảo khoa học Khoa An toàn thông tin - IoT Zero-day (Mẫu 3.5)',
+        heldAt: new Date('2026-12-20T14:00:00Z'),
+        location: 'Phòng Lab An toàn thông tin 404 - Nhà A2',
+        invitationCode: '130/GM-ATTT',
+        status: 'COMPLETED',
+        feedback: 'Nhóm SV trình diễn phát hiện tấn công Zero-day đạt yêu cầu tiến độ.',
+        minutesFileUrl: '/storage/seminars/BB_3_5_ATTT_001.pdf',
+      },
+    ],
   });
 
   // 4. Change Requests (Đơn điều chỉnh / Gia hạn)
@@ -690,6 +864,38 @@ async function main() {
         fileUrl: 'https://github.com/ptit-sec/iot-zeroday-resnet',
         plagiarismRate: 9.5,
         libraryCode: 'SRC-ATTT-2027-04',
+        visibility: 'INTERNAL',
+      },
+      {
+        projectId: 'SV-2026-ATTT-001',
+        docType: 'SUMMARY_REPORT',
+        fileUrl: '/storage/docs/SV-2026-ATTT-001_BaoCaoTongKet_Mau3_2.pdf',
+        plagiarismRate: 9.5,
+        libraryCode: 'THU-VIEN-SO-2027-003',
+        visibility: 'PUBLIC',
+      },
+      {
+        projectId: 'SV-2026-DPT-001',
+        docType: 'SUMMARY_REPORT',
+        fileUrl: '/storage/docs/SV-2026-DPT-001_BaoCaoTongKet_Mau3_2.pdf',
+        plagiarismRate: 8.1,
+        libraryCode: 'THU-VIEN-SO-2027-002',
+        visibility: 'PUBLIC',
+      },
+      {
+        projectId: 'SV-2026-CNTT1-003',
+        docType: 'SUMMARY_REPORT',
+        fileUrl: '/storage/docs/SV-2026-CNTT1-003_BaoCaoTongKet_Mau3_2.pdf',
+        plagiarismRate: 7.4,
+        libraryCode: null,
+        visibility: 'INTERNAL',
+      },
+      {
+        projectId: 'SV-2026-QTKD1-001',
+        docType: 'SUMMARY_REPORT',
+        fileUrl: '/storage/docs/SV-2026-QTKD1-001_BaoCaoTongKet_Mau3_2.pdf',
+        plagiarismRate: 11.2,
+        libraryCode: null,
         visibility: 'INTERNAL',
       },
     ],

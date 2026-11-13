@@ -47,23 +47,23 @@ export const VerifyCertificatePage: React.FC = () => {
 
   const certData = dbCert
     ? {
-        studentName: (dbCert.recipient?.fullName || 'SINH VIÊN PTIT').toUpperCase(),
-        studentClass: dbCert.recipientType === 'ADVISOR' ? 'Giảng viên hướng dẫn' : 'Sinh viên PTIT',
-        department: dbCert.project?.department?.deptName || 'Học viện Công nghệ Bưu chính Viễn thông',
-        projectTitle: dbCert.project?.titleVi || '',
-        projectCode: dbCert.projectId,
-        academicYear: '2026-2027',
-        result: GRADE_LABEL[dbCert.grade] || dbCert.grade,
-        decisionNo: dbCert.project?.acceptance?.approvalDocNo || '521/QĐ-HV',
-        issueDate: dbCert.issuedDate
-          ? new Date(dbCert.issuedDate).toLocaleDateString('vi-VN')
-          : 'ngày 05 tháng 5 năm 2027',
-        certNo: dbCert.certCode,
-        signatoryTitle: 'GIÁM ĐỐC',
-        signatoryName: 'PGS.TS. Đặng Hoài Bắc',
-      }
+      studentName: (dbCert.recipient?.fullName || 'SINH VIÊN PTIT').toUpperCase(),
+      studentClass: dbCert.recipientType === 'ADVISOR' ? 'Giảng viên hướng dẫn' : 'Sinh viên PTIT',
+      department: dbCert.project?.department?.deptName || 'Học viện Công nghệ Bưu chính Viễn thông',
+      projectTitle: dbCert.project?.titleVi || '',
+      projectCode: dbCert.projectId,
+      academicYear: '2026-2027',
+      result: GRADE_LABEL[dbCert.grade] || dbCert.grade,
+      decisionNo: dbCert.project?.acceptance?.approvalDocNo || '521/QĐ-HV',
+      issueDate: dbCert.issuedDate
+        ? new Date(dbCert.issuedDate).toLocaleDateString('vi-VN')
+        : 'ngày 05 tháng 5 năm 2027',
+      certNo: dbCert.certCode,
+      signatoryTitle: 'GIÁM ĐỐC',
+      signatoryName: 'PGS.TS. Đặng Hoài Bắc',
+    }
     : isLegacySample
-    ? {
+      ? {
         studentName: 'NGUYỄN TIẾN ĐẠT',
         studentClass: 'D23CCHT01',
         department: 'Viện Khoa học Kỹ thuật Bưu điện',
@@ -77,7 +77,7 @@ export const VerifyCertificatePage: React.FC = () => {
         signatoryTitle: 'GIÁM ĐỐC',
         signatoryName: 'PGS.TS. Đặng Hoài Bắc',
       }
-    : {
+      : {
         studentName: (student || 'NGUYỄN VĂN AN').toUpperCase(),
         studentClass: 'D23CQCN01-B',
         department: 'Khoa Công nghệ thông tin 1',

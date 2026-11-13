@@ -10,9 +10,60 @@ import { PrismaService } from '../../prisma/prisma.service';
 export class AwardsService {
   constructor(private prisma: PrismaService) {}
 
-  async getAll() {
+  async getAll(user?: any) {
+    const roleCode = user?.roleCode;
+    let nominationWhere: any = {};
+    let certificateWhere: any = {};
+    let lecturerHourWhere: any = {};
+    let studentBonusWhere: any = {};
+    let skipLecturerHours = false;
+    let skipStudentBonuses = false;
+
+    if (roleCode === 'STUDENT') {
+      const studentOr = [
+        ...(user?.userId ? [{ userId: user.userId }] : []),
+        ...(user?.studentId ? [{ studentId: user.studentId }] : []),
+      ];
+      const ownProjectFilter = { members: { some: { student: { OR: studentOr } } } };
+      nominationWhere = { OR: [{ status: 'APPROVED' }, { project: ownProjectFilter }] };
+      certificateWhere = { OR: [{ recipientUserId: user?.userId }, { project: ownProjectFilter }] };
+      studentBonusWhere = { student: { OR: studentOr } };
+      skipLecturerHours = true;
+    } else if (roleCode === 'LECTURER') {
+      const lecturerOr = [
+        ...(user?.userId ? [{ userId: user.userId }] : []),
+        ...(user?.lecturerId ? [{ lecturerId: user.lecturerId }] : []),
+      ];
+      const advisedProjectFilter = { advisors: { some: { lecturer: { OR: lecturerOr } } } };
+      nominationWhere = { OR: [{ status: 'APPROVED' }, { project: advisedProjectFilter }] };
+      certificateWhere = { OR: [{ recipientUserId: user?.userId }, { project: advisedProjectFilter }] };
+      lecturerHourWhere = { lecturer: { OR: lecturerOr } };
+      skipStudentBonuses = true;
+    } else if ((roleCode === 'FACULTY_LEADER' || roleCode === 'FACULTY_SECRETARY') && user?.userId) {
+      const deptPositions = await this.prisma.deptPosition.findMany({
+        where: { userId: user.userId, isActive: true },
+        select: { deptId: true },
+      });
+      const deptIds = deptPositions.map((d) => d.deptId);
+      if (deptIds.length > 0) {
+        const deptFilter = { project: { deptId: { in: deptIds } } };
+        nominationWhere = deptFilter;
+        certificateWhere = deptFilter;
+        lecturerHourWhere = { OR: [deptFilter, { lecturer: { deptId: { in: deptIds } } }] };
+        studentBonusWhere = { OR: [deptFilter, { student: { deptId: { in: deptIds } } }] };
+      }
+    } else if (roleCode === 'STUDENT_AFFAIRS') {
+      skipLecturerHours = true;
+    } else if (roleCode === 'FINANCE') {
+      nominationWhere = { status: 'APPROVED' };
+      skipLecturerHours = true;
+      skipStudentBonuses = true;
+      certificateWhere = { certId: -1 };
+    }
+
     const [nominations, certificates, lecturerHours, studentBonuses] = await Promise.all([
       this.prisma.awardNomination.findMany({
+        where: nominationWhere,
         include: {
           project: {
             include: {
@@ -26,6 +77,7 @@ export class AwardsService {
         orderBy: { nominationId: 'desc' },
       }),
       this.prisma.certificate.findMany({
+        where: certificateWhere,
         include: {
           recipient: true,
           project: {
@@ -37,20 +89,26 @@ export class AwardsService {
         },
         orderBy: { issuedDate: 'desc' },
       }),
-      this.prisma.lecturerHour.findMany({
-        include: {
-          lecturer: { include: { user: true, department: true } },
-          project: { include: { department: true, acceptance: true } },
-        },
-        orderBy: { hourId: 'desc' },
-      }),
-      this.prisma.studentBonus.findMany({
-        include: {
-          student: { include: { user: true, department: true } },
-          project: { include: { department: true, acceptance: true } },
-        },
-        orderBy: { bonusId: 'desc' },
-      }),
+      skipLecturerHours
+        ? Promise.resolve([])
+        : this.prisma.lecturerHour.findMany({
+            where: lecturerHourWhere,
+            include: {
+              lecturer: { include: { user: true, department: true } },
+              project: { include: { department: true, acceptance: true } },
+            },
+            orderBy: { hourId: 'desc' },
+          }),
+      skipStudentBonuses
+        ? Promise.resolve([])
+        : this.prisma.studentBonus.findMany({
+            where: studentBonusWhere,
+            include: {
+              student: { include: { user: true, department: true } },
+              project: { include: { department: true, acceptance: true } },
+            },
+            orderBy: { bonusId: 'desc' },
+          }),
     ]);
 
     return {
@@ -261,3 +319,4 @@ export class AwardsService {
     });
   }
 }
+

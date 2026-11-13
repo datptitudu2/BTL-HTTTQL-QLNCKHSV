@@ -9,16 +9,20 @@ import { CurrentUser } from '../../common/decorators/current-user.decorator';
 export class AcceptanceController {
   constructor(private acceptanceService: AcceptanceService) {}
 
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @Get()
-  @ApiOperation({ summary: 'Danh sách toàn bộ Hội đồng & Hồ sơ Nghiệm thu kèm bộ 7 tiêu chí' })
-  async findAll() {
-    return this.acceptanceService.getAllAcceptances();
+  @ApiOperation({ summary: 'Danh sách Hội đồng & Hồ sơ Nghiệm thu phân quyền theo vai trò & ERD' })
+  async findAll(@CurrentUser() user: any) {
+    return this.acceptanceService.getAllAcceptances(user);
   }
 
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @Get('project/:projectId')
   @ApiOperation({ summary: 'Lấy thông tin hội đồng và kết quả nghiệm thu của đề tài' })
-  async getByProject(@Param('projectId') projectId: string) {
-    return this.acceptanceService.getCouncilByProject(projectId);
+  async getByProject(@Param('projectId') projectId: string, @CurrentUser() user: any) {
+    return this.acceptanceService.getCouncilByProject(projectId, user);
   }
 
   @UseGuards(JwtAuthGuard)

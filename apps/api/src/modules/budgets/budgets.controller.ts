@@ -9,16 +9,20 @@ import { CurrentUser } from '../../common/decorators/current-user.decorator';
 export class BudgetsController {
   constructor(private budgetsService: BudgetsService) {}
 
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @Get()
-  @ApiOperation({ summary: 'Danh sách toàn bộ dự toán và chứng từ quyết toán các đề tài' })
-  async findAll() {
-    return this.budgetsService.findAll();
+  @ApiOperation({ summary: 'Danh sách dự toán và chứng từ quyết toán phân quyền theo vai trò & ERD' })
+  async findAll(@CurrentUser() user: any) {
+    return this.budgetsService.findAll(user);
   }
 
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @Get('project/:projectId')
   @ApiOperation({ summary: 'Lấy thông tin dự toán và lịch sử quyết toán của đề tài' })
-  async getByProject(@Param('projectId') projectId: string) {
-    return this.budgetsService.getBudgetByProject(projectId);
+  async getByProject(@Param('projectId') projectId: string, @CurrentUser() user: any) {
+    return this.budgetsService.getBudgetByProject(projectId, user);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -27,9 +31,10 @@ export class BudgetsController {
   @ApiOperation({ summary: '6.6 Sinh viên kê khai hồ sơ & chứng từ thanh quyết toán chi tiêu' })
   async addSettlement(
     @Param('id', ParseIntPipe) budgetId: number,
+    @CurrentUser() user: any,
     @Body() body: any,
   ) {
-    return this.budgetsService.addSettlement(budgetId, body);
+    return this.budgetsService.addSettlement(budgetId, user, body);
   }
 
   @UseGuards(JwtAuthGuard)

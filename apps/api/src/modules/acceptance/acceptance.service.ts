@@ -5,9 +5,99 @@ import { PrismaService } from '../../prisma/prisma.service';
 export class AcceptanceService {
   constructor(private prisma: PrismaService) {}
 
-  async getAllAcceptances() {
+  private sanitizeSheetsForUser(acc: any, user: any) {
+    const roleCode = user?.roleCode;
+    const isFinalized = Boolean(acc.approvalDocNo) || (acc.grade && acc.grade !== 'PENDING');
+
+    if (roleCode === 'STUDENT') {
+      if (!isFinalized) {
+        return (acc.sheets || []).map((s: any) => ({
+          sheetId: s.sheetId,
+          cmId: s.cmId,
+          hasSubmitted: true,
+        }));
+      }
+      return acc.sheets;
+    }
+
+    if (roleCode === 'LECTURER' && !acc.approvalDocNo) {
+      return (acc.sheets || []).map((s: any) => {
+        const isOwnSheet =
+          (user?.userId && s.councilMember?.lecturer?.userId === user.userId) ||
+          (user?.lecturerId && s.councilMember?.lecturerId === user.lecturerId);
+        if (isOwnSheet) return s;
+        return {
+          sheetId: s.sheetId,
+          cmId: s.cmId,
+          councilMember: s.councilMember,
+          hasSubmitted: true,
+        };
+      });
+    }
+
+    return acc.sheets;
+  }
+
+  async getAllAcceptances(user?: any) {
+    const roleCode = user?.roleCode;
+    let whereClause: any = {};
+
+    if (roleCode === 'STUDENT') {
+      whereClause = {
+        project: {
+          members: {
+            some: {
+              student: {
+                OR: [
+                  ...(user?.userId ? [{ userId: user.userId }] : []),
+                  ...(user?.studentId ? [{ studentId: user.studentId }] : []),
+                ],
+              },
+            },
+          },
+        },
+      };
+    } else if (roleCode === 'LECTURER') {
+      const lecturerOr = [
+        ...(user?.userId ? [{ userId: user.userId }] : []),
+        ...(user?.lecturerId ? [{ lecturerId: user.lecturerId }] : []),
+      ];
+      whereClause = {
+        OR: [
+          {
+            council: {
+              members: {
+                some: {
+                  lecturer: { OR: lecturerOr },
+                },
+              },
+            },
+          },
+          {
+            project: {
+              advisors: {
+                some: {
+                  lecturer: { OR: lecturerOr },
+                },
+              },
+            },
+          },
+        ],
+      };
+    } else if ((roleCode === 'FACULTY_LEADER' || roleCode === 'FACULTY_SECRETARY') && user?.userId) {
+      const deptPositions = await this.prisma.deptPosition.findMany({
+        where: { userId: user.userId, isActive: true },
+        select: { deptId: true },
+      });
+      const deptIds = deptPositions.map((d) => d.deptId);
+      if (deptIds.length > 0) {
+        whereClause = { project: { deptId: { in: deptIds } } };
+      }
+    }
+
     const [acceptances, criteria] = await Promise.all([
       this.prisma.acceptance.findMany({
+        where: whereClause,
         include: {
           project: {
             include: {
@@ -48,13 +138,24 @@ export class AcceptanceService {
       }),
     ]);
 
-    return { acceptances, criteria };
+    const scopedAcceptances = acceptances.map((acc) => ({
+      ...acc,
+      sheets: this.sanitizeSheetsForUser(acc, user),
+    }));
+
+    return { acceptances: scopedAcceptances, criteria };
   }
 
-  async getCouncilByProject(projectId: string) {
-    return this.prisma.acceptance.findUnique({
+  async getCouncilByProject(projectId: string, user?: any) {
+    const acc = await this.prisma.acceptance.findUnique({
       where: { projectId },
       include: {
+        project: {
+          include: {
+            members: { include: { student: true } },
+            advisors: { include: { lecturer: true } },
+          },
+        },
         council: {
           include: {
             members: {
@@ -78,6 +179,32 @@ export class AcceptanceService {
         },
       },
     });
+
+    if (!acc) return null;
+
+    if (user?.roleCode === 'STUDENT') {
+      const isMember = acc.project.members.some(
+        (m) => m.student.userId === user.userId || (user.studentId && m.studentId === user.studentId),
+      );
+      if (!isMember) {
+        throw new ForbiddenException('Sinh viên chỉ được xem thông tin Hội đồng nghiệm thu của đề tài mình tham gia');
+      }
+    } else if (user?.roleCode === 'LECTURER') {
+      const isCouncilMember = acc.council?.members?.some(
+        (m) => m.lecturer.userId === user.userId || (user.lecturerId && m.lecturerId === user.lecturerId),
+      );
+      const isAdvisor = acc.project.advisors.some(
+        (a) => a.lecturer.userId === user.userId || (user.lecturerId && a.lecturerId === user.lecturerId),
+      );
+      if (!isCouncilMember && !isAdvisor) {
+        throw new ForbiddenException('Chỉ thành viên Hội đồng hoặc GVHD của đề tài mới có quyền xem chi tiết nghiệm thu này');
+      }
+    }
+
+    return {
+      ...acc,
+      sheets: this.sanitizeSheetsForUser(acc, user),
+    };
   }
 
   async createCouncil(projectId: string, user: any, dto: {
@@ -93,13 +220,22 @@ export class AcceptanceService {
 
     const project = await this.prisma.project.findUnique({
       where: { projectId },
-      include: { acceptance: true },
+      include: { acceptance: true, seminars: true },
     });
     if (!project) {
       throw new NotFoundException(`Không tìm thấy đề tài ${projectId}`);
     }
     if (project.status !== 'SUBMITTED') {
       throw new BadRequestException('Đề tài phải ở trạng thái đã nộp báo cáo tổng kết (SUBMITTED) mới được thành lập Hội đồng nghiệm thu (DFD 5.1 → 5.2)');
+    }
+    if (project.seminars.some((s) => s.status !== 'COMPLETED') || !project.seminars.some((s) => s.status === 'COMPLETED')) {
+      throw new BadRequestException('Hội thảo khoa học (Mẫu 3.5) phải được tổ chức và chốt Biên bản hoàn tất trước khi thành lập Hội đồng nghiệm thu');
+    }
+    const latestSeminar = project.seminars
+      .filter((s) => s.status === 'COMPLETED')
+      .sort((a, b) => new Date(b.heldAt).getTime() - new Date(a.heldAt).getTime())[0];
+    if (latestSeminar && new Date(dto.defenseDate) <= new Date(latestSeminar.heldAt)) {
+      throw new BadRequestException('Ngày bảo vệ Hội đồng Nghiệm thu phải diễn ra sau ngày tổ chức Hội thảo khoa học cấp Khoa');
     }
     if (project.acceptance?.councilId) {
       throw new BadRequestException(`Đề tài ${projectId} đã có Hội đồng nghiệm thu được thành lập`);

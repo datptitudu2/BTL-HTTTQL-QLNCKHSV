@@ -69,6 +69,10 @@ export const AwardsPage: React.FC = () => {
   const isQLKHOrBoard = ['QLKHCN', 'BOARD', 'ADMIN'].includes(roleCode);
   const isFacultyStaff = ['FACULTY_SECRETARY', 'FACULTY_LEADER', 'QLKHCN', 'BOARD', 'ADMIN'].includes(roleCode);
   const isCTSV = ['STUDENT_AFFAIRS', 'ADMIN'].includes(roleCode);
+  const isStudent = roleCode === 'STUDENT';
+  const isLecturer = roleCode === 'LECTURER';
+  const showBonusesTab = !isLecturer;
+  const showHoursTab = !isStudent && !isCTSV;
 
   const fetchData = async () => {
     try {
@@ -192,34 +196,47 @@ export const AwardsPage: React.FC = () => {
         </Space>
       </div>
 
-      <Row gutter={[16, 16]} style={{ marginBottom: 16 }}>
-        <Col xs={12} sm={6}>
-          <Card bordered={false} style={{ borderRadius: 8 }}>
-            <Statistic title="Giấy chứng nhận số đã cấp" value={data.certificates.length} prefix={<SafetyCertificateOutlined />} valueStyle={{ color: '#C62828' }} />
-          </Card>
-        </Col>
-        <Col xs={12} sm={6}>
-          <Card bordered={false} style={{ borderRadius: 8 }}>
-            <Statistic title="Hồ sơ Giải thưởng Mẫu 5" value={data.nominations.length} prefix={<TrophyOutlined />} valueStyle={{ color: '#D48806' }} />
-          </Card>
-        </Col>
-        <Col xs={12} sm={6}>
-          <Card bordered={false} style={{ borderRadius: 8 }}>
-            <Statistic title="Lượt SV xét ĐRL & Học bổng" value={data.studentBonuses.length} prefix={<StarOutlined />} valueStyle={{ color: '#1890FF' }} />
-          </Card>
-        </Col>
-        <Col xs={12} sm={6}>
-          <Card bordered={false} style={{ borderRadius: 8 }}>
+      <Card bordered={false} size="small" style={{ marginBottom: 16, borderRadius: 8 }} bodyStyle={{ padding: '14px 20px' }}>
+        <Row gutter={[24, 12]}>
+          <Col xs={12} sm={showBonusesTab && showHoursTab ? 6 : 8}>
             <Statistic
-              title="Tổng Giờ chuẩn GVHD"
-              value={data.lecturerHours.reduce((s, h) => s + Number(h.convertedHours || 0), 0)}
-              suffix="giờ"
-              prefix={<ClockCircleOutlined />}
-              valueStyle={{ color: '#389E0D' }}
+              title={isStudent ? 'Giấy chứng nhận của bạn' : 'Giấy chứng nhận số đã cấp'}
+              value={data.certificates.length}
+              prefix={<SafetyCertificateOutlined />}
+              valueStyle={{ color: '#C62828' }}
             />
-          </Card>
-        </Col>
-      </Row>
+          </Col>
+          <Col xs={12} sm={showBonusesTab && showHoursTab ? 6 : 8}>
+            <Statistic
+              title="Hồ sơ Giải thưởng Mẫu 5"
+              value={data.nominations.length}
+              prefix={<TrophyOutlined />}
+              valueStyle={{ color: '#D48806' }}
+            />
+          </Col>
+          {showBonusesTab && (
+            <Col xs={12} sm={showHoursTab ? 6 : 8}>
+              <Statistic
+                title={isStudent ? 'ĐRL & Điểm học bổng của bạn' : 'Lượt SV xét ĐRL & Học bổng'}
+                value={data.studentBonuses.length}
+                prefix={<StarOutlined />}
+                valueStyle={{ color: '#1890FF' }}
+              />
+            </Col>
+          )}
+          {showHoursTab && (
+            <Col xs={12} sm={showBonusesTab ? 6 : 8}>
+              <Statistic
+                title={isLecturer ? 'Giờ chuẩn NCKH của bạn' : 'Tổng Giờ chuẩn GVHD'}
+                value={data.lecturerHours.reduce((s, h) => s + Number(h.convertedHours || 0), 0)}
+                suffix="giờ"
+                prefix={<ClockCircleOutlined />}
+                valueStyle={{ color: '#389E0D' }}
+              />
+            </Col>
+          )}
+        </Row>
+      </Card>
 
       <Card bordered={false} style={{ borderRadius: 8 }}>
         <Tabs
@@ -291,88 +308,92 @@ export const AwardsPage: React.FC = () => {
                 />
               ),
             },
-            {
-              key: 'bonuses',
-              label: `ĐRL & Điểm học bổng SV (${data.studentBonuses.length})`,
-              children: (
-                <Table
-                  loading={loading}
-                  rowKey="bonusId"
-                  dataSource={data.studentBonuses}
-                  pagination={{ pageSize: 8 }}
-                  columns={[
-                    {
-                      title: 'Sinh viên',
-                      key: 'student',
-                      render: (_: any, r: any) => (
-                        <div>
-                          <Text strong>{r.student?.user?.fullName}</Text>
-                          <div style={{ fontSize: 12, color: '#595959' }}>
-                            {r.studentId} • {r.student?.className} ({r.student?.department?.deptCode})
-                          </div>
-                        </div>
-                      ),
-                    },
-                    {
-                      title: 'Đề tài & Xếp loại',
-                      key: 'project',
-                      render: (_: any, r: any) => {
-                        const g = r.project?.acceptance?.grade;
-                        const info = GRADE_MAP[g] || { label: g || '—', color: 'default' };
-                        return (
-                          <div>
-                            <a onClick={() => navigate(`/projects/${r.projectId}`)} style={{ fontWeight: 600 }}>
-                              {r.projectId}
-                            </a>{' '}
-                            <Tag color={info.color}>{info.label}</Tag>
-                          </div>
-                        );
-                      },
-                    },
-                    {
-                      title: 'Điểm ĐRL (P.CTSV)',
-                      dataIndex: 'trainingScore',
-                      key: 'trainingScore',
-                      render: (v: any) => <Tag color="green">+{Number(v)} điểm ĐRL</Tag>,
-                    },
-                    {
-                      title: 'Điểm cộng Học bổng (Đ15.2.h)',
-                      dataIndex: 'bonusPoints',
-                      key: 'bonusPoints',
-                      render: (v: any) =>
-                        Number(v) > 0 ? <Tag color="gold">+{Number(v)} điểm TB học kỳ</Tag> : <Text type="secondary">0</Text>,
-                    },
-                    {
-                      title: 'Trạng thái CTSV',
-                      key: 'approvalStatus',
-                      render: (_: any, r: any) =>
-                        r.approvalStatus === 'APPROVED' ? (
-                          <Tag color="green" icon={<CheckCircleOutlined />}>
-                            Đã duyệt ({r.decisionNotice || 'CTSV'})
-                          </Tag>
-                        ) : (
-                          <Tag color="orange">Chờ Phòng CT&CTSV duyệt</Tag>
-                        ),
-                    },
-                    {
-                      title: 'Thao tác',
-                      key: 'action',
-                      render: (_: any, r: any) =>
-                        isCTSV && r.approvalStatus !== 'APPROVED' ? (
-                          <Button
-                            size="small"
-                            type="primary"
-                            style={{ backgroundColor: '#C62828', borderColor: '#C62828' }}
-                            onClick={() => handleApproveBonus(r.bonusId)}
-                          >
-                            CTSV Phê duyệt
-                          </Button>
-                        ) : null,
-                    },
-                  ]}
-                />
-              ),
-            },
+            ...(showBonusesTab
+              ? [
+                  {
+                    key: 'bonuses',
+                    label: `ĐRL & Điểm học bổng SV (${data.studentBonuses.length})`,
+                    children: (
+                      <Table
+                        loading={loading}
+                        rowKey="bonusId"
+                        dataSource={data.studentBonuses}
+                        pagination={{ pageSize: 8 }}
+                        columns={[
+                          {
+                            title: 'Sinh viên',
+                            key: 'student',
+                            render: (_: any, r: any) => (
+                              <div>
+                                <Text strong>{r.student?.user?.fullName}</Text>
+                                <div style={{ fontSize: 12, color: '#595959' }}>
+                                  {r.studentId} • {r.student?.className} ({r.student?.department?.deptCode})
+                                </div>
+                              </div>
+                            ),
+                          },
+                          {
+                            title: 'Đề tài & Xếp loại',
+                            key: 'project',
+                            render: (_: any, r: any) => {
+                              const g = r.project?.acceptance?.grade;
+                              const info = GRADE_MAP[g] || { label: g || '—', color: 'default' };
+                              return (
+                                <div>
+                                  <a onClick={() => navigate(`/projects/${r.projectId}`)} style={{ fontWeight: 600 }}>
+                                    {r.projectId}
+                                  </a>{' '}
+                                  <Tag color={info.color}>{info.label}</Tag>
+                                </div>
+                              );
+                            },
+                          },
+                          {
+                            title: 'Điểm ĐRL (P.CTSV)',
+                            dataIndex: 'trainingScore',
+                            key: 'trainingScore',
+                            render: (v: any) => <Tag color="green">+{Number(v)} điểm ĐRL</Tag>,
+                          },
+                          {
+                            title: 'Điểm cộng Học bổng (Đ15.2.h)',
+                            dataIndex: 'bonusPoints',
+                            key: 'bonusPoints',
+                            render: (v: any) =>
+                              Number(v) > 0 ? <Tag color="gold">+{Number(v)} điểm TB học kỳ</Tag> : <Text type="secondary">0</Text>,
+                          },
+                          {
+                            title: 'Trạng thái CTSV',
+                            key: 'approvalStatus',
+                            render: (_: any, r: any) =>
+                              r.approvalStatus === 'APPROVED' ? (
+                                <Tag color="green" icon={<CheckCircleOutlined />}>
+                                  Đã duyệt ({r.decisionNotice || 'CTSV'})
+                                </Tag>
+                              ) : (
+                                <Tag color="orange">Chờ Phòng CT&CTSV duyệt</Tag>
+                              ),
+                          },
+                          {
+                            title: 'Thao tác',
+                            key: 'action',
+                            render: (_: any, r: any) =>
+                              isCTSV && r.approvalStatus !== 'APPROVED' ? (
+                                <Button
+                                  size="small"
+                                  type="primary"
+                                  style={{ backgroundColor: '#C62828', borderColor: '#C62828' }}
+                                  onClick={() => handleApproveBonus(r.bonusId)}
+                                >
+                                  CTSV Phê duyệt
+                                </Button>
+                              ) : null,
+                          },
+                        ]}
+                      />
+                    ),
+                  },
+                ]
+              : []),
             {
               key: 'nominations',
               label: `Giải thưởng Mẫu 5 (${data.nominations.length})`,
@@ -460,79 +481,83 @@ export const AwardsPage: React.FC = () => {
                 />
               ),
             },
-            {
-              key: 'hours',
-              label: `Giờ chuẩn NCKH GVHD (${data.lecturerHours.length})`,
-              children: (
-                <Table
-                  loading={loading}
-                  rowKey="hourId"
-                  dataSource={data.lecturerHours}
-                  pagination={{ pageSize: 8 }}
-                  columns={[
-                    {
-                      title: 'Giảng viên hướng dẫn',
-                      key: 'lecturer',
-                      render: (_: any, r: any) => (
-                        <div>
-                          <Text strong>
-                            <UserOutlined /> {r.lecturer?.user?.fullName}
-                          </Text>
-                          <div style={{ fontSize: 12, color: '#595959' }}>
-                            {r.lecturerId} • {r.lecturer?.department?.deptName}
-                          </div>
-                        </div>
-                      ),
-                    },
-                    {
-                      title: 'Đề tài hướng dẫn',
-                      key: 'project',
-                      render: (_: any, r: any) => (
-                        <div>
-                          <a onClick={() => navigate(`/projects/${r.projectId}`)} style={{ fontWeight: 600 }}>
-                            {r.projectId}
-                          </a>
-                          <div style={{ fontSize: 12 }}>{r.project?.titleVi}</div>
-                        </div>
-                      ),
-                    },
-                    {
-                      title: 'Năm học',
-                      dataIndex: 'academicYear',
-                      key: 'academicYear',
-                    },
-                    {
-                      title: 'Giờ chuẩn quy đổi',
-                      dataIndex: 'convertedHours',
-                      key: 'convertedHours',
-                      render: (h: any) => <Tag color="blue">{Number(h)} giờ chuẩn</Tag>,
-                    },
-                    {
-                      title: 'Xác nhận',
-                      key: 'declarationStatus',
-                      render: (_: any, r: any) =>
-                        r.declarationStatus === 'CONFIRMED' ? (
-                          <Tag color="green" icon={<CheckCircleOutlined />}>
-                            Đã chốt giờ NCKH
-                          </Tag>
-                        ) : (
-                          <Tag color="gold">Chờ P.QLKHCN chốt</Tag>
-                        ),
-                    },
-                    {
-                      title: 'Thao tác',
-                      key: 'action',
-                      render: (_: any, r: any) =>
-                        isQLKHOrBoard && r.declarationStatus !== 'CONFIRMED' ? (
-                          <Button size="small" type="primary" onClick={() => handleConfirmHours(r.hourId)}>
-                            Chốt giờ NCKH
-                          </Button>
-                        ) : null,
-                    },
-                  ]}
-                />
-              ),
-            },
+            ...(showHoursTab
+              ? [
+                  {
+                    key: 'hours',
+                    label: `Giờ chuẩn NCKH GVHD (${data.lecturerHours.length})`,
+                    children: (
+                      <Table
+                        loading={loading}
+                        rowKey="hourId"
+                        dataSource={data.lecturerHours}
+                        pagination={{ pageSize: 8 }}
+                        columns={[
+                          {
+                            title: 'Giảng viên hướng dẫn',
+                            key: 'lecturer',
+                            render: (_: any, r: any) => (
+                              <div>
+                                <Text strong>
+                                  <UserOutlined /> {r.lecturer?.user?.fullName}
+                                </Text>
+                                <div style={{ fontSize: 12, color: '#595959' }}>
+                                  {r.lecturerId} • {r.lecturer?.department?.deptName}
+                                </div>
+                              </div>
+                            ),
+                          },
+                          {
+                            title: 'Đề tài hướng dẫn',
+                            key: 'project',
+                            render: (_: any, r: any) => (
+                              <div>
+                                <a onClick={() => navigate(`/projects/${r.projectId}`)} style={{ fontWeight: 600 }}>
+                                  {r.projectId}
+                                </a>
+                                <div style={{ fontSize: 12 }}>{r.project?.titleVi}</div>
+                              </div>
+                            ),
+                          },
+                          {
+                            title: 'Năm học',
+                            dataIndex: 'academicYear',
+                            key: 'academicYear',
+                          },
+                          {
+                            title: 'Giờ chuẩn quy đổi',
+                            dataIndex: 'convertedHours',
+                            key: 'convertedHours',
+                            render: (h: any) => <Tag color="blue">{Number(h)} giờ chuẩn</Tag>,
+                          },
+                          {
+                            title: 'Xác nhận',
+                            key: 'declarationStatus',
+                            render: (_: any, r: any) =>
+                              r.declarationStatus === 'CONFIRMED' ? (
+                                <Tag color="green" icon={<CheckCircleOutlined />}>
+                                  Đã chốt giờ NCKH
+                                </Tag>
+                              ) : (
+                                <Tag color="gold">Chờ P.QLKHCN chốt</Tag>
+                              ),
+                          },
+                          {
+                            title: 'Thao tác',
+                            key: 'action',
+                            render: (_: any, r: any) =>
+                              isQLKHOrBoard && r.declarationStatus !== 'CONFIRMED' ? (
+                                <Button size="small" type="primary" onClick={() => handleConfirmHours(r.hourId)}>
+                                  Chốt giờ NCKH
+                                </Button>
+                              ) : null,
+                          },
+                        ]}
+                      />
+                    ),
+                  },
+                ]
+              : []),
           ]}
         />
       </Card>
@@ -552,7 +577,7 @@ export const AwardsPage: React.FC = () => {
             <Select placeholder="Chọn đề tài đạt Khá trở lên">
               {eligibleAcceptedProjects.map((p) => (
                 <Select.Option key={p.project_id} value={p.project_id}>
-                  {p.project_id} — {p.title_vi} ({p.acceptances?.grade})
+                  {p.project_id} — {p.title_vi} ({GRADE_MAP[p.acceptances?.grade]?.label || p.acceptances?.grade})
                 </Select.Option>
               ))}
             </Select>
@@ -587,7 +612,7 @@ export const AwardsPage: React.FC = () => {
             <Select placeholder="Chọn đề tài">
               {eligibleAcceptedProjects.map((p) => (
                 <Select.Option key={p.project_id} value={p.project_id}>
-                  {p.project_id} — {p.title_vi} ({p.acceptances?.avg_score}đ - {p.acceptances?.grade})
+                  {p.project_id} — {p.title_vi} ({p.acceptances?.avg_score}đ - {GRADE_MAP[p.acceptances?.grade]?.label || p.acceptances?.grade})
                 </Select.Option>
               ))}
             </Select>

@@ -3,7 +3,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 
 @Injectable()
 export class ProjectsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService) { }
 
   async findAll(query: {
     periodId?: number;
@@ -118,17 +118,17 @@ export class ProjectsService {
       })),
       budgets: p.budget
         ? {
-            requested_amount: p.budget.requestedAmount,
-            faculty_proposed: p.budget.facultyProposed,
-            approved_amount: p.budget.approvedAmount,
-          }
+          requested_amount: p.budget.requestedAmount,
+          faculty_proposed: p.budget.facultyProposed,
+          approved_amount: p.budget.approvedAmount,
+        }
         : null,
       acceptances: p.acceptance
         ? {
-            acceptance_id: p.acceptance.acceptanceId,
-            avg_score: p.acceptance.avgScore,
-            grade: p.acceptance.grade,
-          }
+          acceptance_id: p.acceptance.acceptanceId,
+          avg_score: p.acceptance.avgScore,
+          grade: p.acceptance.grade,
+        }
         : null,
     }));
   }
@@ -177,6 +177,7 @@ export class ProjectsService {
         },
         seminars: {
           include: { members: true },
+          orderBy: { heldAt: 'desc' },
         },
         changeRequests: {
           include: { approvals: true },
@@ -231,6 +232,15 @@ export class ProjectsService {
       },
       nckh_periods: {
         period_name: p.period.periodName,
+        milestones: (p.period.milestones || [])
+          .slice()
+          .sort((a, b) => a.pmId - b.pmId)
+          .map((m) => ({
+            pm_id: m.pmId,
+            milestone_type: m.milestoneType,
+            milestone_name: m.milestoneName,
+            due_date: m.dueDate,
+          })),
       },
       project_members: p.members.map((m) => ({
         member_id: m.memberId,
@@ -257,38 +267,69 @@ export class ProjectsService {
       })),
       budgets: p.budget
         ? {
-            requested_amount: p.budget.requestedAmount,
-            faculty_proposed: p.budget.facultyProposed,
-            approved_amount: p.budget.approvedAmount,
-          }
+          requested_amount: p.budget.requestedAmount,
+          faculty_proposed: p.budget.facultyProposed,
+          approved_amount: p.budget.approvedAmount,
+        }
         : null,
       outlines: p.outlines.map((ot) => ({
         outline_id: ot.outlineId,
         version_no: ot.versionNo,
         file_url: ot.fileUrl,
+        approval_status: ot.approvalStatus,
         submitted_at: ot.submittedAt,
         approvals: ot.approvals,
       })),
+      progress_reports: p.progressReports.map((pr) => ({
+        report_id: pr.reportId,
+        pm_id: pr.pmId,
+        milestone_name: pr.milestone?.milestoneName,
+        milestone_type: pr.milestone?.milestoneType,
+        report_content: pr.reportContent,
+        product_url: pr.productUrl,
+        advisor_comment: pr.advisorComment,
+        assessment: pr.assessment,
+        submitted_at: pr.submittedAt,
+      })),
+      seminars: p.seminars.map((sm) => ({
+        seminar_id: sm.seminarId,
+        plan_title: sm.planTitle,
+        held_at: sm.heldAt,
+        location: sm.location,
+        meeting_link: sm.meetingLink,
+        invitation_code: sm.invitationCode,
+        status: sm.status,
+        feedback: sm.feedback,
+        minutes_file_url: sm.minutesFileUrl,
+      })),
+      documents: p.documents.map((doc) => ({
+        doc_id: doc.docId,
+        doc_type: doc.docType,
+        file_url: doc.fileUrl,
+        plagiarism_rate: doc.plagiarismRate,
+        library_code: doc.libraryCode,
+        visibility: doc.visibility,
+      })),
       acceptances: p.acceptance
         ? {
-            acceptance_id: p.acceptance.acceptanceId,
-            avg_score: p.acceptance.avgScore,
-            grade: p.acceptance.grade,
-            councils: p.acceptance.council
-              ? {
-                  council_name: p.acceptance.council.councilName,
-                  council_members: p.acceptance.council.members.map((cm) => ({
-                    cm_id: cm.cmId,
-                    council_role: cm.councilRole,
-                    lecturers: {
-                      users: {
-                        full_name: cm.lecturer.user.fullName,
-                      },
-                    },
-                  })),
-                }
-              : null,
-          }
+          acceptance_id: p.acceptance.acceptanceId,
+          avg_score: p.acceptance.avgScore,
+          grade: p.acceptance.grade,
+          councils: p.acceptance.council
+            ? {
+              council_name: p.acceptance.council.councilName,
+              council_members: p.acceptance.council.members.map((cm) => ({
+                cm_id: cm.cmId,
+                council_role: cm.councilRole,
+                lecturers: {
+                  users: {
+                    full_name: cm.lecturer.user.fullName,
+                  },
+                },
+              })),
+            }
+            : null,
+        }
         : null,
     };
   }
@@ -624,6 +665,15 @@ export class ProjectsService {
           throw new ForbiddenException('Bạn không phải thành viên của đề tài này');
         }
       }
+
+      const projectSeminars = await this.prisma.seminar.findMany({ where: { projectId } });
+      const hasOpenSeminar = projectSeminars.some((s) => s.status !== 'COMPLETED');
+      const hasCompletedSeminar = projectSeminars.some((s) => s.status === 'COMPLETED');
+      if (hasOpenSeminar || !hasCompletedSeminar) {
+        throw new BadRequestException(
+          'Đề tài bắt buộc phải hoàn thành Sinh hoạt khoa học / Hội thảo cấp Khoa (Mẫu 3.5) và chốt Biên bản trước khi nộp hồ sơ Nghiệm thu',
+        );
+      }
     }
 
     const updated = await this.prisma.project.update({
@@ -640,7 +690,7 @@ export class ProjectsService {
           entityId: projectId,
           newValue: JSON.stringify({ status: newStatus, reason: reason || null }),
         },
-      }).catch(() => {});
+      }).catch(() => { });
     }
 
     return updated;

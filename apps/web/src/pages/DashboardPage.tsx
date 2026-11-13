@@ -326,14 +326,17 @@ export const DashboardPage: React.FC = () => {
           });
         });
       (progress.seminars || [])
-        .filter((s: any) => s.status !== 'COMPLETED')
+        .filter(
+          (s: any) =>
+            s.status !== 'COMPLETED' && !['SUBMITTED', 'ACCEPTED', 'REJECTED'].includes(s.project?.status),
+        )
         .slice(0, 2)
         .forEach((s: any) => {
           tasks.push({
             code: s.projectId,
             title: `Sinh hoạt khoa học Mẫu 3.5: ${s.planTitle}`,
-            deadline: formatDateTimeShort(s.scheduledAt),
-            status: s.status === 'INVITES_SENT' ? 'Đã gửi giấy mời' : 'Kế hoạch',
+            deadline: formatDateTimeShort(s.heldAt || s.scheduledAt),
+            status: s.status === 'INVITED' ? 'Đã gửi giấy mời' : 'Kế hoạch',
             color: 'blue',
             path: '/progress',
           });
@@ -431,17 +434,20 @@ export const DashboardPage: React.FC = () => {
     } else {
       // STUDENT
       (progress.seminars || [])
-        .filter((s: any) =>
-          s.members?.some(
-            (m: any) =>
-              (m.userId === user?.userId || m.attendeeName === user?.fullName) && m.rsvpStatus === 'PENDING',
-          ),
+        .filter(
+          (s: any) =>
+            s.status !== 'COMPLETED' &&
+            !['SUBMITTED', 'ACCEPTED', 'REJECTED'].includes(s.project?.status) &&
+            s.members?.some(
+              (m: any) =>
+                (m.userId === user?.userId || m.attendeeName === user?.fullName) && m.rsvpStatus === 'PENDING',
+            ),
         )
         .forEach((s: any) => {
           tasks.push({
             code: s.projectId,
             title: `Xác nhận tham dự Sinh hoạt khoa học "${s.planTitle}"`,
-            deadline: formatDateTimeShort(s.scheduledAt),
+            deadline: formatDateTimeShort(s.heldAt || s.scheduledAt),
             status: 'Chờ xác nhận RSVP',
             color: 'orange',
             path: '/progress',
@@ -927,7 +933,7 @@ export const DashboardPage: React.FC = () => {
                   </div>
                   <div style={{ fontSize: 11, color: '#595959', marginBottom: 6 }}>
                     Chờ Khoa duyệt: {outlines.filter((o) => o.approvalStatus === 'ADVISOR_APPROVED').length} • Đã duyệt:{' '}
-                    {outlines.filter((o) => o.approvalStatus === 'APPROVED').length}
+                    {outlines.filter((o) => o.approvalStatus === 'FACULTY_APPROVED').length}
                   </div>
                   <div style={{ fontSize: 13, fontWeight: 700, color: '#52C41A' }}>
                     Quy trình chuẩn QĐ 521
@@ -941,30 +947,43 @@ export const DashboardPage: React.FC = () => {
             </Col>
 
             <Col xs={24} sm={12} lg={6}>
-              <div
-                style={{ backgroundColor: '#FFFFFF', border: '1px solid #EDEDEE', borderRadius: 8, padding: 16, cursor: 'pointer', height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}
-                onClick={() => navigate('/progress')}
-              >
-                <div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
-                    <span style={{ fontSize: 11, color: '#FA8C16', fontWeight: 700 }}>MẪU 3.5 SINH HOẠT KH</span>
-                    <Tag color="orange">{(progress.seminars || []).length} phiên họp</Tag>
+              {(() => {
+                const allSems = progress.seminars || [];
+                const activeSems = allSems.filter(
+                  (s: any) =>
+                    s.status !== 'COMPLETED' && !['SUBMITTED', 'ACCEPTED', 'REJECTED'].includes(s.project?.status),
+                );
+                const featuredSem = activeSems[0] || allSems[0];
+                return (
+                  <div
+                    style={{ backgroundColor: '#FFFFFF', border: '1px solid #EDEDEE', borderRadius: 8, padding: 16, cursor: 'pointer', height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}
+                    onClick={() => navigate('/progress')}
+                  >
+                    <div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
+                        <span style={{ fontSize: 11, color: '#FA8C16', fontWeight: 700 }}>MẪU 3.5 SINH HOẠT KH</span>
+                        <Tag color={activeSems.length > 0 ? 'orange' : 'green'}>
+                          {activeSems.length > 0 ? `${activeSems.length} đang mở` : `${allSems.length} đã hoàn thành`}
+                        </Tag>
+                      </div>
+                      <div style={{ fontSize: 14, fontWeight: 700, color: '#262626', height: 38, overflow: 'hidden', lineHeight: 1.35, marginBottom: 8 }}>
+                        {featuredSem?.planTitle || 'Tổ chức Hội thảo khoa học & Báo cáo tiến độ cấp Khoa'}
+                      </div>
+                      <div style={{ fontSize: 11, color: '#595959', marginBottom: 6 }}>
+                        {featuredSem?.members?.length || 0} đại biểu •{' '}
+                        {activeSems.length > 0 ? 'Theo dõi RSVP thời gian thực' : 'Đã chốt biên bản trước nghiệm thu'}
+                      </div>
+                      <div style={{ fontSize: 13, fontWeight: 700, color: '#1890FF' }}>
+                        Biên bản Mẫu 3.5 số hóa
+                      </div>
+                    </div>
+                    <div style={{ borderTop: '1px solid #f0f0f0', paddingTop: 10, marginTop: 12, display: 'flex', justifyContent: 'space-between', fontSize: 12 }}>
+                      <span style={{ color: '#595959' }}>{featuredSem?.location || 'Hội trường Khoa'}</span>
+                      <Tag color="blue">Điều 9 QĐ 521</Tag>
+                    </div>
                   </div>
-                  <div style={{ fontSize: 14, fontWeight: 700, color: '#262626', height: 38, overflow: 'hidden', lineHeight: 1.35, marginBottom: 8 }}>
-                    {(progress.seminars || [])[0]?.planTitle || 'Tổ chức Hội thảo khoa học & Báo cáo tiến độ cấp Khoa'}
-                  </div>
-                  <div style={{ fontSize: 11, color: '#595959', marginBottom: 6 }}>
-                    {(progress.seminars || [])[0]?.members?.length || 0} đại biểu mời • Theo dõi RSVP thời gian thực
-                  </div>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: '#1890FF' }}>
-                    Biên bản Mẫu 3.5 số hóa
-                  </div>
-                </div>
-                <div style={{ borderTop: '1px solid #f0f0f0', paddingTop: 10, marginTop: 12, display: 'flex', justifyContent: 'space-between', fontSize: 12 }}>
-                  <span style={{ color: '#595959' }}>{(progress.seminars || [])[0]?.location || 'Hội trường Khoa'}</span>
-                  <Tag color="blue">Điều 9 QĐ 521</Tag>
-                </div>
-              </div>
+                );
+              })()}
             </Col>
           </Row>
         ) : roleCode === 'BOARD' ? (

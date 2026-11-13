@@ -9,10 +9,12 @@ import { AwardsService } from './awards.service';
 export class AwardsController {
   constructor(private awardsService: AwardsService) {}
 
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @Get()
-  @ApiOperation({ summary: 'Tổng hợp Giải thưởng Mẫu 5, Giấy chứng nhận số, Giờ chuẩn GV & ĐRL SV' })
-  async getAll() {
-    return this.awardsService.getAll();
+  @ApiOperation({ summary: 'Tổng hợp Giải thưởng Mẫu 5, Giấy chứng nhận số, Giờ chuẩn GV & ĐRL SV (phân quyền ERD)' })
+  async getAll(@CurrentUser() user: any) {
+    return this.awardsService.getAll(user);
   }
 
   @Get('certificates/verify/:code')
@@ -75,3 +77,4 @@ export class AwardsController {
     return this.awardsService.confirmLecturerHour(hourId, user);
   }
 }
+

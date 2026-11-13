@@ -526,7 +526,9 @@ export const ProjectDetailPage: React.FC = () => {
             backgroundColor:
               project.status === 'ACCEPTED'
                 ? '#52c41a'
-                : project.status === 'PROPOSED' || project.status === 'FACULTY_APPROVED'
+                : project.status === 'REJECTED'
+                ? '#ff4d4f'
+                : project.status === 'PROPOSED' || project.status === 'FACULTY_APPROVED' || project.status === 'SUBMITTED'
                 ? '#fa8c16'
                 : '#1890ff',
             color: '#FFFFFF',
@@ -538,10 +540,16 @@ export const ProjectDetailPage: React.FC = () => {
         >
           {project.status === 'ACCEPTED'
             ? 'Đã nghiệm thu'
+            : project.status === 'SUBMITTED'
+            ? 'Chờ nghiệm thu'
             : project.status === 'PROPOSED'
-            ? 'Chờ P.QLKHCN duyệt'
+            ? 'Chờ Khoa thẩm định'
             : project.status === 'FACULTY_APPROVED'
             ? 'Khoa đã duyệt'
+            : project.status === 'APPROVED'
+            ? 'Đã giao QĐ'
+            : project.status === 'REJECTED'
+            ? 'Từ chối / Không đạt'
             : 'Đang thực hiện'}
         </span>
 
@@ -601,8 +609,14 @@ export const ProjectDetailPage: React.FC = () => {
             <div>
               <div style={{ fontSize: 12, color: '#8c8c8c' }}>Giảng viên:</div>
               <div style={{ fontSize: 15, fontWeight: 700, color: '#262626' }}>
-                {advisor?.lecturers?.academic_rank ? `${advisor.lecturers.academic_rank}. ` : ''}
-                {advisor?.lecturers?.users?.full_name || 'TS. Ngô Quốc Dũng'}
+                {(() => {
+                  const fullName = advisor?.lecturers?.users?.full_name || 'TS. Ngô Quốc Dũng';
+                  const rank = advisor?.lecturers?.academic_rank;
+                  if (rank && !fullName.startsWith(`${rank}.`) && !fullName.startsWith(rank)) {
+                    return `${rank}. ${fullName}`;
+                  }
+                  return fullName;
+                })()}
               </div>
             </div>
           </div>
@@ -660,27 +674,55 @@ export const ProjectDetailPage: React.FC = () => {
                             Xem chi tiết
                           </a>
                         </div>
-                        {project.outlines && project.outlines.length > 0 ? (
-                          <div style={{ fontSize: 13, color: '#262626' }}>
-                            <FileDoneOutlined style={{ color: '#C62828', marginRight: 6 }} />
-                            <a
-                              href={`/gwdu?doc=doc-m2&projectId=${project.project_id}`}
-                              target="_blank"
-                              rel="noreferrer"
-                              style={{ color: '#262626', fontWeight: 600 }}
-                            >
-                              Thuyết minh Đề cương (Mẫu 2) - Phiên bản {project.outlines[0]?.version_no || 1}
-                            </a>
-                            <div style={{ fontSize: 11, color: '#8c8c8c', marginTop: 4 }}>
-                              <a
-                                href={`/gwdu?doc=doc-m2&projectId=${project.project_id}`}
-                                target="_blank"
-                                rel="noreferrer"
-                                style={{ color: '#C62828', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: 4 }}
-                              >
-                                <EyeOutlined /> Mở tab localhost xem PDF đề cương trực tuyến
-                              </a>
-                            </div>
+                        {(project.outlines && project.outlines.length > 0) || (project.documents && project.documents.length > 0) ? (
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: 8, fontSize: 13, color: '#262626' }}>
+                            {project.outlines && project.outlines.length > 0 && (
+                              <div>
+                                <FileDoneOutlined style={{ color: '#C62828', marginRight: 6 }} />
+                                <a
+                                  href={`/gwdu?doc=doc-m2&projectId=${project.project_id}`}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  style={{ color: '#262626', fontWeight: 600 }}
+                                >
+                                  Thuyết minh Đề cương (Mẫu 2) - Phiên bản {project.outlines[0]?.version_no || 1}
+                                </a>
+                                <div style={{ fontSize: 11, color: '#8c8c8c', marginTop: 2 }}>
+                                  <a
+                                    href={`/gwdu?doc=doc-m2&projectId=${project.project_id}`}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    style={{ color: '#C62828', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: 4 }}
+                                  >
+                                    <EyeOutlined /> Mở xem PDF đề cương trực tuyến
+                                  </a>
+                                </div>
+                              </div>
+                            )}
+                            {project.documents && project.documents.map((doc: any) => {
+                              const docLabel =
+                                doc.doc_type === 'SUMMARY_REPORT'
+                                  ? 'Báo cáo tổng kết (Mẫu 3.2 - 3.4)'
+                                  : doc.doc_type === 'PAPER'
+                                  ? 'Bài báo khoa học công bố'
+                                  : doc.doc_type === 'SOURCE_CODE'
+                                  ? 'Mã nguồn / Sản phẩm phần mềm'
+                                  : 'Tài liệu nghiên cứu đính kèm';
+                              return (
+                                <div key={doc.doc_id || doc.library_code || docLabel}>
+                                  <FileDoneOutlined style={{ color: '#1890ff', marginRight: 6 }} />
+                                  <span style={{ fontWeight: 600 }}>{docLabel}</span>
+                                  {doc.library_code && (
+                                    <Tag color="blue" style={{ marginLeft: 6, fontSize: 11 }}>{doc.library_code}</Tag>
+                                  )}
+                                  {doc.plagiarism_rate != null && (
+                                    <span style={{ fontSize: 11, color: '#52c41a', marginLeft: 6 }}>
+                                      (Trùng lặp: {doc.plagiarism_rate}%)
+                                    </span>
+                                  )}
+                                </div>
+                              );
+                            })}
                           </div>
                         ) : (
                           <div style={{ textAlign: 'center', padding: '16px 0', color: '#8c8c8c', fontSize: 12 }}>
@@ -692,81 +734,190 @@ export const ProjectDetailPage: React.FC = () => {
                   </Card>
 
                   {/* BOX 2: NHIỆM VỤ & BÀI NỘP TIẾN ĐỘ */}
-                  <Card
-                    title={
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <span>Nhiệm vụ tiến độ & Bài nộp</span>
-                        <Button
-                          type="link"
-                          size="small"
-                          style={{ color: '#C62828' }}
-                          onClick={() => setOutlineModalVisible(true)}
-                        >
-                          + Nộp Đề cương Mẫu 2
-                        </Button>
-                      </div>
-                    }
-                    style={{ borderRadius: 8 }}
-                    bodyStyle={{ padding: 18 }}
-                  >
-                    <Timeline
-                      items={[
-                        {
-                          color: project.outlines?.length > 0 ? 'green' : 'gray',
-                          children: (
-                            <div>
-                              <div style={{ fontWeight: 600, color: '#262626' }}>
-                                Mốc 1: Nộp Thuyết minh Đề cương nghiên cứu chi tiết (Mẫu 2)
-                              </div>
-                              <div style={{ fontSize: 12, color: '#8c8c8c' }}>
-                                Trạng thái:{' '}
-                                {project.outlines?.length > 0 ? (
-                                  <Tag color="green">Đã nộp</Tag>
-                                ) : (
-                                  <Tag color="orange">Chờ nộp</Tag>
-                                )}
-                              </div>
-                            </div>
-                          ),
-                        },
-                        {
-                          color: 'blue',
-                          children: (
-                            <div>
-                              <div style={{ fontWeight: 600, color: '#262626' }}>
-                                Mốc 2: Báo cáo tiến độ lần 1 & Hội thảo cấp Khoa (Mẫu 3.5)
-                              </div>
-                              <div style={{ fontSize: 12, color: '#8c8c8c' }}>
-                                Hạn chót: 20/12/2026 • Đã phát hành Thư mời tham dự (128/GM-CNTT1)
-                              </div>
-                              <div style={{ marginTop: 6 }}>
-                                <Button
-                                  size="small"
-                                  type="link"
-                                  style={{ padding: 0, fontSize: 12, fontWeight: 600, color: '#C62828' }}
-                                  icon={<MailOutlined />}
-                                  onClick={() => navigate('/progress')}
-                                >
-                                  Xem Thư mời & Danh sách đại biểu Hội thảo Khoa →
-                                </Button>
-                              </div>
-                            </div>
-                          ),
-                        },
-                        {
-                          color: 'orange',
-                          children: (
-                            <div>
-                              <div style={{ fontWeight: 600, color: '#262626' }}>
-                                Mốc 3: Nộp sản phẩm & Báo cáo tổng kết (Mẫu 3.1 - 3.4)
-                              </div>
-                              <div style={{ fontSize: 12, color: '#8c8c8c' }}>Hạn chót: 30/03/2027 • Tỷ lệ đạo văn &lt; 20%</div>
-                            </div>
-                          ),
-                        },
-                      ]}
-                    />
-                  </Card>
+                  {(() => {
+                    const latestOutline = project.outlines?.[0];
+                    const outlineStatus = latestOutline?.approval_status;
+                    const latestSeminar = project.seminars?.[0];
+                    const latestProgress = project.progress_reports?.[0];
+                    const isProgressed = project.status === 'SUBMITTED' || project.status === 'ACCEPTED';
+                    const isActiveExecution = project.status === 'ONGOING' || project.status === 'APPROVED';
+
+                    const milestones: any[] = project.nckh_periods?.milestones || [];
+                    const m2Milestone = milestones.find((m) => m.milestone_type === 'PROGRESS_1');
+                    const m4Milestone = milestones.find((m) => m.milestone_type === 'ACCEPTANCE');
+                    const fmtDate = (d: any, fallback: string) =>
+                      d ? new Date(d).toLocaleDateString('vi-VN') : fallback;
+
+                    const m2DueStr = fmtDate(m2Milestone?.due_date, '20/12/2026');
+                    const m4DueStr = fmtDate(m4Milestone?.due_date, '10/04/2027');
+
+                    const m1Done = outlineStatus === 'FACULTY_APPROVED' || (!latestOutline && isProgressed);
+                    const m1Color = m1Done
+                      ? 'green'
+                      : outlineStatus === 'REVISION_REQUIRED'
+                      ? 'orange'
+                      : latestOutline
+                      ? 'blue'
+                      : 'gray';
+
+                    const m2Done =
+                      latestSeminar?.status === 'COMPLETED' ||
+                      latestProgress?.assessment === 'PASS' ||
+                      isProgressed;
+                    const m2Color = m2Done ? 'green' : latestSeminar ? 'blue' : 'gray';
+
+                    const m3Color =
+                      project.status === 'ACCEPTED'
+                        ? 'green'
+                        : project.status === 'SUBMITTED'
+                        ? 'blue'
+                        : project.status === 'REJECTED'
+                        ? 'red'
+                        : 'orange';
+
+                    const docPlagiarism = project.documents?.find(
+                      (d: any) => d.plagiarism_rate != null,
+                    )?.plagiarism_rate;
+
+                    return (
+                      <Card
+                        title={
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <span>Nhiệm vụ tiến độ & Bài nộp</span>
+                            {isActiveExecution && outlineStatus !== 'FACULTY_APPROVED' && (
+                              <Button
+                                type="link"
+                                size="small"
+                                style={{ color: '#C62828' }}
+                                onClick={() => setOutlineModalVisible(true)}
+                              >
+                                + Nộp Đề cương Mẫu 2
+                              </Button>
+                            )}
+                          </div>
+                        }
+                        style={{ borderRadius: 8 }}
+                        bodyStyle={{ padding: 18 }}
+                      >
+                        <Timeline
+                          items={[
+                            {
+                              color: m1Color,
+                              children: (
+                                <div>
+                                  <div style={{ fontWeight: 600, color: '#262626' }}>
+                                    Mốc 1: Nộp Thuyết minh Đề cương nghiên cứu chi tiết (Mẫu 2)
+                                  </div>
+                                  <div style={{ fontSize: 12, color: '#8c8c8c', marginTop: 2 }}>
+                                    Trạng thái:{' '}
+                                    {outlineStatus === 'FACULTY_APPROVED' ? (
+                                      <Tag color="green">Đã phê duyệt 2 cấp</Tag>
+                                    ) : outlineStatus === 'ADVISOR_APPROVED' ? (
+                                      <Tag color="blue">GVHD đã duyệt • Chờ Trưởng khoa</Tag>
+                                    ) : outlineStatus === 'REVISION_REQUIRED' ? (
+                                      <Tag color="orange">Cần chỉnh sửa</Tag>
+                                    ) : latestOutline ? (
+                                      <Tag color="gold">Đã nộp • Chờ GVHD duyệt</Tag>
+                                    ) : isProgressed ? (
+                                      <Tag color="green">Đã hoàn thành</Tag>
+                                    ) : (
+                                      <Tag color="orange">Chờ nộp</Tag>
+                                    )}
+                                  </div>
+                                </div>
+                              ),
+                            },
+                            {
+                              color: m2Color,
+                              children: (
+                                <div>
+                                  <div style={{ fontWeight: 600, color: '#262626' }}>
+                                    Mốc 2: Báo cáo tiến độ lần 1 & Hội thảo cấp Khoa (Mẫu 3.5)
+                                  </div>
+                                  <div style={{ fontSize: 12, color: '#8c8c8c', marginTop: 2 }}>
+                                    {m2Done ? (
+                                      <Tag color="green">Đã hoàn thành</Tag>
+                                    ) : latestSeminar ? (
+                                      <Tag color="blue">Đang tổ chức Hội thảo</Tag>
+                                    ) : (
+                                      <Tag>Chưa thực hiện</Tag>
+                                    )}
+                                    <span>
+                                      Hạn chót: {m2DueStr}
+                                      {latestSeminar?.invitation_code
+                                        ? ` • ${latestSeminar.status === 'COMPLETED' || isProgressed ? 'Biên bản Hội thảo' : 'Đã phát hành Thư mời'} (${latestSeminar.invitation_code})`
+                                        : latestProgress
+                                        ? ` • GVHD đánh giá: ${latestProgress.assessment === 'PASS' ? 'Đạt' : 'Cần bổ sung'}`
+                                        : ''}
+                                    </span>
+                                  </div>
+                                  {(latestSeminar || isActiveExecution) && (
+                                    <div style={{ marginTop: 6 }}>
+                                      <Button
+                                        size="small"
+                                        type="link"
+                                        style={{ padding: 0, fontSize: 12, fontWeight: 600, color: '#C62828' }}
+                                        icon={<MailOutlined />}
+                                        onClick={() => navigate('/progress')}
+                                      >
+                                        {latestSeminar?.status === 'COMPLETED' || isProgressed
+                                          ? 'Xem Biên bản & Kết quả Hội thảo Khoa →'
+                                          : 'Xem Thư mời & Danh sách đại biểu Hội thảo Khoa →'}
+                                      </Button>
+                                    </div>
+                                  )}
+                                </div>
+                              ),
+                            },
+                            {
+                              color: m3Color,
+                              children: (
+                                <div>
+                                  <div style={{ fontWeight: 600, color: '#262626' }}>
+                                    Mốc 3: Nộp sản phẩm & Báo cáo tổng kết (Mẫu 3.1 - 3.4)
+                                  </div>
+                                  <div style={{ fontSize: 12, color: '#8c8c8c', marginTop: 2 }}>
+                                    {project.status === 'ACCEPTED' ? (
+                                      <>
+                                        <Tag color="green">Đã nghiệm thu</Tag>
+                                        <span>
+                                          {project.acceptances?.grade
+                                            ? `Kết quả: ${
+                                                project.acceptances.grade === 'XUAT_SAC'
+                                                  ? 'Xuất sắc'
+                                                  : project.acceptances.grade === 'TOT'
+                                                  ? 'Tốt'
+                                                  : project.acceptances.grade === 'KHA'
+                                                  ? 'Khá'
+                                                  : 'Đạt'
+                                              } (${project.acceptances.avg_score}đ)`
+                                            : 'Đã hoàn thành bảo vệ trước Hội đồng'}
+                                          {docPlagiarism != null ? ` • Trùng lặp: ${docPlagiarism}% (< 20%)` : ''}
+                                        </span>
+                                      </>
+                                    ) : project.status === 'SUBMITTED' ? (
+                                      <>
+                                        <Tag color="blue">Đã nộp hồ sơ • Chờ Hội đồng chấm</Tag>
+                                        <span>
+                                          {docPlagiarism != null
+                                            ? `Tỷ lệ đạo văn: ${docPlagiarism}% (< 20%)`
+                                            : `Hạn chót: ${m4DueStr}`}
+                                        </span>
+                                      </>
+                                    ) : project.status === 'REJECTED' ? (
+                                      <Tag color="red">Dừng thực hiện</Tag>
+                                    ) : (
+                                      <span>Hạn chót: {m4DueStr} • Tỷ lệ đạo văn &lt; 20%</span>
+                                    )}
+                                  </div>
+                                </div>
+                              ),
+                            },
+                          ]}
+                        />
+                      </Card>
+                    );
+                  })()}
 
                   {/* BOX 3: NỘI DUNG NGHIÊN CỨU CHI TIẾT */}
                   <Card title="Nội dung nghiên cứu & Phương pháp triển khai" style={{ borderRadius: 8 }} bodyStyle={{ padding: 18 }}>

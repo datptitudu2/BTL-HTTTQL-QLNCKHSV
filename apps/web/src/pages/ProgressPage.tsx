@@ -52,10 +52,27 @@ const RSVP_MAP: Record<string, { label: string; color: string }> = {
 
 const MILESTONE_TYPE_LABEL: Record<string, string> = {
   OUTLINE: 'Nộp đề cương',
+  PROGRESS_1: 'Tiến độ lần 1 & SHKH',
+  PROGRESS_2: 'Hoàn thiện sản phẩm',
+  ACCEPTANCE: 'Nghiệm thu tổng kết',
   MIDTERM: 'Báo cáo giữa kỳ',
   SEMINAR: 'Sinh hoạt khoa học',
   FINAL: 'Nghiệm thu tổng kết',
   PAPER: 'Công bố khoa học',
+};
+
+const CHANNEL_LABEL: Record<string, string> = {
+  IN_APP: 'Thông báo hệ thống',
+  EMAIL: 'Email',
+  SMS: 'SMS',
+};
+
+const formatRemindChannels = (channels?: string) => {
+  if (!channels) return 'Thông báo hệ thống';
+  return channels
+    .split(',')
+    .map((c) => CHANNEL_LABEL[c.trim()] || c.trim())
+    .join(', ');
 };
 
 const REQUEST_TYPE_LABEL: Record<string, string> = {
@@ -143,7 +160,7 @@ export const ProgressPage: React.FC = () => {
   }, []);
 
   const eligibleProjects = projects.filter((p) => {
-    if (!['ONGOING', 'OUTLINE_SUBMITTED', 'SUBMITTED', 'ACCEPTED'].includes(p.status)) return false;
+    if (!['ONGOING', 'APPROVED', 'OUTLINE_SUBMITTED'].includes(p.status)) return false;
     if (roleCode === 'STUDENT') {
       const uid = user?.studentId;
       const uname = (user?.fullName || '').toLowerCase();
@@ -346,18 +363,20 @@ export const ProgressPage: React.FC = () => {
               items={overview.milestones.map((m) => {
                 const isPast = new Date(m.dueDate) < new Date();
                 return {
-                  color: isPast ? 'green' : 'blue',
+                  color: isPast ? 'green' : '#1677ff',
                   children: (
                     <div>
                       <Text strong>{m.milestoneName}</Text>
-                      <div>
-                        <Tag color="default" style={{ fontSize: 11 }}>{MILESTONE_TYPE_LABEL[m.milestoneType] || m.milestoneType}</Tag>
+                      <div style={{ marginTop: 4, display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+                        <Tag color={isPast ? 'green' : 'blue'} style={{ fontSize: 11, margin: 0 }}>
+                          {MILESTONE_TYPE_LABEL[m.milestoneType] || m.milestoneType}
+                        </Tag>
                         <Text type="secondary" style={{ fontSize: 12 }}>
                           Hạn chót: {new Date(m.dueDate).toLocaleDateString('vi-VN')}
                         </Text>
                       </div>
-                      <div style={{ fontSize: 11, color: '#8c8c8c' }}>
-                        Nhắc trước {m.remindDaysBefore} ngày ({m.remindChannels})
+                      <div style={{ fontSize: 11, color: '#8c8c8c', marginTop: 2 }}>
+                        Nhắc trước {m.remindDaysBefore} ngày ({formatRemindChannels(m.remindChannels)})
                       </div>
                     </div>
                   ),
@@ -378,13 +397,22 @@ export const ProgressPage: React.FC = () => {
                   label: `Hội thảo & Thư mời RSVP (${overview.seminars.length})`,
                   children: (
                     <Space direction="vertical" style={{ width: '100%' }} size={16}>
-                      {overview.seminars.map((sem) => {
+                      {[...overview.seminars]
+                        .sort((a, b) => {
+                          const aClosed = a.status === 'COMPLETED' || ['SUBMITTED', 'ACCEPTED', 'REJECTED'].includes(a.project?.status);
+                          const bClosed = b.status === 'COMPLETED' || ['SUBMITTED', 'ACCEPTED', 'REJECTED'].includes(b.project?.status);
+                          if (aClosed !== bClosed) return aClosed ? 1 : -1;
+                          return new Date(b.heldAt).getTime() - new Date(a.heldAt).getTime();
+                        })
+                        .map((sem) => {
                         const members = sem.members || [];
                         const onsiteCount = members.filter((m: any) => m.rsvpStatus === 'ACCEPTED_ONSITE').length;
                         const onlineCount = members.filter((m: any) => m.rsvpStatus === 'ACCEPTED_ONLINE').length;
                         const declinedCount = members.filter((m: any) => m.rsvpStatus === 'DECLINED').length;
                         const pendingCount = members.filter((m: any) => m.rsvpStatus === 'PENDING').length;
                         const respondedPct = members.length > 0 ? Math.round(((members.length - pendingCount) / members.length) * 100) : 0;
+                        const isProjectFinished = ['SUBMITTED', 'ACCEPTED', 'REJECTED'].includes(sem.project?.status);
+                        const isSeminarClosed = sem.status === 'COMPLETED' || isProjectFinished;
 
                         const myMember = members.find(
                           (m: any) =>
@@ -396,7 +424,7 @@ export const ProgressPage: React.FC = () => {
                           <Card
                             key={sem.seminarId}
                             size="small"
-                            style={{ borderRadius: 8, borderColor: sem.status === 'INVITED' ? '#FFA39E' : '#E8E8E8' }}
+                            style={{ borderRadius: 8, borderColor: !isSeminarClosed && sem.status === 'INVITED' ? '#FFA39E' : '#E8E8E8' }}
                           >
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12, flexWrap: 'wrap' }}>
                               <div>
@@ -411,11 +439,11 @@ export const ProgressPage: React.FC = () => {
                                   — {sem.project?.department?.deptName}
                                 </div>
                               </div>
-                              <Tag color={sem.status === 'COMPLETED' ? 'green' : sem.status === 'INVITED' ? 'blue' : 'gold'}>
-                                {sem.status === 'COMPLETED'
-                                  ? 'Đã hoàn thành Biên bản Mẫu 3.5'
+                              <Tag color={isSeminarClosed ? 'green' : sem.status === 'INVITED' ? 'blue' : 'gold'}>
+                                {isSeminarClosed
+                                  ? 'Đã hoàn thành trước nghiệm thu (Mẫu 3.5)'
                                   : sem.status === 'INVITED'
-                                  ? 'Đã phát hành Thư mời'
+                                  ? 'Đang mở mời RSVP'
                                   : 'Lịch dự kiến (Chưa gửi thư mời)'}
                               </Tag>
                             </div>
@@ -444,61 +472,80 @@ export const ProgressPage: React.FC = () => {
                               </Col>
                             </Row>
 
-                            {/* Khu vực Xác nhận tham dự (RSVP Realtime vào DB) */}
-                            <div
-                              style={{
-                                marginTop: 12,
-                                padding: '8px 12px',
-                                backgroundColor: '#FFF7F6',
-                                borderRadius: 6,
-                                display: 'flex',
-                                justifyContent: 'space-between',
-                                alignItems: 'center',
-                                flexWrap: 'wrap',
-                                gap: 8,
-                              }}
-                            >
-                              <Text style={{ fontSize: 12 }}>
-                                Xác nhận tham dự của bạn (<b>{user?.fullName}</b>):{' '}
-                                {myMember ? (
-                                  <Tag color={RSVP_MAP[myMember.rsvpStatus]?.color || 'default'}>
-                                    {RSVP_MAP[myMember.rsvpStatus]?.label || myMember.rsvpStatus}
-                                  </Tag>
-                                ) : (
-                                  <Tag>Chưa xác nhận</Tag>
-                                )}
-                              </Text>
-                              <Space size={6}>
-                                <Button
-                                  size="small"
-                                  type={myMember?.rsvpStatus === 'ACCEPTED_ONSITE' ? 'primary' : 'default'}
-                                  style={myMember?.rsvpStatus === 'ACCEPTED_ONSITE' ? { backgroundColor: '#389E0D', borderColor: '#389E0D' } : {}}
-                                  icon={<CheckCircleOutlined />}
-                                  onClick={() => handleRsvp(sem.seminarId, 'ACCEPTED_ONSITE')}
-                                >
-                                  Tham dự trực tiếp
-                                </Button>
-                                <Button
-                                  size="small"
-                                  type={myMember?.rsvpStatus === 'ACCEPTED_ONLINE' ? 'primary' : 'default'}
-                                  icon={<VideoCameraOutlined />}
-                                  onClick={() => handleRsvp(sem.seminarId, 'ACCEPTED_ONLINE')}
-                                >
-                                  Tham dự Online
-                                </Button>
-                                <Button
-                                  size="small"
-                                  danger={myMember?.rsvpStatus === 'DECLINED'}
-                                  icon={<CloseCircleOutlined />}
-                                  onClick={() => handleRsvp(sem.seminarId, 'DECLINED')}
-                                >
-                                  Báo vắng
-                                </Button>
-                              </Space>
-                            </div>
+                            {/* Khu vực Xác nhận tham dự (Chỉ mở khi Hội thảo chưa hoàn thành & đề tài chưa nghiệm thu) */}
+                            {!isSeminarClosed ? (
+                              <div
+                                style={{
+                                  marginTop: 12,
+                                  padding: '8px 12px',
+                                  backgroundColor: '#FFF7F6',
+                                  borderRadius: 6,
+                                  display: 'flex',
+                                  justifyContent: 'space-between',
+                                  alignItems: 'center',
+                                  flexWrap: 'wrap',
+                                  gap: 8,
+                                }}
+                              >
+                                <Text style={{ fontSize: 12 }}>
+                                  Xác nhận tham dự của bạn (<b>{user?.fullName}</b>):{' '}
+                                  {myMember ? (
+                                    <Tag color={RSVP_MAP[myMember.rsvpStatus]?.color || 'default'}>
+                                      {RSVP_MAP[myMember.rsvpStatus]?.label || myMember.rsvpStatus}
+                                    </Tag>
+                                  ) : (
+                                    <Tag>Chưa xác nhận</Tag>
+                                  )}
+                                </Text>
+                                <Space size={6}>
+                                  <Button
+                                    size="small"
+                                    type={myMember?.rsvpStatus === 'ACCEPTED_ONSITE' ? 'primary' : 'default'}
+                                    style={myMember?.rsvpStatus === 'ACCEPTED_ONSITE' ? { backgroundColor: '#389E0D', borderColor: '#389E0D' } : {}}
+                                    icon={<CheckCircleOutlined />}
+                                    onClick={() => handleRsvp(sem.seminarId, 'ACCEPTED_ONSITE')}
+                                  >
+                                    Tham dự trực tiếp
+                                  </Button>
+                                  <Button
+                                    size="small"
+                                    type={myMember?.rsvpStatus === 'ACCEPTED_ONLINE' ? 'primary' : 'default'}
+                                    icon={<VideoCameraOutlined />}
+                                    onClick={() => handleRsvp(sem.seminarId, 'ACCEPTED_ONLINE')}
+                                  >
+                                    Tham dự Online
+                                  </Button>
+                                  <Button
+                                    size="small"
+                                    danger={myMember?.rsvpStatus === 'DECLINED'}
+                                    icon={<CloseCircleOutlined />}
+                                    onClick={() => handleRsvp(sem.seminarId, 'DECLINED')}
+                                  >
+                                    Báo vắng
+                                  </Button>
+                                </Space>
+                              </div>
+                            ) : (
+                              <div
+                                style={{
+                                  marginTop: 12,
+                                  padding: '8px 12px',
+                                  backgroundColor: '#f6ffed',
+                                  border: '1px solid #b7eb8f',
+                                  borderRadius: 6,
+                                  fontSize: 12,
+                                  color: '#389e0d',
+                                }}
+                              >
+                                <b>Kết luận Hội thảo Mẫu 3.5:</b>{' '}
+                                <span style={{ color: '#262626' }}>
+                                  {sem.feedback || 'Đã hoàn tất sinh hoạt khoa học trước giai đoạn nghiệm thu.'}
+                                </span>
+                              </div>
+                            )}
 
                             <div style={{ marginTop: 10, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                              {canCreateSeminarOrInvite && (
+                              {canCreateSeminarOrInvite && !isSeminarClosed && (
                                 <Button
                                   size="small"
                                   type="primary"
@@ -514,7 +561,7 @@ export const ProgressPage: React.FC = () => {
                                 icon={<TeamOutlined />}
                                 onClick={() => setAttendeesModalSeminar(sem)}
                               >
-                                Quản lý Đại biểu & RSVP ({members.length})
+                                Danh sách Đại biểu ({members.length})
                               </Button>
                               <Button
                                 size="small"
@@ -533,7 +580,7 @@ export const ProgressPage: React.FC = () => {
                                   setMinutesFeedback(sem.feedback || '');
                                 }}
                               >
-                                Biên bản Mẫu 3.5
+                                {isSeminarClosed ? 'Xem Biên bản Mẫu 3.5' : 'Biên bản Mẫu 3.5'}
                               </Button>
                             </div>
                           </Card>
@@ -582,9 +629,9 @@ export const ProgressPage: React.FC = () => {
                           render: (_: any, r: any) => (
                             <div>
                               {r.assessment === 'PASS' ? (
-                                <Tag color="green">Đạt tiến độ (PASS)</Tag>
+                                <Tag color="green">Đạt tiến độ</Tag>
                               ) : r.assessment === 'WARNING_DELAY' ? (
-                                <Tag color="orange">Cảnh báo chậm (WARNING)</Tag>
+                                <Tag color="orange">Cảnh báo chậm</Tag>
                               ) : (
                                 <Tag color="gold">Chờ GVHD nhận xét</Tag>
                               )}
@@ -669,7 +716,7 @@ export const ProgressPage: React.FC = () => {
                                       }
                                     >
                                       {st === 'ADVISOR' ? '1.GVHD' : st === 'FACULTY_LEADER' ? '2.Khoa' : '3.QLKH'}
-                                      {found ? ` (${found.decision})` : ''}
+                                      {found ? (found.decision === 'APPROVED' ? ' (Đã duyệt)' : found.decision === 'REJECTED' ? ' (Từ chối)' : ` (${found.decision})`) : ''}
                                     </Tag>
                                   );
                                 })}
@@ -677,7 +724,12 @@ export const ProgressPage: React.FC = () => {
                               <div style={{ marginTop: 4 }}>
                                 Trạng thái chung:{' '}
                                 <Tag color={r.resultStatus === 'APPROVED' ? 'green' : r.resultStatus === 'REJECTED' ? 'red' : 'gold'}>
-                                  {r.resultStatus} {r.decisionNo ? `(${r.decisionNo})` : ''}
+                                  {r.resultStatus === 'APPROVED'
+                                    ? 'Đã phê duyệt'
+                                    : r.resultStatus === 'REJECTED'
+                                    ? 'Từ chối'
+                                    : 'Đang chờ duyệt'}{' '}
+                                  {r.decisionNo ? `(${r.decisionNo})` : ''}
                                 </Tag>
                               </div>
                             </div>
@@ -726,7 +778,7 @@ export const ProgressPage: React.FC = () => {
         <Form form={seminarForm} layout="vertical" onFinish={handleCreateSeminar}>
           <Form.Item name="projectId" label="Đề tài báo cáo trung gian" rules={[{ required: true }]}>
             <Select placeholder="Chọn đề tài">
-              {projects.filter((p) => !['REJECTED', 'PROPOSED'].includes(p.status)).map((p) => (
+              {projects.filter((p) => ['ONGOING', 'APPROVED', 'OUTLINE_SUBMITTED'].includes(p.status)).map((p) => (
                 <Select.Option key={p.project_id} value={p.project_id}>
                   {p.project_id} — {p.title_vi}
                 </Select.Option>
@@ -854,7 +906,8 @@ export const ProgressPage: React.FC = () => {
         onCancel={() => setMinutesModalSeminar(null)}
         footer={[
           <Button key="close" onClick={() => setMinutesModalSeminar(null)}>Đóng</Button>,
-          (isStaff || isLecturer) && (
+          (isStaff || isLecturer) &&
+            !['SUBMITTED', 'ACCEPTED', 'REJECTED'].includes(minutesModalSeminar?.project?.status) && (
             <Button
               key="save"
               type="primary"
@@ -871,7 +924,7 @@ export const ProgressPage: React.FC = () => {
           rows={5}
           value={minutesFeedback}
           onChange={(e) => setMinutesFeedback(e.target.value)}
-          disabled={!isStaff && !isLecturer}
+          disabled={(!isStaff && !isLecturer) || ['SUBMITTED', 'ACCEPTED', 'REJECTED'].includes(minutesModalSeminar?.project?.status)}
           placeholder="Ghi chép ý kiến đóng góp chuyên môn của Hội đồng Khoa/Bộ môn & Kết luận cho nhóm nghiên cứu..."
         />
       </Modal>

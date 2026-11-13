@@ -46,9 +46,26 @@ export const BudgetsPage: React.FC = () => {
   const [submitting, setSubmitting] = useState(false);
   const [form] = Form.useForm();
 
-  const isFacultyStaff = ['FACULTY_SECRETARY', 'FACULTY_LEADER', 'QLKHCN', 'ADMIN'].includes(roleCode);
+  const isFacultyStaff = ['FACULTY_SECRETARY', 'FACULTY_LEADER', 'ADMIN'].includes(roleCode);
   const isFinance = ['FINANCE', 'ADMIN'].includes(roleCode);
   const canSubmitVoucher = ['STUDENT', 'FACULTY_SECRETARY', 'ADMIN'].includes(roleCode);
+  const isStudent = roleCode === 'STUDENT';
+
+  const ACCEPTANCE_GRADE_MAP: Record<string, string> = {
+    XUAT_SAC: 'Xuất sắc',
+    TOT: 'Tốt',
+    KHA: 'Khá',
+    DAT: 'Đạt',
+    KHONG_DAT: 'Không đạt',
+  };
+
+  const BUDGET_STATUS_MAP: Record<string, { label: string; color: string }> = {
+    SETTLED: { label: 'Đã quyết toán', color: 'green' },
+    PARTIALLY_SETTLED: { label: 'Đang giải ngân', color: 'blue' },
+    APPROVED: { label: 'Đã giao dự toán', color: 'blue' },
+    PENDING: { label: 'Chờ duyệt', color: 'default' },
+    REJECTED: { label: 'Từ chối', color: 'red' },
+  };
 
   const fetchBudgets = async () => {
     try {
@@ -143,7 +160,7 @@ export const BudgetsPage: React.FC = () => {
           <div style={{ fontSize: 11, color: '#595959' }}>{r.project?.department?.deptName}</div>
           {r.project?.acceptance?.grade && !['PENDING', 'KHONG_DAT'].includes(r.project.acceptance.grade) ? (
             <Tag color="green" style={{ fontSize: 10, marginTop: 4 }}>
-              Đã nghiệm thu ({r.project.acceptance.grade})
+              Đã nghiệm thu ({ACCEPTANCE_GRADE_MAP[r.project.acceptance.grade] || r.project.acceptance.grade})
             </Tag>
           ) : (
             <Tag color="orange" icon={<WarningOutlined />} style={{ fontSize: 10, marginTop: 4 }}>
@@ -286,48 +303,53 @@ export const BudgetsPage: React.FC = () => {
         </Space>
       </div>
 
-      <Row gutter={[16, 16]} style={{ marginBottom: 16 }}>
-        <Col xs={24} sm={8}>
-          <Card bordered={false} style={{ borderRadius: 8 }}>
+      <Card bordered={false} size="small" style={{ marginBottom: 16, borderRadius: 8 }} bodyStyle={{ padding: '14px 20px' }}>
+        <Row gutter={[24, 12]}>
+          <Col xs={24} sm={8}>
             <Statistic
-              title="Tổng dự toán được cấp (VNĐ)"
+              title={isStudent ? 'Dự toán đề tài của bạn (VNĐ)' : 'Tổng dự toán được cấp (VNĐ)'}
               value={totalApproved}
+              formatter={(value) => Number(value || 0).toLocaleString('vi-VN')}
               suffix="đ"
               prefix={<DollarOutlined />}
               valueStyle={{ color: '#262626' }}
             />
-          </Card>
-        </Col>
-        <Col xs={24} sm={8}>
-          <Card bordered={false} style={{ borderRadius: 8 }}>
+          </Col>
+          <Col xs={24} sm={8}>
             <Statistic
               title="Đã giải ngân thực tế (VNĐ)"
               value={totalSettled}
+              formatter={(value) => Number(value || 0).toLocaleString('vi-VN')}
               suffix="đ"
               prefix={<CheckCircleOutlined />}
               valueStyle={{ color: '#389E0D' }}
             />
-          </Card>
-        </Col>
-        <Col xs={24} sm={8}>
-          <Card bordered={false} style={{ borderRadius: 8 }}>
+          </Col>
+          <Col xs={24} sm={8}>
             <Statistic
               title="Chứng từ chờ xử lý"
               value={pendingCount}
               prefix={<FileDoneOutlined />}
               valueStyle={{ color: '#D48806' }}
             />
-          </Card>
-        </Col>
-      </Row>
+          </Col>
+        </Row>
+      </Card>
 
       <Card bordered={false} style={{ marginBottom: 16, borderRadius: 8 }}>
         <Collapse
           ghost
+          defaultActiveKey={isStudent ? ['budgets-summary'] : undefined}
           items={[
             {
               key: 'budgets-summary',
-              label: <Text strong>Theo dõi Hạn mức Dự toán & Tỷ lệ giải ngân từng Đề tài ({budgets.length} đề tài)</Text>,
+              label: (
+                <Text strong>
+                  {isStudent
+                    ? `Theo dõi Hạn mức Dự toán & Tỷ lệ giải ngân đề tài của bạn (${budgets.length} đề tài)`
+                    : `Theo dõi Hạn mức Dự toán & Tỷ lệ giải ngân từng Đề tài (${budgets.length} đề tài)`}
+                </Text>
+              ),
               children: (
                 <Row gutter={[12, 12]}>
                   {budgets.map((b) => {
@@ -336,6 +358,7 @@ export const BudgetsPage: React.FC = () => {
                       .filter((s: any) => Boolean(s.settledAt))
                       .reduce((sum: number, s: any) => sum + Number(s.amount || 0), 0);
                     const pct = approved > 0 ? Math.min(100, Math.round((settled / approved) * 100)) : 0;
+                    const statusInfo = BUDGET_STATUS_MAP[b.status] || { label: b.status, color: 'default' };
                     return (
                       <Col xs={24} md={12} key={b.budgetId}>
                         <Card size="small" style={{ borderRadius: 6 }}>
@@ -343,23 +366,15 @@ export const BudgetsPage: React.FC = () => {
                             <a onClick={() => navigate(`/projects/${b.projectId}`)} style={{ fontWeight: 700, color: '#C62828' }}>
                               {b.projectId}
                             </a>
-                            <Tag color={b.status === 'SETTLED' ? 'green' : approved > 0 ? 'blue' : 'default'}>
-                              {b.status === 'SETTLED'
-                                ? 'Đã quyết toán'
-                                : b.status === 'PARTIALLY_SETTLED'
-                                  ? 'Đang giải ngân'
-                                  : b.status === 'APPROVED'
-                                    ? 'Đã giao dự toán'
-                                    : b.status === 'PENDING'
-                                      ? 'Chờ duyệt'
-                                      : b.status}
+                            <Tag color={statusInfo.color}>
+                              {statusInfo.label}
                             </Tag>
                           </div>
                           <div style={{ fontSize: 12, color: '#595959', marginBottom: 6 }}>
                             Được duyệt: <b>{approved.toLocaleString('vi-VN')}đ</b> • Đã giải ngân: <b>{settled.toLocaleString('vi-VN')}đ</b>
                           </div>
                           <Progress percent={pct} size="small" status={pct === 100 ? 'success' : 'active'} />
-                          {canSubmitVoucher && approved > 0 && (
+                          {canSubmitVoucher && approved > 0 && b.project?.status !== 'REJECTED' && (
                             <Button size="small" type="link" style={{ padding: 0, marginTop: 4 }} onClick={() => openAddSettlement(b.budgetId)}>
                               + Kê khai chứng từ cho đề tài này
                             </Button>

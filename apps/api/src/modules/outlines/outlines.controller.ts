@@ -7,18 +7,22 @@ import { CurrentUser } from '../../common/decorators/current-user.decorator';
 @ApiTags('4.1 Phân hệ Đề cương nghiên cứu chi tiết (Mẫu 2 & D4)')
 @Controller('api/outlines')
 export class OutlinesController {
-  constructor(private outlinesService: OutlinesService) {}
+  constructor(private outlinesService: OutlinesService) { }
 
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @Get()
-  @ApiOperation({ summary: 'Lấy danh sách tất cả đề cương kèm trạng thái phê duyệt 2 cấp' })
-  async findAll() {
-    return this.outlinesService.findAll();
+  @ApiOperation({ summary: 'Lấy danh sách đề cương phân quyền theo vai trò & ERD' })
+  async findAll(@CurrentUser() user: any) {
+    return this.outlinesService.findAll(user);
   }
 
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @Get('project/:projectId')
   @ApiOperation({ summary: 'Lấy danh sách các phiên bản đề cương của đề tài' })
-  async findByProject(@Param('projectId') projectId: string) {
-    return this.outlinesService.findByProject(projectId);
+  async findByProject(@Param('projectId') projectId: string, @CurrentUser() user: any) {
+    return this.outlinesService.findByProject(projectId, user);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -27,9 +31,10 @@ export class OutlinesController {
   @ApiOperation({ summary: '4.1.1 Soạn và nộp đề cương nghiên cứu theo Mẫu 2' })
   async submit(
     @Param('projectId') projectId: string,
+    @CurrentUser() user: any,
     @Body() body: any,
   ) {
-    return this.outlinesService.submitOutline(projectId, body);
+    return this.outlinesService.submitOutline(projectId, body, user);
   }
 
   @UseGuards(JwtAuthGuard)

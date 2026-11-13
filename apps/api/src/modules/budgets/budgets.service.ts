@@ -3,10 +3,57 @@ import { PrismaService } from '../../prisma/prisma.service';
 
 @Injectable()
 export class BudgetsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService) { }
 
-  async findAll() {
+  async findAll(user?: any) {
+    const roleCode = user?.roleCode;
+    let whereClause: any = {};
+
+    if (roleCode === 'STUDENT') {
+      whereClause = {
+        project: {
+          members: {
+            some: {
+              student: {
+                OR: [
+                  ...(user?.userId ? [{ userId: user.userId }] : []),
+                  ...(user?.studentId ? [{ studentId: user.studentId }] : []),
+                ],
+              },
+            },
+          },
+        },
+      };
+    } else if (roleCode === 'LECTURER') {
+      whereClause = {
+        project: {
+          advisors: {
+            some: {
+              lecturer: {
+                OR: [
+                  ...(user?.userId ? [{ userId: user.userId }] : []),
+                  ...(user?.lecturerId ? [{ lecturerId: user.lecturerId }] : []),
+                ],
+              },
+            },
+          },
+        },
+      };
+    } else if ((roleCode === 'FACULTY_LEADER' || roleCode === 'FACULTY_SECRETARY') && user?.userId) {
+      const deptPositions = await this.prisma.deptPosition.findMany({
+        where: { userId: user.userId, isActive: true },
+        select: { deptId: true },
+      });
+      const deptIds = deptPositions.map((d) => d.deptId);
+      if (deptIds.length > 0) {
+        whereClause = { project: { deptId: { in: deptIds } } };
+      }
+    } else if (roleCode === 'STUDENT_AFFAIRS') {
+      return [];
+    }
+
     return this.prisma.budget.findMany({
+      where: whereClause,
       include: {
         project: {
           include: {
@@ -23,20 +70,57 @@ export class BudgetsService {
     });
   }
 
-  async getBudgetByProject(projectId: string) {
-    return this.prisma.budget.findUnique({
+  async getBudgetByProject(projectId: string, user?: any) {
+    const budget = await this.prisma.budget.findUnique({
       where: { projectId: projectId },
       include: {
-        project: { include: { acceptance: true, department: true } },
+        project: {
+          include: {
+            acceptance: true,
+            department: true,
+            members: { include: { student: true } },
+            advisors: { include: { lecturer: true } },
+          },
+        },
         settlements: {
           orderBy: { submittedAt: 'desc' },
         },
       },
     });
+    if (!budget) return null;
+
+    const roleCode = user?.roleCode;
+    if (roleCode === 'STUDENT') {
+      const isMember = budget.project?.members?.some(
+        (m) => m.student?.userId === user.userId || (user.studentId && m.studentId === user.studentId),
+      );
+      if (!isMember) {
+        throw new ForbiddenException('Bạn không có quyền xem thông tin kinh phí của đề tài khác');
+      }
+    } else if (roleCode === 'LECTURER') {
+      const isAdvisor = budget.project?.advisors?.some(
+        (a) => a.lecturer?.userId === user.userId || (user.lecturerId && a.lecturerId === user.lecturerId),
+      );
+      if (!isAdvisor) {
+        throw new ForbiddenException('Bạn chỉ xem được kinh phí của đề tài mình hướng dẫn');
+      }
+    } else if ((roleCode === 'FACULTY_LEADER' || roleCode === 'FACULTY_SECRETARY') && user?.userId) {
+      const deptPositions = await this.prisma.deptPosition.findMany({
+        where: { userId: user.userId, isActive: true },
+        select: { deptId: true },
+      });
+      const deptIds = deptPositions.map((d) => d.deptId);
+      if (deptIds.length > 0 && budget.project?.deptId && !deptIds.includes(budget.project.deptId)) {
+        throw new ForbiddenException('Bạn chỉ xem được kinh phí đề tài thuộc Khoa mình quản lý');
+      }
+    }
+
+    return budget;
   }
 
   async addSettlement(
     budgetId: number,
+    user: any,
     dto: {
       voucherNo: string;
       invoiceNo?: string;
@@ -47,11 +131,35 @@ export class BudgetsService {
       voucherFileUrl?: string;
     },
   ) {
+    if (!['STUDENT', 'FACULTY_SECRETARY', 'ADMIN'].includes(user?.roleCode)) {
+      throw new ForbiddenException('Chỉ Chủ nhiệm/Thành viên đề tài hoặc Thư ký Khoa mới có quyền kê khai chứng từ thanh quyết toán');
+    }
+
     const budget = await this.prisma.budget.findUnique({
       where: { budgetId: budgetId },
-      include: { settlements: true },
+      include: {
+        settlements: true,
+        project: {
+          include: {
+            members: { include: { student: true } },
+          },
+        },
+      },
     });
     if (!budget) throw new NotFoundException('Không tìm thấy tài khoản kinh phí đề tài');
+
+    if (budget.project?.status === 'REJECTED' || Number(budget.approvedAmount || 0) <= 0) {
+      throw new BadRequestException('Đề tài chưa được phê duyệt cấp kinh phí nên chưa thể kê khai chứng từ');
+    }
+
+    if (user.roleCode === 'STUDENT') {
+      const isMember = budget.project?.members?.some(
+        (m) => m.student?.userId === user.userId || (user.studentId && m.studentId === user.studentId),
+      );
+      if (!isMember) {
+        throw new ForbiddenException('Sinh viên chỉ được kê khai chứng từ thanh quyết toán cho đề tài nhóm mình');
+      }
+    }
 
     const amount = Number(dto.amount);
     if (Number.isNaN(amount) || amount <= 0) {
@@ -82,7 +190,7 @@ export class BudgetsService {
   }
 
   async confirmByFaculty(settlementId: number, user: any) {
-    if (!['FACULTY_SECRETARY', 'FACULTY_LEADER', 'QLKHCN', 'ADMIN'].includes(user.roleCode)) {
+    if (!['FACULTY_SECRETARY', 'FACULTY_LEADER', 'ADMIN'].includes(user.roleCode)) {
       throw new ForbiddenException('Chỉ Thư ký Khoa hoặc Lãnh đạo Khoa mới có quyền xác nhận chứng từ hoàn thành sản phẩm');
     }
 

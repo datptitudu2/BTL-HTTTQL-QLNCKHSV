@@ -9,10 +9,12 @@ import { ProgressService } from './progress.service';
 export class ProgressController {
   constructor(private progressService: ProgressService) {}
 
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @Get('overview')
-  @ApiOperation({ summary: 'Tổng hợp Mốc kiểm soát, Báo cáo tiến độ, Hội thảo Mẫu 3.5 & Đơn điều chỉnh' })
-  async getOverview() {
-    return this.progressService.getOverview();
+  @ApiOperation({ summary: 'Tổng hợp Mốc kiểm soát, Báo cáo tiến độ, Hội thảo Mẫu 3.5 & Đơn điều chỉnh (phân quyền ERD)' })
+  async getOverview(@CurrentUser() user: any) {
+    return this.progressService.getOverview(user);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -105,3 +107,4 @@ export class ProgressController {
     return this.progressService.approveChangeRequest(requestId, user, body);
   }
 }
+
