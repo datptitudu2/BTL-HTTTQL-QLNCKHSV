@@ -194,30 +194,30 @@ export const AwardsPage: React.FC = () => {
 
       <Row gutter={[16, 16]} style={{ marginBottom: 16 }}>
         <Col xs={12} sm={6}>
-          <div style={{ backgroundColor: '#FFFFFF', border: '1px solid #EDEDEE', borderRadius: 8, padding: 18, borderLeft: '4px solid #C62828' }}>
-            <Statistic title={<span style={{ fontSize: 13, color: '#595959', fontWeight: 600 }}>Giấy chứng nhận số đã cấp</span>} value={data.certificates.length} prefix={<SafetyCertificateOutlined />} valueStyle={{ color: '#C62828', fontWeight: 800, fontSize: 22 }} />
-          </div>
+          <Card bordered={false} style={{ borderRadius: 8 }}>
+            <Statistic title="Giấy chứng nhận số đã cấp" value={data.certificates.length} prefix={<SafetyCertificateOutlined />} valueStyle={{ color: '#C62828' }} />
+          </Card>
         </Col>
         <Col xs={12} sm={6}>
-          <div style={{ backgroundColor: '#FFFFFF', border: '1px solid #EDEDEE', borderRadius: 8, padding: 18, borderLeft: '4px solid #FA8C16' }}>
-            <Statistic title={<span style={{ fontSize: 13, color: '#595959', fontWeight: 600 }}>Hồ sơ Giải thưởng Mẫu 5</span>} value={data.nominations.length} prefix={<TrophyOutlined />} valueStyle={{ color: '#FA8C16', fontWeight: 800, fontSize: 22 }} />
-          </div>
+          <Card bordered={false} style={{ borderRadius: 8 }}>
+            <Statistic title="Hồ sơ Giải thưởng Mẫu 5" value={data.nominations.length} prefix={<TrophyOutlined />} valueStyle={{ color: '#D48806' }} />
+          </Card>
         </Col>
         <Col xs={12} sm={6}>
-          <div style={{ backgroundColor: '#FFFFFF', border: '1px solid #EDEDEE', borderRadius: 8, padding: 18, borderLeft: '4px solid #1890FF' }}>
-            <Statistic title={<span style={{ fontSize: 13, color: '#595959', fontWeight: 600 }}>Lượt SV xét ĐRL & Học bổng</span>} value={data.studentBonuses.length} prefix={<StarOutlined />} valueStyle={{ color: '#1890FF', fontWeight: 800, fontSize: 22 }} />
-          </div>
+          <Card bordered={false} style={{ borderRadius: 8 }}>
+            <Statistic title="Lượt SV xét ĐRL & Học bổng" value={data.studentBonuses.length} prefix={<StarOutlined />} valueStyle={{ color: '#1890FF' }} />
+          </Card>
         </Col>
         <Col xs={12} sm={6}>
-          <div style={{ backgroundColor: '#FFFFFF', border: '1px solid #EDEDEE', borderRadius: 8, padding: 18, borderLeft: '4px solid #52C41A' }}>
+          <Card bordered={false} style={{ borderRadius: 8 }}>
             <Statistic
-              title={<span style={{ fontSize: 13, color: '#595959', fontWeight: 600 }}>Tổng Giờ chuẩn GVHD</span>}
+              title="Tổng Giờ chuẩn GVHD"
               value={data.lecturerHours.reduce((s, h) => s + Number(h.convertedHours || 0), 0)}
               suffix="giờ"
               prefix={<ClockCircleOutlined />}
-              valueStyle={{ color: '#52C41A', fontWeight: 800, fontSize: 22 }}
+              valueStyle={{ color: '#389E0D' }}
             />
-          </div>
+          </Card>
         </Col>
       </Row>
 
@@ -408,15 +408,28 @@ export const AwardsPage: React.FC = () => {
                     {
                       title: 'Xếp giải & Tiền thưởng',
                       key: 'prize',
-                      render: (_: any, r: any) => (
-                        <div>
-                          <Text strong>{r.prizeGrade || 'Đề xuất'}</Text>
-                          <div style={{ fontSize: 12, color: '#389E0D' }}>
-                            Thưởng: {Number(r.rewardAmount || 0).toLocaleString('vi-VN')}đ
-                            {Number(r.supportFund || 0) > 0 && ` (+Hỗ trợ: ${Number(r.supportFund).toLocaleString('vi-VN')}đ)`}
+                      render: (_: any, r: any) => {
+                        const prizeLabels: Record<string, { label: string; color: string }> = {
+                          FIRST: { label: 'Giải Nhất', color: 'gold' },
+                          SECOND: { label: 'Giải Nhì', color: 'cyan' },
+                          THIRD: { label: 'Giải Ba', color: 'blue' },
+                          CONSOLATION: { label: 'Giải Khuyến khích', color: 'default' },
+                        };
+                        const prizeInfo = r.prizeGrade ? prizeLabels[r.prizeGrade] : null;
+                        return (
+                          <div>
+                            {prizeInfo ? (
+                              <Tag color={prizeInfo.color} style={{ fontWeight: 600 }}>{prizeInfo.label}</Tag>
+                            ) : (
+                              <Text strong>{r.prizeGrade || 'Đề xuất'}</Text>
+                            )}
+                            <div style={{ fontSize: 12, color: '#389E0D', marginTop: 2 }}>
+                              Thưởng: {Number(r.rewardAmount || 0).toLocaleString('vi-VN')}đ
+                              {Number(r.supportFund || 0) > 0 && ` (+Hỗ trợ: ${Number(r.supportFund).toLocaleString('vi-VN')}đ)`}
+                            </div>
                           </div>
-                        </div>
-                      ),
+                        );
+                      },
                     },
                     {
                       title: 'Trạng thái',

@@ -49,6 +49,18 @@ const GRADE_LABEL: Record<string, { label: string; color: string; drl: number }>
   PENDING: { label: 'Chờ chấm điểm', color: 'default', drl: 0 },
 };
 
+const COUNCIL_ROLE_LABEL: Record<string, { label: string; color: string }> = {
+  CHAIR: { label: 'Chủ tịch HĐ', color: 'red' },
+  REVIEWER: { label: 'Ủy viên Phản biện', color: 'blue' },
+  REVIEWER_1: { label: 'Phản biện 1', color: 'blue' },
+  REVIEWER_2: { label: 'Phản biện 2', color: 'geekblue' },
+  SECRETARY: { label: 'Thư ký HĐ', color: 'cyan' },
+  MEMBER: { label: 'Ủy viên', color: 'default' },
+};
+
+const getCouncilRoleInfo = (role?: string) =>
+  COUNCIL_ROLE_LABEL[role || ''] || { label: role || 'Thành viên', color: 'default' };
+
 export const AcceptancePage: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -241,39 +253,39 @@ export const AcceptancePage: React.FC = () => {
 
       <Row gutter={[16, 16]} style={{ marginBottom: 16 }}>
         <Col xs={12} sm={6}>
-          <div style={{ backgroundColor: '#FFFFFF', border: '1px solid #EDEDEE', borderRadius: 8, padding: 18, borderLeft: '4px solid #1890FF' }}>
-            <Statistic title={<span style={{ fontSize: 13, color: '#595959', fontWeight: 600 }}>Tổng Hồ sơ Nghiệm thu</span>} value={acceptances.length} prefix={<AuditOutlined />} valueStyle={{ color: '#1890FF', fontWeight: 800, fontSize: 22 }} />
-          </div>
+          <Card bordered={false} style={{ borderRadius: 8 }}>
+            <Statistic title="Tổng Hồ sơ Nghiệm thu" value={acceptances.length} prefix={<AuditOutlined />} />
+          </Card>
         </Col>
         <Col xs={12} sm={6}>
-          <div style={{ backgroundColor: '#FFFFFF', border: '1px solid #EDEDEE', borderRadius: 8, padding: 18, borderLeft: '4px solid #52C41A' }}>
+          <Card bordered={false} style={{ borderRadius: 8 }}>
             <Statistic
-              title={<span style={{ fontSize: 13, color: '#595959', fontWeight: 600 }}>Đã phê duyệt P.QLKHCN</span>}
+              title="Đã phê duyệt P.QLKHCN"
               value={acceptances.filter((a) => Boolean(a.approvalDocNo)).length}
-              valueStyle={{ color: '#52C41A', fontWeight: 800, fontSize: 22 }}
+              valueStyle={{ color: '#389E0D' }}
               prefix={<CheckCircleOutlined />}
             />
-          </div>
+          </Card>
         </Col>
         <Col xs={12} sm={6}>
-          <div style={{ backgroundColor: '#FFFFFF', border: '1px solid #EDEDEE', borderRadius: 8, padding: 18, borderLeft: '4px solid #C62828' }}>
+          <Card bordered={false} style={{ borderRadius: 8 }}>
             <Statistic
-              title={<span style={{ fontSize: 13, color: '#595959', fontWeight: 600 }}>Đạt Xuất sắc / Tốt</span>}
+              title="Đạt Xuất sắc / Tốt"
               value={acceptances.filter((a) => ['XUAT_SAC', 'TOT'].includes(a.grade)).length}
-              valueStyle={{ color: '#C62828', fontWeight: 800, fontSize: 22 }}
+              valueStyle={{ color: '#C62828' }}
               prefix={<TrophyOutlined />}
             />
-          </div>
+          </Card>
         </Col>
         <Col xs={12} sm={6}>
-          <div style={{ backgroundColor: '#FFFFFF', border: '1px solid #EDEDEE', borderRadius: 8, padding: 18, borderLeft: '4px solid #FA8C16' }}>
+          <Card bordered={false} style={{ borderRadius: 8 }}>
             <Statistic
-              title={<span style={{ fontSize: 13, color: '#595959', fontWeight: 600 }}>Có phiếu lệch &gt; 15đ (Mẫu 4.2)</span>}
+              title="Có phiếu lệch > 15đ (Mẫu 4.2)"
               value={acceptances.filter((a) => a.sheets?.some((s: any) => s.isOutlier)).length}
-              valueStyle={{ color: '#FA8C16', fontWeight: 800, fontSize: 22 }}
+              valueStyle={{ color: '#D48806' }}
               prefix={<WarningOutlined />}
             />
-          </div>
+          </Card>
         </Col>
       </Row>
 
@@ -368,11 +380,15 @@ export const AcceptancePage: React.FC = () => {
                       {
                         title: 'Thành viên Hội đồng',
                         key: 'lec',
-                        render: (_: any, m: any) => (
-                          <span>
-                            <b>{m.lecturer?.user?.fullName}</b> <Tag>{m.councilRole}</Tag>
-                          </span>
-                        ),
+                        render: (_: any, m: any) => {
+                          const roleInfo = getCouncilRoleInfo(m.councilRole);
+                          return (
+                            <span>
+                              <b>{m.lecturer?.user?.fullName}</b>{' '}
+                              <Tag color={roleInfo.color}>{roleInfo.label}</Tag>
+                            </span>
+                          );
+                        },
                       },
                       {
                         title: 'Tổng điểm',
@@ -416,7 +432,7 @@ export const AcceptancePage: React.FC = () => {
                     style={{ backgroundColor: '#C62828', borderColor: '#C62828' }}
                     onClick={() => openScoreModal(acc, myMember)}
                   >
-                    {mySheet ? 'Cập nhật Phiếu 4.1 của tôi' : `Chấm điểm Phiếu 4.1 (${myMember.councilRole})`}
+                    {mySheet ? 'Cập nhật Phiếu 4.1 của tôi' : `Chấm điểm Phiếu 4.1 (${getCouncilRoleInfo(myMember.councilRole).label})`}
                   </Button>
                 )}
                 {roleCode === 'LECTURER' && !myMember && (
@@ -457,7 +473,9 @@ export const AcceptancePage: React.FC = () => {
             <Text type="secondary" style={{ fontSize: 12 }}>Thành viên Hội đồng thực hiện chấm điểm:</Text>
             <div style={{ fontWeight: 700, color: '#262626', marginTop: 2 }}>
               {scoringMember?.lecturer?.user?.fullName || user?.fullName}{' '}
-              <Tag color="blue" style={{ marginLeft: 6 }}>{scoringMember?.councilRole}</Tag>
+              <Tag color={getCouncilRoleInfo(scoringMember?.councilRole).color} style={{ marginLeft: 6 }}>
+                {getCouncilRoleInfo(scoringMember?.councilRole).label}
+              </Tag>
             </div>
           </div>
 

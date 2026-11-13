@@ -311,24 +311,24 @@ export const OutlinesPage: React.FC = () => {
 
       <Row gutter={[16, 16]} style={{ marginBottom: 16 }}>
         <Col xs={12} sm={6}>
-          <div style={{ backgroundColor: '#FFFFFF', border: '1px solid #EDEDEE', borderRadius: 8, padding: 18, borderLeft: '4px solid #262626' }}>
-            <Statistic title={<span style={{ fontSize: 13, color: '#595959', fontWeight: 600 }}>Tổng bản đề cương</span>} value={stats.total} prefix={<FileTextOutlined />} valueStyle={{ color: '#262626', fontWeight: 800, fontSize: 22 }} />
-          </div>
+          <Card bordered={false} style={{ borderRadius: 8 }}>
+            <Statistic title="Tổng bản đề cương" value={stats.total} prefix={<FileTextOutlined />} />
+          </Card>
         </Col>
         <Col xs={12} sm={6}>
-          <div style={{ backgroundColor: '#FFFFFF', border: '1px solid #EDEDEE', borderRadius: 8, padding: 18, borderLeft: '4px solid #FA8C16' }}>
-            <Statistic title={<span style={{ fontSize: 13, color: '#595959', fontWeight: 600 }}>Chờ GVHD duyệt (Cấp 1)</span>} value={stats.pendingAdvisor} valueStyle={{ color: '#FA8C16', fontWeight: 800, fontSize: 22 }} />
-          </div>
+          <Card bordered={false} style={{ borderRadius: 8 }}>
+            <Statistic title="Chờ GVHD duyệt (Cấp 1)" value={stats.pendingAdvisor} valueStyle={{ color: '#D48806' }} />
+          </Card>
         </Col>
         <Col xs={12} sm={6}>
-          <div style={{ backgroundColor: '#FFFFFF', border: '1px solid #EDEDEE', borderRadius: 8, padding: 18, borderLeft: '4px solid #1890FF' }}>
-            <Statistic title={<span style={{ fontSize: 13, color: '#595959', fontWeight: 600 }}>Chờ Lãnh đạo Khoa (Cấp 2)</span>} value={stats.pendingFaculty} valueStyle={{ color: '#1890FF', fontWeight: 800, fontSize: 22 }} />
-          </div>
+          <Card bordered={false} style={{ borderRadius: 8 }}>
+            <Statistic title="Chờ Lãnh đạo Khoa (Cấp 2)" value={stats.pendingFaculty} valueStyle={{ color: '#1890FF' }} />
+          </Card>
         </Col>
         <Col xs={12} sm={6}>
-          <div style={{ backgroundColor: '#FFFFFF', border: '1px solid #EDEDEE', borderRadius: 8, padding: 18, borderLeft: '4px solid #52C41A' }}>
-            <Statistic title={<span style={{ fontSize: 13, color: '#595959', fontWeight: 600 }}>Đã phê duyệt 2 cấp</span>} value={stats.approved} valueStyle={{ color: '#52C41A', fontWeight: 800, fontSize: 22 }} />
-          </div>
+          <Card bordered={false} style={{ borderRadius: 8 }}>
+            <Statistic title="Đã phê duyệt 2 cấp" value={stats.approved} valueStyle={{ color: '#389E0D' }} />
+          </Card>
         </Col>
       </Row>
 
@@ -373,7 +373,13 @@ export const OutlinesPage: React.FC = () => {
                       <Text strong>
                         {app.role === 'ADVISOR' ? 'Cấp 1: Giảng viên hướng dẫn' : 'Cấp 2: Lãnh đạo Khoa / Đơn vị'}
                       </Text>{' '}
-                      <Tag color={app.decision === 'APPROVED' ? 'green' : 'orange'}>{app.decision}</Tag>
+                      <Tag color={app.decision === 'APPROVED' ? 'green' : app.decision === 'REVISION_REQUIRED' ? 'orange' : 'red'}>
+                        {app.decision === 'APPROVED'
+                          ? 'Đã phê duyệt'
+                          : app.decision === 'REVISION_REQUIRED'
+                            ? 'Yêu cầu chỉnh sửa'
+                            : 'Không đạt / Từ chối'}
+                      </Tag>
                       {app.mode === 'PROXY' && <Tag color="purple">Ký thay (PROXY)</Tag>}
                       <div style={{ fontSize: 12, color: '#595959', marginTop: 2 }}>{app.comment || 'Không có ghi chú'}</div>
                       <div style={{ fontSize: 11, color: '#8c8c8c' }}>

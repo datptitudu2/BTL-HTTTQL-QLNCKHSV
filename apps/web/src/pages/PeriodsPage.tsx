@@ -329,10 +329,10 @@ export const PeriodsPage: React.FC = () => {
               }
               extra={
                 <Space>
-                  {period?.status === 'ACTIVE' ? (
+                  {period?.status === 'ACTIVE' || period?.status === 'OPEN' ? (
                     <Tag color="green" style={{ fontWeight: 600 }}>ĐANG MỞ ĐĂNG KÝ</Tag>
                   ) : (
-                    <Tag color="default">{period?.status || 'ĐÃ ĐÓNG'}</Tag>
+                    <Tag color="default">{period?.status === 'CLOSED' ? 'ĐÃ ĐÓNG' : period?.status || 'ĐÃ ĐÓNG'}</Tag>
                   )}
                   {canConfigure && (
                     <Tooltip title="Chỉnh sửa cấu hình này">

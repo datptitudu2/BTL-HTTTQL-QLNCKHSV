@@ -50,6 +50,32 @@ const RSVP_MAP: Record<string, { label: string; color: string }> = {
   PENDING: { label: 'Chờ phản hồi', color: 'gold' },
 };
 
+const MILESTONE_TYPE_LABEL: Record<string, string> = {
+  OUTLINE: 'Nộp đề cương',
+  MIDTERM: 'Báo cáo giữa kỳ',
+  SEMINAR: 'Sinh hoạt khoa học',
+  FINAL: 'Nghiệm thu tổng kết',
+  PAPER: 'Công bố khoa học',
+};
+
+const REQUEST_TYPE_LABEL: Record<string, string> = {
+  EXTENSION: 'Gia hạn tiến độ',
+  MEMBER_CHANGE: 'Điều chỉnh thành viên',
+  TITLE_CHANGE: 'Điều chỉnh tên đề tài',
+  ADVISOR_CHANGE: 'Thay đổi GVHD',
+  CANCEL: 'Xin dừng đề tài',
+};
+
+const ATTENDEE_ROLE_LABEL: Record<string, { label: string; color: string }> = {
+  CHAIR: { label: 'Chủ trì', color: 'red' },
+  SECRETARY: { label: 'Thư ký', color: 'cyan' },
+  LEADER: { label: 'Chủ nhiệm ĐT', color: 'blue' },
+  STUDENT: { label: 'Sinh viên', color: 'geekblue' },
+  ADVISOR: { label: 'GVHD', color: 'purple' },
+  LECTURER: { label: 'Giảng viên', color: 'blue' },
+  GUEST: { label: 'Đại biểu mời', color: 'default' },
+};
+
 export const ProgressPage: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -325,7 +351,7 @@ export const ProgressPage: React.FC = () => {
                     <div>
                       <Text strong>{m.milestoneName}</Text>
                       <div>
-                        <Tag color="default" style={{ fontSize: 11 }}>{m.milestoneType}</Tag>
+                        <Tag color="default" style={{ fontSize: 11 }}>{MILESTONE_TYPE_LABEL[m.milestoneType] || m.milestoneType}</Tag>
                         <Text type="secondary" style={{ fontSize: 12 }}>
                           Hạn chót: {new Date(m.dueDate).toLocaleDateString('vi-VN')}
                         </Text>
@@ -608,7 +634,7 @@ export const ProgressPage: React.FC = () => {
                                 {r.projectId}
                               </a>
                               <div>
-                                <Tag color="purple">{r.requestType}</Tag>
+                                <Tag color="purple">{REQUEST_TYPE_LABEL[r.requestType] || r.requestType}</Tag>
                                 {r.newDueDate && (
                                   <Text type="secondary" style={{ fontSize: 11 }}>
                                     Hạn mới: {new Date(r.newDueDate).toLocaleDateString('vi-VN')}
@@ -777,7 +803,15 @@ export const ProgressPage: React.FC = () => {
               dataSource={attendeesModalSeminar.members || []}
               columns={[
                 { title: 'Họ tên đại biểu', dataIndex: 'attendeeName', key: 'attendeeName' },
-                { title: 'Vai trò', dataIndex: 'role', key: 'role', render: (r: string) => <Tag>{r}</Tag> },
+                {
+                  title: 'Vai trò',
+                  dataIndex: 'role',
+                  key: 'role',
+                  render: (r: string) => {
+                    const roleInfo = ATTENDEE_ROLE_LABEL[r] || { label: r, color: 'default' };
+                    return <Tag color={roleInfo.color}>{roleInfo.label}</Tag>;
+                  },
+                },
                 { title: 'Đơn vị', dataIndex: 'unit', key: 'unit' },
                 {
                   title: 'Phản hồi RSVP',

@@ -288,36 +288,36 @@ export const BudgetsPage: React.FC = () => {
 
       <Row gutter={[16, 16]} style={{ marginBottom: 16 }}>
         <Col xs={24} sm={8}>
-          <div style={{ backgroundColor: '#FFFFFF', border: '1px solid #EDEDEE', borderRadius: 8, padding: 18, borderLeft: '4px solid #1890FF' }}>
+          <Card bordered={false} style={{ borderRadius: 8 }}>
             <Statistic
-              title={<span style={{ fontSize: 13, color: '#595959', fontWeight: 600 }}>Tổng dự toán được cấp (VNĐ)</span>}
+              title="Tổng dự toán được cấp (VNĐ)"
               value={totalApproved}
               suffix="đ"
               prefix={<DollarOutlined />}
-              valueStyle={{ color: '#1890FF', fontWeight: 800, fontSize: 22 }}
+              valueStyle={{ color: '#262626' }}
             />
-          </div>
+          </Card>
         </Col>
         <Col xs={24} sm={8}>
-          <div style={{ backgroundColor: '#FFFFFF', border: '1px solid #EDEDEE', borderRadius: 8, padding: 18, borderLeft: '4px solid #52C41A' }}>
+          <Card bordered={false} style={{ borderRadius: 8 }}>
             <Statistic
-              title={<span style={{ fontSize: 13, color: '#595959', fontWeight: 600 }}>Đã giải ngân thực tế (VNĐ)</span>}
+              title="Đã giải ngân thực tế (VNĐ)"
               value={totalSettled}
               suffix="đ"
               prefix={<CheckCircleOutlined />}
-              valueStyle={{ color: '#52C41A', fontWeight: 800, fontSize: 22 }}
+              valueStyle={{ color: '#389E0D' }}
             />
-          </div>
+          </Card>
         </Col>
         <Col xs={24} sm={8}>
-          <div style={{ backgroundColor: '#FFFFFF', border: '1px solid #EDEDEE', borderRadius: 8, padding: 18, borderLeft: '4px solid #FA8C16' }}>
+          <Card bordered={false} style={{ borderRadius: 8 }}>
             <Statistic
-              title={<span style={{ fontSize: 13, color: '#595959', fontWeight: 600 }}>Chứng từ chờ xử lý</span>}
+              title="Chứng từ chờ xử lý"
               value={pendingCount}
               prefix={<FileDoneOutlined />}
-              valueStyle={{ color: '#FA8C16', fontWeight: 800, fontSize: 22 }}
+              valueStyle={{ color: '#D48806' }}
             />
-          </div>
+          </Card>
         </Col>
       </Row>
 
@@ -344,7 +344,15 @@ export const BudgetsPage: React.FC = () => {
                               {b.projectId}
                             </a>
                             <Tag color={b.status === 'SETTLED' ? 'green' : approved > 0 ? 'blue' : 'default'}>
-                              {b.status}
+                              {b.status === 'SETTLED'
+                                ? 'Đã quyết toán'
+                                : b.status === 'PARTIALLY_SETTLED'
+                                  ? 'Đang giải ngân'
+                                  : b.status === 'APPROVED'
+                                    ? 'Đã giao dự toán'
+                                    : b.status === 'PENDING'
+                                      ? 'Chờ duyệt'
+                                      : b.status}
                             </Tag>
                           </div>
                           <div style={{ fontSize: 12, color: '#595959', marginBottom: 6 }}>
