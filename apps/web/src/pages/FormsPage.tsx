@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Tabs, Typography, Button, Alert, message } from 'antd';
+import { Card, Tabs, Typography, Button, message } from 'antd';
 import {
   PrinterOutlined,
   DownloadOutlined,
@@ -403,14 +403,6 @@ export const FormsPage: React.FC = () => {
           Tổng hợp toàn bộ 10 biểu mẫu chuẩn hóa theo Quyết định số 521/QĐ-HV của Giám đốc Học viện. Dữ liệu được trích xuất trực tiếp từ hồ sơ đề tài.
         </Text>
       </div>
-
-      <Alert
-        message="Trích xuất biểu mẫu hành chính tự động"
-        description="Mỗi biểu mẫu được tự động điền sẵn thông tin đề tài, sinh viên chủ trì, thành viên nhóm, giảng viên hướng dẫn, điểm đánh giá 7 tiêu chí và biên bản nghiệm thu từ hệ thống. Bạn có thể xem trước, in ấn hoặc xuất tệp văn bản."
-        type="info"
-        showIcon
-        style={{ marginBottom: 16 }}
-      />
 
       <Card style={{ borderRadius: 8 }}>
         <Tabs

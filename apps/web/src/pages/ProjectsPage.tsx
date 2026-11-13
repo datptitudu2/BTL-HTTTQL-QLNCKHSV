@@ -27,7 +27,6 @@ import {
   QuestionCircleOutlined,
   CheckCircleOutlined,
   CloseCircleOutlined,
-  SolutionOutlined,
   FileProtectOutlined,
   ClockCircleOutlined,
   TrophyOutlined,
@@ -868,22 +867,6 @@ export const ProjectsPage: React.FC = () => {
 
   return (
     <div>
-      {/* BANNER THẨM QUYỀN DUYỆT CỦA PHÒNG QLKHCN THEO QĐ 521 */}
-      {isQLKH && (
-        <Alert
-          type="info"
-          showIcon
-          icon={<SolutionOutlined />}
-          message="Cổng Thẩm định & Phê duyệt Đề tài NCKH - Phòng Quản lý Khoa học Công nghệ (P.QLKHCN)"
-          description={
-            <div>
-              Bạn đang đăng nhập với vai trò <b>{user?.roleName || 'Chuyên viên P.QLKHCN'}</b>. Bạn có thẩm quyền tiếp nhận hồ sơ đăng ký từ các Khoa, tổ chức thẩm định chuyên môn, phê duyệt danh mục và trình Ban Giám đốc ban hành Quyết định giao đề tài (theo Quyết định số 521/QĐ-HV).
-            </div>
-          }
-          style={{ marginBottom: 14 }}
-        />
-      )}
-
       {/* TIÊU ĐỀ SẢN PHẨM CHUẨN S-LINK */}
       <div style={{ marginBottom: 14 }}>
         <Title level={4} style={{ margin: 0, fontWeight: 700, color: '#262626', fontSize: 18 }}>

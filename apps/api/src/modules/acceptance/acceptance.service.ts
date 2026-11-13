@@ -80,13 +80,37 @@ export class AcceptanceService {
     });
   }
 
-  async createCouncil(projectId: string, dto: {
+  async createCouncil(projectId: string, user: any, dto: {
     councilName: string;
     decisionNo: string;
     defenseDate: string;
     location: string;
     members: { lecturerId: string; councilRole: string }[];
   }) {
+    if (!['QLKHCN', 'FACULTY_LEADER', 'BOARD', 'ADMIN'].includes(user?.roleCode)) {
+      throw new ForbiddenException('Chỉ P.QLKH&CN, Lãnh đạo Khoa hoặc Ban Giám Đốc mới có quyền thành lập Hội đồng nghiệm thu (DFD 5.2)');
+    }
+
+    const project = await this.prisma.project.findUnique({
+      where: { projectId },
+      include: { acceptance: true },
+    });
+    if (!project) {
+      throw new NotFoundException(`Không tìm thấy đề tài ${projectId}`);
+    }
+    if (project.status !== 'SUBMITTED') {
+      throw new BadRequestException('Đề tài phải ở trạng thái đã nộp báo cáo tổng kết (SUBMITTED) mới được thành lập Hội đồng nghiệm thu (DFD 5.1 → 5.2)');
+    }
+    if (project.acceptance?.councilId) {
+      throw new BadRequestException(`Đề tài ${projectId} đã có Hội đồng nghiệm thu được thành lập`);
+    }
+
+    const members = Array.isArray(dto.members) ? dto.members : [];
+    const uniqueLecturerIds = new Set(members.map((m) => m.lecturerId).filter(Boolean));
+    if (uniqueLecturerIds.size < 3) {
+      throw new BadRequestException('Hội đồng nghiệm thu phải có tối thiểu 03 thành viên giảng viên không trùng lặp');
+    }
+
     const council = await this.prisma.council.create({
       data: {
         councilName: dto.councilName,
@@ -94,7 +118,7 @@ export class AcceptanceService {
         defenseDate: new Date(dto.defenseDate),
         location: dto.location,
         members: {
-          create: dto.members.map((m) => ({
+          create: members.map((m) => ({
             lecturerId: m.lecturerId,
             councilRole: m.councilRole,
           })),
@@ -128,10 +152,6 @@ export class AcceptanceService {
     conclusionAwardRec?: boolean | string;
     scores: { criteriaId: number; score: number }[];
   }) {
-    if (!['LECTURER', 'FACULTY_LEADER', 'QLKHCN', 'ADMIN'].includes(user.roleCode)) {
-      throw new ForbiddenException('Chỉ thành viên Hội đồng đánh giá mới có quyền chấm điểm');
-    }
-
     const lecturer = await this.prisma.lecturer.findFirst({
       where: { userId: user.userId },
     });
@@ -149,19 +169,23 @@ export class AcceptanceService {
       throw new NotFoundException('Hồ sơ nghiệm thu hoặc hội đồng không tồn tại');
     }
 
-    let cmId: number | undefined = dto.cmId ? Number(dto.cmId) : undefined;
-    if (!cmId && lecturer) {
-      const cm = acceptance.council.members.find((m) => m.lecturerId === lecturer.lecturerId);
-      if (cm) cmId = cm.cmId;
+    if (acceptance.approvalDocNo) {
+      throw new BadRequestException('Kết quả nghiệm thu đã được phê duyệt chính thức, không thể chỉnh sửa phiếu chấm');
     }
 
-    if (!cmId && acceptance.council.members.length > 0 && ['QLKHCN', 'ADMIN', 'FACULTY_LEADER'].includes(user.roleCode)) {
-      cmId = acceptance.council.members[0].cmId;
+    const ownMember = lecturer
+      ? acceptance.council.members.find((m) => m.lecturerId === lecturer.lecturerId)
+      : undefined;
+
+    if (!ownMember) {
+      throw new ForbiddenException('Bạn không thuộc danh sách thành viên Hội đồng được thành lập cho đề tài này (DFD 5.3)');
     }
 
-    if (!cmId) {
-      throw new BadRequestException('Bạn không thuộc danh sách thành viên Hội đồng đánh giá');
+    if (dto.cmId && Number(dto.cmId) !== ownMember.cmId) {
+      throw new ForbiddenException('Chỉ được phép chấm phiếu điểm bằng tư cách thành viên của chính mình trong Hội đồng');
     }
+
+    const cmId = ownMember.cmId;
 
     // Kiểm tra trần điểm từng tiêu chí theo Điều 10 QĐ 521
     const criteriaList = await this.prisma.evaluationCriteria.findMany();

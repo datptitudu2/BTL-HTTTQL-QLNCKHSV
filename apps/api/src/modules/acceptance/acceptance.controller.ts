@@ -27,9 +27,10 @@ export class AcceptanceController {
   @ApiOperation({ summary: '5.2 Thành lập Hội đồng nghiệm thu & lập lịch bảo vệ' })
   async createCouncil(
     @Param('projectId') projectId: string,
+    @CurrentUser() user: any,
     @Body() body: any,
   ) {
-    return this.acceptanceService.createCouncil(projectId, body);
+    return this.acceptanceService.createCouncil(projectId, user, body);
   }
 
   @UseGuards(JwtAuthGuard)

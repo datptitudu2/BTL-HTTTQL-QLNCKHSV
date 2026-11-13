@@ -11,7 +11,6 @@ import {
   Select,
   Input,
   InputNumber,
-  Alert,
   Row,
   Col,
   Statistic,
@@ -159,8 +158,8 @@ export const AwardsPage: React.FC = () => {
     <div style={{ maxWidth: 1600, margin: '0 auto' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, flexWrap: 'wrap', gap: 12 }}>
         <div>
-          <Title level={4} style={{ margin: 0, color: '#C62828', fontWeight: 700 }}>
-            Khen thưởng (Mẫu 5), Chứng nhận số & Quyền lợi NCKH (QĐ 521 - D8)
+          <Title level={4} style={{ margin: 0, color: '#262626', fontWeight: 700 }}>
+            Khen thưởng (Mẫu 5), Chứng nhận số & Quyền lợi NCKH (QĐ 521)
           </Title>
           <Text type="secondary" style={{ fontSize: 13 }}>
             Đồng bộ dữ liệu thực Kho D8: Chứng nhận số QR (Điều 15.2.e ≥ Khá), ĐRL & Học bổng CTSV (Điều 15.2.h), Đề cử Mẫu 5 & Giờ chuẩn GVHD.
@@ -193,40 +192,32 @@ export const AwardsPage: React.FC = () => {
         </Space>
       </div>
 
-      <Alert
-        type="info"
-        showIcon
-        style={{ marginBottom: 16 }}
-        message="Chính sách Quyền lợi & Chứng nhận theo Điều 15 QĐ 521/QĐ-HV"
-        description="• Cấp Giấy chứng nhận: Đạt kết quả Nghiệm thu từ Khá trở lên (≥ 70đ). • Cộng Điểm rèn luyện (P.CTSV): Xuất sắc (+10đ), Tốt (+8đ), Khá (+6đ), Đạt (+4đ). • Cộng Điểm học bổng Giải thưởng Trong nước: Nhất (+0.4), Nhì (+0.3), Ba (+0.2), KK (+0.1)."
-      />
-
       <Row gutter={[16, 16]} style={{ marginBottom: 16 }}>
         <Col xs={12} sm={6}>
-          <Card bordered={false} style={{ borderRadius: 8 }}>
-            <Statistic title="Giấy chứng nhận số đã cấp" value={data.certificates.length} prefix={<SafetyCertificateOutlined />} valueStyle={{ color: '#C62828' }} />
-          </Card>
+          <div style={{ backgroundColor: '#FFFFFF', border: '1px solid #EDEDEE', borderRadius: 8, padding: 18, borderLeft: '4px solid #C62828' }}>
+            <Statistic title={<span style={{ fontSize: 13, color: '#595959', fontWeight: 600 }}>Giấy chứng nhận số đã cấp</span>} value={data.certificates.length} prefix={<SafetyCertificateOutlined />} valueStyle={{ color: '#C62828', fontWeight: 800, fontSize: 22 }} />
+          </div>
         </Col>
         <Col xs={12} sm={6}>
-          <Card bordered={false} style={{ borderRadius: 8 }}>
-            <Statistic title="Hồ sơ Giải thưởng Mẫu 5" value={data.nominations.length} prefix={<TrophyOutlined />} valueStyle={{ color: '#D48806' }} />
-          </Card>
+          <div style={{ backgroundColor: '#FFFFFF', border: '1px solid #EDEDEE', borderRadius: 8, padding: 18, borderLeft: '4px solid #FA8C16' }}>
+            <Statistic title={<span style={{ fontSize: 13, color: '#595959', fontWeight: 600 }}>Hồ sơ Giải thưởng Mẫu 5</span>} value={data.nominations.length} prefix={<TrophyOutlined />} valueStyle={{ color: '#FA8C16', fontWeight: 800, fontSize: 22 }} />
+          </div>
         </Col>
         <Col xs={12} sm={6}>
-          <Card bordered={false} style={{ borderRadius: 8 }}>
-            <Statistic title="Lượt SV xét ĐRL & Học bổng" value={data.studentBonuses.length} prefix={<StarOutlined />} valueStyle={{ color: '#1890FF' }} />
-          </Card>
+          <div style={{ backgroundColor: '#FFFFFF', border: '1px solid #EDEDEE', borderRadius: 8, padding: 18, borderLeft: '4px solid #1890FF' }}>
+            <Statistic title={<span style={{ fontSize: 13, color: '#595959', fontWeight: 600 }}>Lượt SV xét ĐRL & Học bổng</span>} value={data.studentBonuses.length} prefix={<StarOutlined />} valueStyle={{ color: '#1890FF', fontWeight: 800, fontSize: 22 }} />
+          </div>
         </Col>
         <Col xs={12} sm={6}>
-          <Card bordered={false} style={{ borderRadius: 8 }}>
+          <div style={{ backgroundColor: '#FFFFFF', border: '1px solid #EDEDEE', borderRadius: 8, padding: 18, borderLeft: '4px solid #52C41A' }}>
             <Statistic
-              title="Tổng Giờ chuẩn GVHD"
+              title={<span style={{ fontSize: 13, color: '#595959', fontWeight: 600 }}>Tổng Giờ chuẩn GVHD</span>}
               value={data.lecturerHours.reduce((s, h) => s + Number(h.convertedHours || 0), 0)}
               suffix="giờ"
               prefix={<ClockCircleOutlined />}
-              valueStyle={{ color: '#389E0D' }}
+              valueStyle={{ color: '#52C41A', fontWeight: 800, fontSize: 22 }}
             />
-          </Card>
+          </div>
         </Col>
       </Row>
 

@@ -15,7 +15,6 @@ import {
   InputNumber,
   Select,
   DatePicker,
-  Alert,
   Tooltip,
   Divider,
   message,
@@ -314,35 +313,6 @@ export const PeriodsPage: React.FC = () => {
           )}
         </Space>
       </div>
-
-      {/* BANNER THÔNG BÁO QUYỀN HẠN PHÂN CẤP */}
-      {canConfigure ? (
-        <Alert
-          type="success"
-          showIcon
-          style={{ marginBottom: 18, borderRadius: 6, border: '1px solid #B7EB8F', backgroundColor: '#F6FFED' }}
-          message={
-            <div style={{ fontSize: 13 }}>
-              <b>Quyền hạn Quản trị viên:</b> Bạn đang đăng nhập với tài khoản <b>{user?.fullName}</b> (
-              <span style={{ color: '#C62828', fontWeight: 600 }}>{user?.roleName || 'Phòng QLKH&CN'}</span>).
-              Bạn có toàn quyền thiết lập thời gian đợt, phân bổ chỉ tiêu, tổng ngân sách và điều chỉnh các mốc hạn toàn Học viện theo QĐ 521.
-            </div>
-          }
-        />
-      ) : (
-        <Alert
-          type="info"
-          showIcon
-          style={{ marginBottom: 18, borderRadius: 6, border: '1px solid #91D5FF', backgroundColor: '#E6F7FF' }}
-          message={
-            <div style={{ fontSize: 13 }}>
-              <b>Phân quyền truy cập:</b> Bạn đang xem với vai trò <b>{user?.roleName || 'Sinh viên'}</b>. 
-              Quyền thiết lập và ban hành đợt NCKH thuộc thẩm quyền của <b>Phòng Quản lý Khoa học Công nghệ (QLKH&CN)</b> và Ban Giám Đốc Học viện. 
-              Sinh viên và Giảng viên theo dõi các mốc hạn nộp Đề cương (Mẫu 2) và Báo cáo tiến độ (Mẫu 3.5) dưới đây để đảm bảo đúng tiến độ.
-            </div>
-          }
-        />
-      )}
 
       {loading ? (
         <PtitSpinner tip="Đang tải dữ liệu đợt NCKH..." minHeight={300} />

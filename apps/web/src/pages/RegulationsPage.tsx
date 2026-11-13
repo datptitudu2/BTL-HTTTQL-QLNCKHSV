@@ -1,5 +1,5 @@
 import React from 'react';
-import { Card, Typography, Collapse, Alert } from 'antd';
+import { Card, Typography, Collapse } from 'antd';
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -24,14 +24,6 @@ export const RegulationsPage: React.FC = () => {
           Ban hành kèm theo Quyết định số 521/QĐ-HV ngày 17/07/2020 của Giám đốc Học viện Công nghệ Bưu chính Viễn thông
         </Text>
       </div>
-
-      <Alert
-        message="Văn bản pháp lý nền tảng của Hệ thống SRMS"
-        description="Mọi quy tắc kiểm tra ràng buộc (quota GVHD max 2, nhóm max 5 SV, thang điểm 100 theo 7 tiêu chí Mẫu 4.1, loại trừ điểm lệch > 15đ) đều được lập trình tự động hóa tuân thủ nghiêm ngặt theo QĐ 521."
-        type="info"
-        showIcon
-        style={{ marginBottom: 16 }}
-      />
 
       <Card style={{ borderRadius: 8 }}>
         <Collapse

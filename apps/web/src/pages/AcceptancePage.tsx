@@ -10,7 +10,6 @@ import {
   Form,
   Input,
   InputNumber,
-  Alert,
   Row,
   Col,
   Select,
@@ -63,6 +62,7 @@ export const AcceptancePage: React.FC = () => {
   const [deptFilter, setDeptFilter] = useState<string>('ALL');
 
   const [scoringAcc, setScoringAcc] = useState<any>(null);
+  const [scoringMember, setScoringMember] = useState<any>(null);
   const [detailAcc, setDetailAcc] = useState<any>(null);
   const [councilModalVisible, setCouncilModalVisible] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -70,9 +70,15 @@ export const AcceptancePage: React.FC = () => {
   const [scoreForm] = Form.useForm();
   const [councilForm] = Form.useForm();
 
-  const canScore = ['LECTURER', 'FACULTY_LEADER', 'QLKHCN', 'ADMIN'].includes(roleCode);
-  const canCreateCouncil = ['QLKHCN', 'FACULTY_LEADER', 'ADMIN'].includes(roleCode);
+  const canCreateCouncil = ['QLKHCN', 'FACULTY_LEADER', 'BOARD', 'ADMIN'].includes(roleCode);
   const canApproveFinal = ['QLKHCN', 'BOARD', 'ADMIN'].includes(roleCode);
+
+  const getMyCouncilMember = (acc: any) =>
+    (acc?.council?.members || []).find(
+      (m: any) =>
+        (user?.userId && m.lecturer?.userId === user.userId) ||
+        (user?.lecturerId && m.lecturerId === user.lecturerId),
+    );
 
   const fetchAll = async () => {
     try {
@@ -102,24 +108,33 @@ export const AcceptancePage: React.FC = () => {
     fetchAll();
   }, []);
 
-  const openScoreModal = (acc: any) => {
+  const openScoreModal = (acc: any, myMember: any) => {
     setScoringAcc(acc);
+    setScoringMember(myMember);
+    const existingSheet = (acc.sheets || []).find((s: any) => s.cmId === myMember.cmId);
     const initialScores: Record<string, number> = {};
     criteria.forEach((c) => {
-      initialScores[`c_${c.criteriaId}`] = Math.round(Number(c.maxScore) * 0.85 * 10) / 10;
+      const existingItem = (existingSheet?.scores || []).find((sc: any) => sc.criteriaId === c.criteriaId);
+      initialScores[`c_${c.criteriaId}`] = existingItem
+        ? Number(existingItem.score)
+        : Math.round(Number(c.maxScore) * 0.85 * 10) / 10;
     });
     scoreForm.setFieldsValue({
       ...initialScores,
-      cmId: acc.council?.members?.[0]?.cmId,
-      strengths: 'Đề tài hoàn thành đúng mục tiêu, sản phẩm hoạt động ổn định và có tính ứng dụng thực tiễn.',
-      limitations: 'Cần tiếp tục mở rộng tập dữ liệu kiểm thử và hoàn thiện thêm bài báo khoa học.',
-      qaComment: 'Nhóm trả lời rõ ràng các câu hỏi phản biện của Hội đồng.',
-      recommendAward: true,
+      cmId: myMember.cmId,
+      strengths:
+        existingSheet?.strengths ||
+        'Đề tài hoàn thành đúng mục tiêu, sản phẩm hoạt động ổn định và có tính ứng dụng thực tiễn.',
+      limitations:
+        existingSheet?.limitations ||
+        'Cần tiếp tục mở rộng tập dữ liệu kiểm thử và hoàn thiện thêm bài báo khoa học.',
+      qaComment: existingSheet?.qaNotes || 'Nhóm trả lời rõ ràng các câu hỏi phản biện của Hội đồng.',
+      recommendAward: existingSheet ? Boolean(existingSheet.recommendAward) : true,
     });
   };
 
   const handleSubmitScore = async (values: any) => {
-    if (!scoringAcc) return;
+    if (!scoringAcc || !scoringMember) return;
     try {
       setSubmitting(true);
       const scores = criteria.map((c) => ({
@@ -128,7 +143,7 @@ export const AcceptancePage: React.FC = () => {
       }));
       await api.post('/acceptance/score', {
         acceptanceId: scoringAcc.acceptanceId,
-        cmId: values.cmId,
+        cmId: scoringMember.cmId,
         strengths: values.strengths,
         limitations: values.limitations,
         qaComment: values.qaComment,
@@ -137,6 +152,7 @@ export const AcceptancePage: React.FC = () => {
       });
       message.success('Đã lưu Phiếu chấm Mẫu 4.1 & tự động kiểm tra điểm lệch > 15 điểm!');
       setScoringAcc(null);
+      setScoringMember(null);
       await fetchAll();
     } catch (err: any) {
       message.error(err.response?.data?.detail || err.response?.data?.message || 'Không thể lưu phiếu chấm');
@@ -193,8 +209,8 @@ export const AcceptancePage: React.FC = () => {
     <div style={{ maxWidth: 1600, margin: '0 auto' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, flexWrap: 'wrap', gap: 12 }}>
         <div>
-          <Title level={4} style={{ margin: 0, color: '#C62828', fontWeight: 700 }}>
-            Hội đồng Nghiệm thu & Chấm điểm Đề tài (QĐ 521/QĐ-HV - D6)
+          <Title level={4} style={{ margin: 0, color: '#262626', fontWeight: 700 }}>
+            Hội đồng Nghiệm thu & Chấm điểm Đề tài (QĐ 521/QĐ-HV)
           </Title>
           <Text type="secondary" style={{ fontSize: 13 }}>
             Quản lý phiên bảo vệ theo Khoa & Đề tài: 7 tiêu chí chuẩn (100đ), tự động loại trừ phiếu chênh lệch &gt; 15 điểm (Mẫu 4.2), phê duyệt P.QLKHCN.
@@ -217,65 +233,47 @@ export const AcceptancePage: React.FC = () => {
               style={{ backgroundColor: '#C62828', borderColor: '#C62828' }}
               onClick={() => setCouncilModalVisible(true)}
             >
-              Thành lập Hội đồng
+              Thành lập Hội đồng{submittedProjects.length > 0 ? ` (${submittedProjects.length} đề tài chờ)` : ''}
             </Button>
           )}
         </Space>
       </div>
 
-      <Alert
-        type="info"
-        showIcon
-        style={{ marginBottom: 16 }}
-        message="Thuật toán tính điểm & Loại trừ phiếu lệch > 15 điểm (Điều 10 QĐ 521/QĐ-HV)"
-        description="Mỗi thành viên Hội đồng chấm theo 7 tiêu chí (10 + 15 + 15 + 35 + 15 + 5 + 5 = 100 điểm). Nếu điểm tổng của thành viên chênh lệch quá 15 điểm so với trung bình ban đầu sẽ bị hệ thống gắn cờ Loại trừ trước khi xếp loại: Xuất sắc (≥90), Tốt (80-89.9), Khá (70-79.9), Đạt (50-69.9)."
-      />
-
-      {submittedProjects.length > 0 && (
-        <Alert
-          type="warning"
-          showIcon
-          style={{ marginBottom: 16 }}
-          message={`Có ${submittedProjects.length} đề tài đã nộp báo cáo tổng kết (SUBMITTED) đang chờ thành lập Hội đồng nghiệm thu`}
-          description={submittedProjects.map((p) => `${p.project_id} (${p.departments?.dept_code})`).join(' • ')}
-        />
-      )}
-
       <Row gutter={[16, 16]} style={{ marginBottom: 16 }}>
         <Col xs={12} sm={6}>
-          <Card bordered={false} style={{ borderRadius: 8 }}>
-            <Statistic title="Tổng Hồ sơ Nghiệm thu" value={acceptances.length} prefix={<AuditOutlined />} />
-          </Card>
+          <div style={{ backgroundColor: '#FFFFFF', border: '1px solid #EDEDEE', borderRadius: 8, padding: 18, borderLeft: '4px solid #1890FF' }}>
+            <Statistic title={<span style={{ fontSize: 13, color: '#595959', fontWeight: 600 }}>Tổng Hồ sơ Nghiệm thu</span>} value={acceptances.length} prefix={<AuditOutlined />} valueStyle={{ color: '#1890FF', fontWeight: 800, fontSize: 22 }} />
+          </div>
         </Col>
         <Col xs={12} sm={6}>
-          <Card bordered={false} style={{ borderRadius: 8 }}>
+          <div style={{ backgroundColor: '#FFFFFF', border: '1px solid #EDEDEE', borderRadius: 8, padding: 18, borderLeft: '4px solid #52C41A' }}>
             <Statistic
-              title="Đã phê duyệt P.QLKHCN"
+              title={<span style={{ fontSize: 13, color: '#595959', fontWeight: 600 }}>Đã phê duyệt P.QLKHCN</span>}
               value={acceptances.filter((a) => Boolean(a.approvalDocNo)).length}
-              valueStyle={{ color: '#389E0D' }}
+              valueStyle={{ color: '#52C41A', fontWeight: 800, fontSize: 22 }}
               prefix={<CheckCircleOutlined />}
             />
-          </Card>
+          </div>
         </Col>
         <Col xs={12} sm={6}>
-          <Card bordered={false} style={{ borderRadius: 8 }}>
+          <div style={{ backgroundColor: '#FFFFFF', border: '1px solid #EDEDEE', borderRadius: 8, padding: 18, borderLeft: '4px solid #C62828' }}>
             <Statistic
-              title="Đạt Xuất sắc / Tốt"
+              title={<span style={{ fontSize: 13, color: '#595959', fontWeight: 600 }}>Đạt Xuất sắc / Tốt</span>}
               value={acceptances.filter((a) => ['XUAT_SAC', 'TOT'].includes(a.grade)).length}
-              valueStyle={{ color: '#C62828' }}
+              valueStyle={{ color: '#C62828', fontWeight: 800, fontSize: 22 }}
               prefix={<TrophyOutlined />}
             />
-          </Card>
+          </div>
         </Col>
         <Col xs={12} sm={6}>
-          <Card bordered={false} style={{ borderRadius: 8 }}>
+          <div style={{ backgroundColor: '#FFFFFF', border: '1px solid #EDEDEE', borderRadius: 8, padding: 18, borderLeft: '4px solid #FA8C16' }}>
             <Statistic
-              title="Có phiếu lệch > 15đ (Mẫu 4.2)"
+              title={<span style={{ fontSize: 13, color: '#595959', fontWeight: 600 }}>Có phiếu lệch &gt; 15đ (Mẫu 4.2)</span>}
               value={acceptances.filter((a) => a.sheets?.some((s: any) => s.isOutlier)).length}
-              valueStyle={{ color: '#D48806' }}
+              valueStyle={{ color: '#FA8C16', fontWeight: 800, fontSize: 22 }}
               prefix={<WarningOutlined />}
             />
-          </Card>
+          </div>
         </Col>
       </Row>
 
@@ -286,6 +284,8 @@ export const AcceptancePage: React.FC = () => {
           const adv = acc.project?.advisors?.[0];
           const papers = (acc.project?.documents || []).filter((d: any) => d.docType === 'PAPER');
           const hasOutlier = acc.sheets?.some((s: any) => s.isOutlier);
+          const myMember = getMyCouncilMember(acc);
+          const mySheet = myMember ? (acc.sheets || []).find((s: any) => s.cmId === myMember.cmId) : null;
 
           return (
             <Card
@@ -405,19 +405,22 @@ export const AcceptancePage: React.FC = () => {
                 </Col>
               </Row>
 
-              <div style={{ marginTop: 14, paddingTop: 12, borderTop: '1px solid #f0f0f0', display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+              <div style={{ marginTop: 14, paddingTop: 12, borderTop: '1px solid #f0f0f0', display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
                 <Button icon={<PrinterOutlined />} onClick={() => setDetailAcc(acc)}>
                   Biên bản Mẫu 4.2 & Chi tiết 7 tiêu chí
                 </Button>
-                {canScore && (
+                {myMember && !acc.approvalDocNo && (
                   <Button
                     type="primary"
                     icon={<EditOutlined />}
                     style={{ backgroundColor: '#C62828', borderColor: '#C62828' }}
-                    onClick={() => openScoreModal(acc)}
+                    onClick={() => openScoreModal(acc, myMember)}
                   >
-                    Chấm điểm Phiếu 4.1
+                    {mySheet ? 'Cập nhật Phiếu 4.1 của tôi' : `Chấm điểm Phiếu 4.1 (${myMember.councilRole})`}
                   </Button>
+                )}
+                {roleCode === 'LECTURER' && !myMember && (
+                  <Tag style={{ margin: 0 }}>Bạn không thuộc danh sách thành viên Hội đồng này</Tag>
                 )}
                 {canApproveFinal && !acc.approvalDocNo && acc.avgScore && (
                   <Button
@@ -439,7 +442,10 @@ export const AcceptancePage: React.FC = () => {
       <Modal
         title={`Phiếu chấm 7 Tiêu chí (Mẫu 4.1) — ${scoringAcc?.projectId}`}
         open={Boolean(scoringAcc)}
-        onCancel={() => setScoringAcc(null)}
+        onCancel={() => {
+          setScoringAcc(null);
+          setScoringMember(null);
+        }}
         onOk={() => scoreForm.submit()}
         confirmLoading={submitting}
         width={760}
@@ -447,15 +453,13 @@ export const AcceptancePage: React.FC = () => {
         okButtonProps={{ style: { backgroundColor: '#C62828', borderColor: '#C62828' } }}
       >
         <Form form={scoreForm} layout="vertical" onFinish={handleSubmitScore}>
-          <Form.Item name="cmId" label="Chấm với tư cách thành viên Hội đồng" rules={[{ required: true }]}>
-            <Select>
-              {(scoringAcc?.council?.members || []).map((m: any) => (
-                <Select.Option key={m.cmId} value={m.cmId}>
-                  {m.lecturer?.user?.fullName} ({m.councilRole})
-                </Select.Option>
-              ))}
-            </Select>
-          </Form.Item>
+          <div style={{ marginBottom: 14, padding: '10px 14px', backgroundColor: '#FAFAFA', border: '1px solid #F0F0F0', borderRadius: 6 }}>
+            <Text type="secondary" style={{ fontSize: 12 }}>Thành viên Hội đồng thực hiện chấm điểm:</Text>
+            <div style={{ fontWeight: 700, color: '#262626', marginTop: 2 }}>
+              {scoringMember?.lecturer?.user?.fullName || user?.fullName}{' '}
+              <Tag color="blue" style={{ marginLeft: 6 }}>{scoringMember?.councilRole}</Tag>
+            </div>
+          </div>
 
           <Row gutter={[12, 8]}>
             {criteria.map((c) => (

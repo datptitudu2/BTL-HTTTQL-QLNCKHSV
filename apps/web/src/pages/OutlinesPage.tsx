@@ -284,7 +284,7 @@ export const OutlinesPage: React.FC = () => {
     <div style={{ maxWidth: 1600, margin: '0 auto' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, flexWrap: 'wrap', gap: 12 }}>
         <div>
-          <Title level={4} style={{ margin: 0, color: '#C62828', fontWeight: 700 }}>
+          <Title level={4} style={{ margin: 0, color: '#262626', fontWeight: 700 }}>
             Quản lý & Phê duyệt 2 cấp Đề cương Chi tiết (Mẫu 2 - QĐ 521)
           </Title>
           <Text type="secondary" style={{ fontSize: 13 }}>
@@ -311,24 +311,24 @@ export const OutlinesPage: React.FC = () => {
 
       <Row gutter={[16, 16]} style={{ marginBottom: 16 }}>
         <Col xs={12} sm={6}>
-          <Card bordered={false} style={{ borderRadius: 8 }}>
-            <Statistic title="Tổng bản đề cương" value={stats.total} prefix={<FileTextOutlined />} />
-          </Card>
+          <div style={{ backgroundColor: '#FFFFFF', border: '1px solid #EDEDEE', borderRadius: 8, padding: 18, borderLeft: '4px solid #262626' }}>
+            <Statistic title={<span style={{ fontSize: 13, color: '#595959', fontWeight: 600 }}>Tổng bản đề cương</span>} value={stats.total} prefix={<FileTextOutlined />} valueStyle={{ color: '#262626', fontWeight: 800, fontSize: 22 }} />
+          </div>
         </Col>
         <Col xs={12} sm={6}>
-          <Card bordered={false} style={{ borderRadius: 8 }}>
-            <Statistic title="Chờ GVHD duyệt (Cấp 1)" value={stats.pendingAdvisor} valueStyle={{ color: '#D48806' }} />
-          </Card>
+          <div style={{ backgroundColor: '#FFFFFF', border: '1px solid #EDEDEE', borderRadius: 8, padding: 18, borderLeft: '4px solid #FA8C16' }}>
+            <Statistic title={<span style={{ fontSize: 13, color: '#595959', fontWeight: 600 }}>Chờ GVHD duyệt (Cấp 1)</span>} value={stats.pendingAdvisor} valueStyle={{ color: '#FA8C16', fontWeight: 800, fontSize: 22 }} />
+          </div>
         </Col>
         <Col xs={12} sm={6}>
-          <Card bordered={false} style={{ borderRadius: 8 }}>
-            <Statistic title="Chờ Lãnh đạo Khoa (Cấp 2)" value={stats.pendingFaculty} valueStyle={{ color: '#1890FF' }} />
-          </Card>
+          <div style={{ backgroundColor: '#FFFFFF', border: '1px solid #EDEDEE', borderRadius: 8, padding: 18, borderLeft: '4px solid #1890FF' }}>
+            <Statistic title={<span style={{ fontSize: 13, color: '#595959', fontWeight: 600 }}>Chờ Lãnh đạo Khoa (Cấp 2)</span>} value={stats.pendingFaculty} valueStyle={{ color: '#1890FF', fontWeight: 800, fontSize: 22 }} />
+          </div>
         </Col>
         <Col xs={12} sm={6}>
-          <Card bordered={false} style={{ borderRadius: 8 }}>
-            <Statistic title="Đã phê duyệt 2 cấp" value={stats.approved} valueStyle={{ color: '#389E0D' }} />
-          </Card>
+          <div style={{ backgroundColor: '#FFFFFF', border: '1px solid #EDEDEE', borderRadius: 8, padding: 18, borderLeft: '4px solid #52C41A' }}>
+            <Statistic title={<span style={{ fontSize: 13, color: '#595959', fontWeight: 600 }}>Đã phê duyệt 2 cấp</span>} value={stats.approved} valueStyle={{ color: '#52C41A', fontWeight: 800, fontSize: 22 }} />
+          </div>
         </Col>
       </Row>
 

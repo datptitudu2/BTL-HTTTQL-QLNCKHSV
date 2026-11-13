@@ -11,7 +11,6 @@ import {
   Input,
   InputNumber,
   Select,
-  Alert,
   Row,
   Col,
   Statistic,
@@ -258,8 +257,8 @@ export const BudgetsPage: React.FC = () => {
     <div style={{ maxWidth: 1600, margin: '0 auto' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, flexWrap: 'wrap', gap: 12 }}>
         <div>
-          <Title level={4} style={{ margin: 0, color: '#C62828', fontWeight: 700 }}>
-            Quản lý Kinh phí & Thanh quyết toán Đề tài (Điều 5.2.b QĐ 521)
+          <Title level={4} style={{ margin: 0, color: '#262626', fontWeight: 700 }}>
+            Quản lý Kinh phí & Thanh quyết toán Đề tài (Điều 5 QĐ 521)
           </Title>
           <Text type="secondary" style={{ fontSize: 13 }}>
             Quy trình DFD 6.6: (1) Chủ nhiệm kê khai hóa đơn → (2) Thư ký/Trưởng Khoa xác nhận hoàn thành sản phẩm → (3) P.TCKT phê duyệt giải ngân sau Nghiệm thu.
@@ -287,46 +286,38 @@ export const BudgetsPage: React.FC = () => {
         </Space>
       </div>
 
-      <Alert
-        type="info"
-        showIcon
-        style={{ marginBottom: 16 }}
-        message="Nguyên tắc Thanh quyết toán theo Điều 5.2.b QĐ 521/QĐ-HV"
-        description="Mỗi đề tài NCKH sinh viên được cấp kinh phí tối đa theo Quyết định giao đề tài (thường 4.5 - 5 triệu đồng). Phòng Tài chính - Kế toán chỉ giải ngân khi chứng từ đã được Khoa xác nhận hoàn thành và đề tài đã có kết quả Nghiệm thu đạt."
-      />
-
       <Row gutter={[16, 16]} style={{ marginBottom: 16 }}>
         <Col xs={24} sm={8}>
-          <Card bordered={false} style={{ borderRadius: 8 }}>
+          <div style={{ backgroundColor: '#FFFFFF', border: '1px solid #EDEDEE', borderRadius: 8, padding: 18, borderLeft: '4px solid #1890FF' }}>
             <Statistic
-              title="Tổng dự toán được cấp (VNĐ)"
+              title={<span style={{ fontSize: 13, color: '#595959', fontWeight: 600 }}>Tổng dự toán được cấp (VNĐ)</span>}
               value={totalApproved}
               suffix="đ"
               prefix={<DollarOutlined />}
-              valueStyle={{ color: '#262626' }}
+              valueStyle={{ color: '#1890FF', fontWeight: 800, fontSize: 22 }}
             />
-          </Card>
+          </div>
         </Col>
         <Col xs={24} sm={8}>
-          <Card bordered={false} style={{ borderRadius: 8 }}>
+          <div style={{ backgroundColor: '#FFFFFF', border: '1px solid #EDEDEE', borderRadius: 8, padding: 18, borderLeft: '4px solid #52C41A' }}>
             <Statistic
-              title="Đã giải ngân thực tế (VNĐ)"
+              title={<span style={{ fontSize: 13, color: '#595959', fontWeight: 600 }}>Đã giải ngân thực tế (VNĐ)</span>}
               value={totalSettled}
               suffix="đ"
               prefix={<CheckCircleOutlined />}
-              valueStyle={{ color: '#389E0D' }}
+              valueStyle={{ color: '#52C41A', fontWeight: 800, fontSize: 22 }}
             />
-          </Card>
+          </div>
         </Col>
         <Col xs={24} sm={8}>
-          <Card bordered={false} style={{ borderRadius: 8 }}>
+          <div style={{ backgroundColor: '#FFFFFF', border: '1px solid #EDEDEE', borderRadius: 8, padding: 18, borderLeft: '4px solid #FA8C16' }}>
             <Statistic
-              title="Chứng từ chờ xử lý"
+              title={<span style={{ fontSize: 13, color: '#595959', fontWeight: 600 }}>Chứng từ chờ xử lý</span>}
               value={pendingCount}
               prefix={<FileDoneOutlined />}
-              valueStyle={{ color: '#D48806' }}
+              valueStyle={{ color: '#FA8C16', fontWeight: 800, fontSize: 22 }}
             />
-          </Card>
+          </div>
         </Col>
       </Row>
 

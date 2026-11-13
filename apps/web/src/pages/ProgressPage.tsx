@@ -273,7 +273,7 @@ export const ProgressPage: React.FC = () => {
     <div style={{ maxWidth: 1600, margin: '0 auto' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, flexWrap: 'wrap', gap: 12 }}>
         <div>
-          <Title level={4} style={{ margin: 0, color: '#C62828', fontWeight: 700 }}>
+          <Title level={4} style={{ margin: 0, color: '#262626', fontWeight: 700 }}>
             Quản lý Tiến độ, Sinh hoạt Khoa học (Mẫu 3.5) & Đơn điều chỉnh
           </Title>
           <Text type="secondary" style={{ fontSize: 13 }}>
@@ -337,14 +337,6 @@ export const ProgressPage: React.FC = () => {
                   ),
                 };
               })}
-            />
-
-            <Alert
-              type="info"
-              showIcon
-              style={{ marginTop: 12 }}
-              message="Căn cứ Điều 9 QĐ 521/QĐ-HV"
-              description="Trong quá trình thực hiện đề tài, Khoa/Bộ môn tổ chức ít nhất 01 buổi sinh hoạt khoa học để nhóm SV báo cáo tiến độ trung gian và hoàn thiện Biên bản Mẫu 3.5."
             />
           </Card>
         </Col>
