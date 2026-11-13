@@ -13,7 +13,6 @@ import {
   Avatar,
   message,
   Tooltip,
-  Alert,
   Tabs,
 } from 'antd';
 import {
@@ -677,7 +676,7 @@ export const ProjectsPage: React.FC = () => {
       title: 'TT',
       dataIndex: 'index',
       key: 'index',
-      width: 55,
+      width: 50,
       align: 'center' as const,
       render: (_: any, __: any, index: number) => index + 1,
     },
@@ -689,7 +688,7 @@ export const ProjectsPage: React.FC = () => {
       ),
       dataIndex: 'author',
       key: 'author',
-      width: 200,
+      width: 165,
       render: (_: any, record: any) => {
         const leader = record.project_members?.find((m: any) => m.member_role === 'LEADER' || m.member_role === 'LEAD');
         const leaderName = leader?.students?.users?.full_name || leader?.full_name || 'NGUYỄN VĂN AN';
@@ -713,7 +712,7 @@ export const ProjectsPage: React.FC = () => {
       ),
       dataIndex: 'members',
       key: 'members',
-      width: 125,
+      width: 100,
       render: (_: any, record: any) => {
         const count = record.project_members?.length || 1;
         return (
@@ -734,7 +733,7 @@ export const ProjectsPage: React.FC = () => {
       title: 'Ngày đăng ký',
       dataIndex: 'registered_at',
       key: 'registered_at',
-      width: 130,
+      width: 105,
       render: (val: string) => (val ? new Date(val).toLocaleDateString('vi-VN') : '10/09/2026'),
     },
     {
@@ -745,6 +744,7 @@ export const ProjectsPage: React.FC = () => {
       ),
       dataIndex: 'title_vi',
       key: 'title_vi',
+      width: 260,
       render: (val: string, record: any) => {
         const paperDoc = record.documents?.find((d: any) => d.docType === 'PAPER');
         return (
@@ -778,7 +778,7 @@ export const ProjectsPage: React.FC = () => {
       title: 'Lĩnh vực',
       dataIndex: 'research_field',
       key: 'research_field',
-      width: 170,
+      width: 135,
       render: (_: any, record: any) => (
         <span style={{ fontSize: 12, color: '#595959', lineHeight: 1.3 }}>
           {record.research_field || record.keywords || 'Công nghệ thông tin'}
@@ -793,17 +793,18 @@ export const ProjectsPage: React.FC = () => {
       ),
       dataIndex: 'status',
       key: 'status',
-      width: 135,
+      width: 130,
       align: 'center' as const,
       render: (status: string) => getStatusPill(status),
     },
     {
       title: 'Thao tác',
       key: 'action',
-      width: canApprove ? 180 : 90,
+      width: canApprove ? 225 : 75,
+      fixed: 'right' as const,
       align: 'center' as const,
       render: (_: any, record: any) => (
-        <Space size={6}>
+        <Space size={[4, 4]} wrap style={{ justifyContent: 'center' }}>
           <Tooltip title="Xem chi tiết hồ sơ đề tài">
             <Button
               size="small"
@@ -855,7 +856,7 @@ export const ProjectsPage: React.FC = () => {
 
           {canApprove && (record.status === 'ONGOING' || record.status === 'APPROVED') && (
             <Tooltip title="Đề tài đã có Quyết định giao nhiệm vụ NCKH theo QĐ 521">
-              <Tag color="success" style={{ margin: 0, fontSize: 11, padding: '1px 6px', cursor: 'default' }}>
+              <Tag color="success" style={{ margin: 0, fontSize: 11, padding: '2px 6px', cursor: 'default', whiteSpace: 'nowrap' }}>
                 <CheckCircleOutlined /> Đã ban hành QĐ
               </Tag>
             </Tooltip>
@@ -874,9 +875,9 @@ export const ProjectsPage: React.FC = () => {
         </Title>
       </div>
 
-      <div style={{ display: 'flex', gap: 20, alignItems: 'flex-start' }}>
+      <div style={{ display: 'flex', gap: 16, alignItems: 'flex-start', flexWrap: 'wrap' }}>
         {/* DANH MỤC TRÁI (3 MỤC KHÔNG DÙNG CARD KHỐI NẶNG NỀ) */}
-        <div style={{ width: 210, flexShrink: 0 }}>
+        <div style={{ flex: '0 0 200px', minWidth: 190 }}>
           <div
             style={{
               backgroundColor: '#FFFFFF',
@@ -1023,91 +1024,6 @@ export const ProjectsPage: React.FC = () => {
               ]}
             />
 
-            {/* ALERT BANNER GIẢI THÍCH NGỮ CẢNH THEO TAB */}
-            {activeTab === 'my' && (
-              <Alert
-                type="success"
-                showIcon
-                icon={roleCode === 'LECTURER' ? <AuditOutlined /> : roleCode === 'FACULTY_LEADER' || roleCode === 'FACULTY_SECRETARY' ? <ApartmentOutlined /> : <UserOutlined />}
-                message={
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8 }}>
-                    <span>
-                      {roleCode === 'LECTURER' ? (
-                        <>
-                          Đang hiển thị <b>{myProjects.length} đề tài NCKH</b> do bạn (<b>{user?.fullName || 'TS. Ngô Quốc Dũng'}</b>) trực tiếp hướng dẫn khoa học theo Quyết định số 521/QĐ-HV.
-                        </>
-                      ) : roleCode === 'FACULTY_LEADER' || roleCode === 'FACULTY_SECRETARY' ? (
-                        <>
-                          Đang hiển thị <b>{myProjects.length} đề tài NCKH</b> thuộc phạm vi quản lý chuyên môn và thẩm định của Khoa Công nghệ thông tin 1 (<b>{user?.fullName}</b>).
-                        </>
-                      ) : roleCode === 'QLKHCN' ? (
-                        <>
-                          Đang hiển thị <b>{myProjects.length} đề tài NCKH</b> trong danh mục thẩm định, theo dõi tiến độ và quản lý cấp Học viện của Phòng QLKHCN.
-                        </>
-                      ) : (
-                        <>
-                          Đang hiển thị <b>{myProjects.length} đề tài NCKH</b> mà bạn (<b>{user?.fullName || 'Sinh viên'}</b>) tham gia với vai trò Chủ nhiệm hoặc Thành viên nhóm nghiên cứu.
-                        </>
-                      )}
-                    </span>
-                    <Button
-                      size="small"
-                      type="link"
-                      style={{ padding: 0, fontWeight: 600 }}
-                      onClick={() => {
-                        setActiveTab('all');
-                        setSearchParams({});
-                      }}
-                    >
-                      Xem toàn bộ đề tài toàn trường →
-                    </Button>
-                  </div>
-                }
-                style={{ marginBottom: 14, borderRadius: 6 }}
-              />
-            )}
-
-            {activeTab === 'all' && (
-              <Alert
-                type="info"
-                showIcon
-                icon={<UnorderedListOutlined />}
-                message={
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8 }}>
-                    <span>
-                      Danh mục <b>Toàn bộ đề tài NCKH Sinh viên</b> đã đăng ký trong toàn Học viện ({projects.length} đề tài). Tra cứu thuận tiện theo đơn vị Khoa, từ khóa, người khai báo.
-                    </span>
-                    <Button
-                      size="small"
-                      type="primary"
-                      style={{ backgroundColor: '#C62828', borderColor: '#C62828', fontSize: 12, borderRadius: 4 }}
-                      onClick={() => {
-                        setActiveTab('my');
-                        setSearchParams({ tab: 'my' });
-                      }}
-                    >
-                      Chuyển sang Đề tài của tôi ({myProjects.length})
-                    </Button>
-                  </div>
-                }
-                style={{ marginBottom: 14, borderRadius: 6 }}
-              />
-            )}
-
-            {activeTab === 'pending' && (
-              <Alert
-                type="warning"
-                showIcon
-                icon={<ClockCircleOutlined />}
-                message={
-                  <span>
-                    Danh sách <b>{pendingProjects.length} đề tài NCKH</b> đang chờ thẩm định chuyên môn tại cấp Khoa và Phòng Quản lý KH&CN.
-                  </span>
-                }
-                style={{ marginBottom: 14, borderRadius: 6 }}
-              />
-            )}
-
             {/* THANH THAO TÁC HÀNG LOẠT DÀNH CHO PHÒNG QLKHCN */}
             {isQLKH && selectedRowKeys.length > 0 && (
               <div
@@ -1120,6 +1036,8 @@ export const ProjectsPage: React.FC = () => {
                   display: 'flex',
                   justifyContent: 'space-between',
                   alignItems: 'center',
+                  flexWrap: 'wrap',
+                  gap: 8,
                 }}
               >
                 <span style={{ fontSize: 13, color: '#0050B3' }}>
@@ -1223,10 +1141,12 @@ export const ProjectsPage: React.FC = () => {
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'space-between',
+                flexWrap: 'wrap',
+                gap: 10,
                 marginBottom: 14,
               }}
             >
-              <Space size={8}>
+              <Space size={8} wrap>
                 <Input
                   placeholder="Tìm theo: Người khai báo, Tên bài viết, Mã..."
                   suffix={<SearchOutlined style={{ color: '#bfbfbf', cursor: 'pointer' }} onClick={fetchProjects} />}
@@ -1271,6 +1191,7 @@ export const ProjectsPage: React.FC = () => {
                 showSizeChanger: true,
                 showTotal: (t) => `Hiển thị 1-${displayedProjects.length} trong tổng số ${t} kết quả`,
               }}
+              scroll={{ x: canApprove ? 1080 : 940 }}
               size="middle"
               bordered
             />
