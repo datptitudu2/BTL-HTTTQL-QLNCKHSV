@@ -10,6 +10,8 @@ import { AcceptanceModule } from './modules/acceptance/acceptance.module';
 import { BudgetsModule } from './modules/budgets/budgets.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
 import { ScheduleModule } from './modules/schedule/schedule.module';
+import { ProgressModule } from './modules/progress/progress.module';
+import { AwardsModule } from './modules/awards/awards.module';
 
 @Module({
   imports: [
@@ -24,6 +26,8 @@ import { ScheduleModule } from './modules/schedule/schedule.module';
     BudgetsModule,
     NotificationsModule,
     ScheduleModule,
+    ProgressModule,
+    AwardsModule,
   ],
 })
 export class AppModule {}

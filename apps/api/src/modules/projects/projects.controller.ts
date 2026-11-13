@@ -88,10 +88,11 @@ export class ProjectsController {
   @Patch(':id/status')
   @ApiOperation({ summary: '3.5 & 4.7 Chuyển trạng thái vòng đời đề tài' })
   async updateStatus(
+    @CurrentUser() user: any,
     @Param('id') projectId: string,
     @Body() body: { status: string; reason?: string },
   ) {
-    return this.projectsService.updateStatus(projectId, body.status, body.reason);
+    return this.projectsService.updateStatus(projectId, body.status, body.reason, user);
   }
 }
 

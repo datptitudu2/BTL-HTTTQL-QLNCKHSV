@@ -35,7 +35,7 @@ export const roleProfiles: Record<string, UserProfile> = {
     phone: '0981234567',
     roleCode: 'STUDENT',
     roleName: 'Sinh viên',
-    studentId: 'B23DCCC001',
+    studentId: 'B23DCCN001',
     deptId: 1,
   },
   LECTURER: {

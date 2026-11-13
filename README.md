@@ -68,7 +68,7 @@ pnpm dev
 
 Sau khi khởi chạy thành công:
 - 🌐 **Ứng dụng Web (Frontend):** [http://localhost:3000](http://localhost:3000)
-- 🔌 **API Server (Backend):** [http://localhost:4000/api/v1](http://localhost:4000/api/v1)
+- 🔌 **API Swagger Docs (Backend):** [http://localhost:4000/api/docs](http://localhost:4000/api/docs)
 - ✉️ **Hòm thư ảo MailHog Web UI:** [http://localhost:8025](http://localhost:8025)
 
 ---
@@ -79,8 +79,10 @@ Sau khi khởi chạy thành công:
 
 | STT | Vai trò | Họ và tên | Tên đăng nhập | Email |
 |:---:|:---|:---|:---:|:---|
-| 1 | **Sinh viên nghiên cứu** | Nguyễn Văn An | `an.nv` (hoặc `sv001`) | an.nv@stu.ptit.edu.vn |
+| 1 | **Sinh viên (Đã có đề tài)** | Nguyễn Văn An | `an.nv` (hoặc `sv001`) | an.nv@stu.ptit.edu.vn |
+| 1b | **Sinh viên mới (Chưa có đề tài)** | Lê Hoàng Nam | `sv.moi` (hoặc `sv015`) | nam.lh@stu.ptit.edu.vn |
 | 2 | **GVHD - Khoa CNTT 1** | TS. Ngô Quốc Dũng | `dungnq` (hoặc `gv001`) | dungnq@ptit.edu.vn |
+| 2b | **GVHD - Khoa CNTT 1 (KHDL)** | TS. Vũ Trọng Hùng | `hungvt` (hoặc `gv006`) | hungvt@ptit.edu.vn |
 | 3 | **GVHD - Khoa ĐPT** | TS. Trần Đình Trí | `tritd` (hoặc `gv002`) | tritd@ptit.edu.vn |
 | 4 | **GVHD - Khoa QTKD 1** | TS. Đinh Quang Huy | `huydq` (hoặc `gv003`) | huydq@ptit.edu.vn |
 | 5 | **GVHD - Khoa ATTT** | TS. Nguyễn Văn Tuấn | `tuannv` (hoặc `gv004`) | tuannv@ptit.edu.vn |
@@ -130,3 +132,4 @@ he_thong_thong_tin_quan_ly/
 6. **Hội đồng nghiệm thu (`/acceptance`):** Chấm điểm 7 tiêu chí trực tuyến, hệ thống tự động chạy thuật toán loại trừ điểm lệch > 15đ, xuất Biên bản Mẫu 4.2.
 7. **Phòng CT&CTSV (`ctsv`):** Đối soát kết quả nghiệm thu, tự động cộng Điểm rèn luyện (+10đ, +8đ, +6đ) và cấp Chứng nhận số A4.
 8. **Phòng TCKT (`tckt`):** Duyệt hồ sơ thanh quyết toán kinh phí đề tài.
+

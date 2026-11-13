@@ -353,7 +353,7 @@ export const ProjectsPage: React.FC = () => {
   // Quyền hạn thẩm định & phê duyệt theo QĐ 521 (Phòng QLKHCN & Lãnh đạo Khoa)
   const roleCode = user?.roleCode || 'STUDENT';
   const isQLKH = roleCode === 'QLKHCN' || roleCode === 'ADMIN' || roleCode === 'BOARD';
-  const isFacultyLeader = roleCode === 'FACULTY_LEADER';
+  const isFacultyLeader = roleCode === 'FACULTY_LEADER' || roleCode === 'FACULTY_SECRETARY';
   const canApprove = isQLKH || isFacultyLeader;
 
   // State thẩm định & phê duyệt
@@ -377,25 +377,10 @@ export const ProjectsPage: React.FC = () => {
           status: selectedStatus !== 'ALL' ? selectedStatus : undefined,
         },
       });
-
-      // Nếu backend trả về đủ dữ liệu (>= 8 đề tài), dùng trực tiếp
-      if (res.data && Array.isArray(res.data) && res.data.length >= 8) {
-        setProjects(res.data);
-      } else {
-        // Merge thông minh giữa DB thực tế và danh mục 10 đề tài chuẩn hóa để luôn đảm bảo có đủ case test mọi vai trò
-        const existingMap = new Map();
-        (res.data || []).forEach((p: any) => existingMap.set(p.project_id || p.projectId, p));
-        defaultProjectsList.forEach((fb: any) => {
-          if (!existingMap.has(fb.project_id)) {
-            existingMap.set(fb.project_id, fb);
-          }
-        });
-        const combined = Array.from(existingMap.values());
-        setProjects(combined);
-      }
+      setProjects(Array.isArray(res.data) ? res.data : []);
     } catch (err: any) {
-      // Fallback khi backend offline hoặc lỗi kết nối mạng
-      setProjects(defaultProjectsList);
+      message.error(err.response?.data?.detail || err.response?.data?.message || 'Không thể tải danh sách đề tài từ máy chủ');
+      setProjects([]);
     } finally {
       setLoading(false);
     }
@@ -405,35 +390,31 @@ export const ProjectsPage: React.FC = () => {
     fetchProjects();
   }, [selectedDept, selectedStatus]);
 
-  // Xử lý Phê duyệt đề tài (P.QLKHCN / Lãnh đạo Khoa)
+  // Xử lý Phê duyệt đề tài phân cấp: Khoa sơ tuyển (FACULTY_APPROVED) vs QLKHCN/BGĐ ban hành QĐ (ONGOING)
   const handleApproveProject = async () => {
     if (!selectedProjectForAction) return;
+    const isFacultyScreening =
+      (roleCode === 'FACULTY_LEADER' || roleCode === 'FACULTY_SECRETARY') &&
+      selectedProjectForAction.status === 'PROPOSED';
+    const nextStatus = isFacultyScreening ? 'FACULTY_APPROVED' : 'ONGOING';
+
     try {
       setSubmittingAction(true);
-      try {
-        await api.patch(`/projects/${selectedProjectForAction.project_id}/status`, {
-          status: 'ONGOING',
-          reason: approvalNote,
-        });
-      } catch (e) {
-        console.log('API patch fallback offline');
-      }
-
-      setProjects((prev) =>
-        prev.map((p) =>
-          p.project_id === selectedProjectForAction.project_id
-            ? { ...p, status: 'ONGOING' }
-            : p
-        )
-      );
+      await api.patch(`/projects/${selectedProjectForAction.project_id}/status`, {
+        status: nextStatus,
+        reason: approvalNote,
+      });
 
       message.success(
-        `Phòng QLKHCN đã phê duyệt thành công đề tài ${selectedProjectForAction.project_id}! Ban hành QĐ giao đề tài số: ${decisionNo}.`
+        isFacultyScreening
+          ? `Khoa đã sơ tuyển đề tài ${selectedProjectForAction.project_id} (Mẫu 1) và chuyển P.QLKHCN!`
+          : `Phòng QLKHCN đã phê duyệt giao đề tài ${selectedProjectForAction.project_id} (QĐ: ${decisionNo})!`,
       );
       setApproveModalVisible(false);
       setSelectedProjectForAction(null);
+      await fetchProjects();
     } catch (err: any) {
-      message.error('Lỗi khi phê duyệt đề tài');
+      message.error(err.response?.data?.detail || err.response?.data?.message || 'Lỗi khi phê duyệt đề tài');
     } finally {
       setSubmittingAction(false);
     }
@@ -444,28 +425,17 @@ export const ProjectsPage: React.FC = () => {
     if (!selectedProjectForAction) return;
     try {
       setSubmittingAction(true);
-      try {
-        await api.patch(`/projects/${selectedProjectForAction.project_id}/status`, {
-          status: 'REJECTED',
-          reason: rejectReason,
-        });
-      } catch (e) {
-        console.log('API patch fallback offline');
-      }
+      await api.patch(`/projects/${selectedProjectForAction.project_id}/status`, {
+        status: 'REJECTED',
+        reason: rejectReason,
+      });
 
-      setProjects((prev) =>
-        prev.map((p) =>
-          p.project_id === selectedProjectForAction.project_id
-            ? { ...p, status: 'REJECTED' }
-            : p
-        )
-      );
-
-      message.warning(`Đã chuyển đề tài ${selectedProjectForAction.project_id} sang trạng thái Yêu cầu chỉnh sửa / Từ chối.`);
+      message.warning(`Đã chuyển đề tài ${selectedProjectForAction.project_id} sang trạng thái Từ chối / Hủy.`);
       setRejectModalVisible(false);
       setSelectedProjectForAction(null);
+      await fetchProjects();
     } catch (err: any) {
-      message.error('Lỗi khi từ chối đề tài');
+      message.error(err.response?.data?.detail || err.response?.data?.message || 'Lỗi khi từ chối đề tài');
     } finally {
       setSubmittingAction(false);
     }
@@ -476,27 +446,19 @@ export const ProjectsPage: React.FC = () => {
     if (selectedRowKeys.length === 0) return;
     try {
       setSubmittingAction(true);
+      const nextStatus = roleCode === 'FACULTY_LEADER' || roleCode === 'FACULTY_SECRETARY' ? 'FACULTY_APPROVED' : 'ONGOING';
       for (const key of selectedRowKeys) {
-        try {
-          await api.patch(`/projects/${key}/status`, {
-            status: 'ONGOING',
-            reason: 'Phòng QLKHCN thẩm định & phê duyệt danh mục hàng loạt',
-          });
-        } catch (e) {}
+        await api.patch(`/projects/${key}/status`, {
+          status: nextStatus,
+          reason: 'Thẩm định & phê duyệt danh mục hàng loạt theo QĐ 521',
+        });
       }
 
-      setProjects((prev) =>
-        prev.map((p) =>
-          selectedRowKeys.includes(p.project_id)
-            ? { ...p, status: 'ONGOING' }
-            : p
-        )
-      );
-
-      message.success(`Phòng QLKHCN đã thẩm định & phê duyệt thành công ${selectedRowKeys.length} đề tài NCKH được chọn!`);
+      message.success(`Đã thẩm định & phê duyệt thành công ${selectedRowKeys.length} đề tài NCKH được chọn!`);
       setSelectedRowKeys([]);
+      await fetchProjects();
     } catch (err: any) {
-      message.error('Lỗi khi phê duyệt hàng loạt');
+      message.error(err.response?.data?.detail || err.response?.data?.message || 'Lỗi khi phê duyệt hàng loạt');
     } finally {
       setSubmittingAction(false);
     }
@@ -523,12 +485,7 @@ export const ProjectsPage: React.FC = () => {
         const advId = a.lecturer_id || a.lecturers?.lecturer_id || '';
         return (
           (userLecturerId && advId && userLecturerId === advId) ||
-          (userFullName && advName && (advName.includes(userFullName) || userFullName.includes(advName))) ||
-          (userFullName.includes('dũng') && (p.project_id === 'SV-2026-CNTT1-001' || p.project_id === 'SV-2026-CNTT1-004' || p.project_id === 'SV-2026-CNTT1-006')) ||
-          (userFullName.includes('trí') && (p.project_id === 'SV-2026-CNTT1-002')) ||
-          (userFullName.includes('huy') && (p.project_id === 'SV-2026-CNTT1-003' || p.project_id === 'SV-2026-CNTT1-007' || p.project_id === 'SV-2026-CNTT1-010')) ||
-          (userFullName.includes('tuấn') && (p.project_id === 'SV-2026-CNTT1-005' || p.project_id === 'SV-2026-CNTT1-009')) ||
-          (userFullName.includes('minh') && (p.project_id === 'SV-2026-CNTT1-008'))
+          (userFullName && advName && (advName.includes(userFullName) || userFullName.includes(advName)))
         );
       });
 
@@ -560,8 +517,7 @@ export const ProjectsPage: React.FC = () => {
       const isLeader = Boolean(
         (userFullName && leaderName && (leaderName.includes(userFullName) || userFullName.includes(leaderName))) ||
         (userStudentId && leaderCode && leaderCode === userStudentId) ||
-        (userEmail && leaderEmail && leaderEmail === userEmail) ||
-        (p.project_id === 'SV-2026-CNTT1-001' && userFullName.includes('an'))
+        (userEmail && leaderEmail && leaderEmail === userEmail)
       );
 
       if (isLeader) {
@@ -589,8 +545,7 @@ export const ProjectsPage: React.FC = () => {
         return (
           (userFullName && mName && (mName.includes(userFullName) || userFullName.includes(mName))) ||
           (userStudentId && mCode && mCode === userStudentId) ||
-          (userEmail && mEmail && mEmail === userEmail) ||
-          (p.project_id === 'SV-2026-CNTT1-003' && userFullName.includes('an'))
+          (userEmail && mEmail && mEmail === userEmail)
         );
       });
 
@@ -777,7 +732,7 @@ export const ProjectsPage: React.FC = () => {
       },
     },
     {
-      title: 'Thời gian tổ chức',
+      title: 'Ngày đăng ký',
       dataIndex: 'registered_at',
       key: 'registered_at',
       width: 130,
@@ -786,43 +741,48 @@ export const ProjectsPage: React.FC = () => {
     {
       title: (
         <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-          Tên bài viết <SearchOutlined style={{ fontSize: 11, color: '#bfbfbf' }} />
+          Tên đề tài NCKH <SearchOutlined style={{ fontSize: 11, color: '#bfbfbf' }} />
         </span>
       ),
       dataIndex: 'title_vi',
       key: 'title_vi',
-      render: (val: string, record: any) => (
-        <div>
-          <div
-            style={{ fontWeight: 500, color: '#262626', cursor: 'pointer', lineHeight: 1.4 }}
-            onClick={() => navigate(`/projects/${record.project_id}`)}
-          >
-            {val}
-          </div>
-          <div style={{ fontSize: 11, color: '#8c8c8c', marginTop: 3 }}>
-            Mã đề tài: <b>{record.project_id}</b> • Đơn vị: {record.departments?.dept_name || 'Khoa CNTT 1'}
-          </div>
-          {record.publications && (
-            <div style={{ marginTop: 5, display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-              <Tag color="geekblue" style={{ fontSize: 11, padding: '0 6px', margin: 0, fontWeight: 600 }}>
-                <BookOutlined /> {record.publications.paper_venue}
-              </Tag>
-              <span style={{ fontSize: 11, color: '#595959', fontStyle: 'italic' }}>
-                "{record.publications.paper_title}"
-              </span>
+      render: (val: string, record: any) => {
+        const paperDoc = record.documents?.find((d: any) => d.docType === 'PAPER');
+        return (
+          <div>
+            <div
+              style={{ fontWeight: 500, color: '#262626', cursor: 'pointer', lineHeight: 1.4 }}
+              onClick={() => navigate(`/projects/${record.project_id}`)}
+            >
+              {val}
             </div>
-          )}
-        </div>
-      ),
+            <div style={{ fontSize: 11, color: '#8c8c8c', marginTop: 3 }}>
+              Mã đề tài: <b>{record.project_id}</b> • Đơn vị: {record.departments?.dept_name || 'Khoa/Viện PTIT'}
+            </div>
+            {(record.publications || paperDoc) && (
+              <div style={{ marginTop: 5, display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+                <Tag color="geekblue" style={{ fontSize: 11, padding: '0 6px', margin: 0, fontWeight: 600 }}>
+                  <BookOutlined /> {record.publications?.paper_venue || `Bài báo khoa học (${paperDoc?.libraryCode || 'GWDU'})`}
+                </Tag>
+                {record.publications?.paper_title && (
+                  <span style={{ fontSize: 11, color: '#595959', fontStyle: 'italic' }}>
+                    "{record.publications.paper_title}"
+                  </span>
+                )}
+              </div>
+            )}
+          </div>
+        );
+      },
     },
     {
-      title: 'Từ khóa',
-      dataIndex: 'keywords',
-      key: 'keywords',
+      title: 'Lĩnh vực',
+      dataIndex: 'research_field',
+      key: 'research_field',
       width: 170,
       render: (_: any, record: any) => (
         <span style={{ fontSize: 12, color: '#595959', lineHeight: 1.3 }}>
-          {record.keywords || 'mobile augmented reality, impulse buying, PTIT'}
+          {record.research_field || record.keywords || 'Công nghệ thông tin'}
         </span>
       ),
     },
@@ -853,9 +813,16 @@ export const ProjectsPage: React.FC = () => {
             />
           </Tooltip>
 
-          {canApprove && (record.status === 'PROPOSED' || record.status === 'FACULTY_APPROVED' || record.status === 'Draft') && (
+          {((isFacultyLeader && record.status === 'PROPOSED') ||
+            (isQLKH && (record.status === 'FACULTY_APPROVED' || record.status === 'PROPOSED' || record.status === 'Draft'))) && (
             <>
-              <Tooltip title="Phòng QLKHCN Thẩm định & Phê duyệt">
+              <Tooltip
+                title={
+                  isFacultyLeader && record.status === 'PROPOSED'
+                    ? 'Khoa Sơ tuyển & Gửi Hồ sơ Mẫu 1 lên P.QLKHCN'
+                    : 'Phòng QLKHCN / BGĐ Thẩm định & Giao đề tài (QĐ)'
+                }
+              >
                 <Button
                   size="small"
                   type="primary"
@@ -863,11 +830,11 @@ export const ProjectsPage: React.FC = () => {
                   icon={<CheckCircleOutlined />}
                   onClick={() => {
                     setSelectedProjectForAction(record);
-                    setApprovedBudget(record.requested_budget || 5000000);
+                    setApprovedBudget(record.budgets?.requested_amount || 5000000);
                     setApproveModalVisible(true);
                   }}
                 >
-                  Duyệt
+                  {isFacultyLeader && record.status === 'PROPOSED' ? 'Khoa duyệt' : 'Giao QĐ'}
                 </Button>
               </Tooltip>
               <Tooltip title="Yêu cầu sửa / Từ chối">

@@ -1,224 +1,483 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Table, Tag, Button, Typography, Space, message, Alert } from 'antd';
-import { EyeOutlined } from '@ant-design/icons';
+import {
+  Card,
+  Table,
+  Tag,
+  Button,
+  Typography,
+  Space,
+  Modal,
+  Input,
+  Radio,
+  Form,
+  Select,
+  message,
+  Alert,
+  Timeline,
+  Tooltip,
+  Row,
+  Col,
+  Statistic,
+} from 'antd';
+import {
+  FileTextOutlined,
+  CheckCircleOutlined,
+  CloseCircleOutlined,
+  EyeOutlined,
+  PlusOutlined,
+  ReloadOutlined,
+  SolutionOutlined,
+  ExclamationCircleOutlined,
+} from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
-import { PtitSpinner } from '../components/common/PtitSpinner';
 
 const { Title, Text } = Typography;
+const { TextArea } = Input;
 
 export const OutlinesPage: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const [loading, setLoading] = useState(false);
-  const [projects, setProjects] = useState<any[]>([]);
-
   const roleCode = user?.roleCode || 'STUDENT';
-  const isLecturer = roleCode === 'LECTURER' || roleCode === 'ADMIN';
-  const isFacultyLeader = roleCode === 'FACULTY_LEADER' || roleCode === 'ADMIN';
 
-  const fetchProjects = async () => {
+  const [outlines, setOutlines] = useState<any[]>([]);
+  const [projects, setProjects] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedOutline, setSelectedOutline] = useState<any>(null);
+  const [reviewModalVisible, setReviewModalVisible] = useState(false);
+  const [submitModalVisible, setSubmitModalVisible] = useState(false);
+
+  const [reviewDecision, setReviewDecision] = useState<'APPROVED' | 'REVISION_REQUIRED' | 'REJECTED'>('APPROVED');
+  const [reviewMode, setReviewMode] = useState<'DIRECT' | 'PROXY'>('DIRECT');
+  const [reviewComment, setReviewComment] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+
+  const [submitForm] = Form.useForm();
+
+  const isLecturer = roleCode === 'LECTURER';
+  const isFaculty = roleCode === 'FACULTY_LEADER' || roleCode === 'FACULTY_SECRETARY' || roleCode === 'ADMIN';
+  const canReview = isLecturer || isFaculty || roleCode === 'QLKHCN';
+  const canSubmitOutline = roleCode === 'STUDENT' || roleCode === 'ADMIN';
+
+  const fetchData = async () => {
     try {
       setLoading(true);
-      const res = await api.get('/projects');
-      setProjects(res.data);
-    } catch (err) {
-      // Fallback danh mục đề cương mẫu khi backend offline
-      setProjects([
-        {
-          project_id: 'SV-2026-CNTT1-001',
-          title_vi: 'Nghiên cứu và xây dựng hệ thống web quản lý đề tài NCKH sinh viên PTIT S-Link',
-          departments: { dept_name: 'Khoa Công nghệ thông tin 1' },
-          outlines: [
-            {
-              outline_id: 1,
-              outline_file_url: '/gwdu',
-              submitted_at: '2026-10-14T09:30:00.000Z',
-              review_status: 'FACULTY_APPROVED',
-              reviewer_comment: 'Đề cương chi tiết 12 mục hoàn chỉnh, phương pháp rõ ràng.',
-            },
-          ],
-        },
-        {
-          project_id: 'SV-2026-CNTT1-002',
-          title_vi: 'Mobile AR Apps and Impulse Buying: Perspectives from Indonesian Consumers',
-          departments: { dept_name: 'Khoa Đa phương tiện' },
-          outlines: [
-            {
-              outline_id: 2,
-              outline_file_url: '/gwdu',
-              submitted_at: '2026-10-15T14:20:00.000Z',
-              review_status: 'LECTURER_APPROVED',
-              reviewer_comment: 'GVHD đã duyệt, chờ Hội đồng Khoa rà soát.',
-            },
-          ],
-        },
-        {
-          project_id: 'SV-2026-CNTT1-003',
-          title_vi: 'Mental Imagery and Positive Arousal Influencing Purchase Intention in VR Hotels',
-          departments: { dept_name: 'Khoa Quản trị kinh doanh' },
-          outlines: [],
-        },
+      const [outRes, projRes] = await Promise.all([
+        api.get('/outlines'),
+        api.get('/projects'),
       ]);
+      setOutlines(Array.isArray(outRes.data) ? outRes.data : []);
+      setProjects(Array.isArray(projRes.data) ? projRes.data : []);
+    } catch (err: any) {
+      message.error(err.response?.data?.detail || err.response?.data?.message || 'Không thể tải dữ liệu đề cương từ máy chủ');
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchProjects();
+    fetchData();
   }, []);
 
-  const handleApprove = (projectId: string, level: string) => {
-    message.success(`Đã cập nhật phê duyệt đề cương (${level}) cho đề tài ${projectId}!`);
-    fetchProjects();
+  const eligibleProjectsForSubmit = projects.filter((p) => {
+    if (!['ONGOING', 'OUTLINE_SUBMITTED', 'FACULTY_APPROVED'].includes(p.status)) return false;
+    if (roleCode === 'STUDENT') {
+      const uid = user?.studentId;
+      const uname = (user?.fullName || '').toLowerCase();
+      return p.project_members?.some(
+        (m: any) =>
+          (uid && m.student_id === uid) ||
+          (uname && m.students?.users?.full_name?.toLowerCase().includes(uname)),
+      );
+    }
+    return true;
+  });
+
+  const openReviewModal = (record: any) => {
+    setSelectedOutline(record);
+    setReviewDecision('APPROVED');
+    setReviewMode('DIRECT');
+    setReviewComment('');
+    setReviewModalVisible(true);
+  };
+
+  const handleConfirmReview = async () => {
+    if (!selectedOutline) return;
+    try {
+      setSubmitting(true);
+      await api.post(`/outlines/${selectedOutline.outlineId}/approve`, {
+        decision: reviewDecision,
+        comment: reviewComment,
+        mode: reviewMode,
+      });
+      message.success('Đã ghi nhận kết quả thẩm định Đề cương Mẫu 2 lên CSDL.');
+      setReviewModalVisible(false);
+      setSelectedOutline(null);
+      await fetchData();
+    } catch (err: any) {
+      message.error(err.response?.data?.detail || err.response?.data?.message || 'Lỗi khi phê duyệt đề cương');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleSubmitNewOutline = async (values: any) => {
+    try {
+      setSubmitting(true);
+      await api.post(`/outlines/project/${values.projectId}`, {
+        fileUrl: values.fileUrl || `/storage/outlines/${values.projectId}_Mau2.pdf`,
+        objectives: values.objectives,
+        content: values.content,
+        methodology: values.methodology,
+        expectedResult: values.expectedResult,
+      });
+      message.success('Đã nộp phiên bản Đề cương chi tiết Mẫu 2 thành công!');
+      setSubmitModalVisible(false);
+      submitForm.resetFields();
+      await fetchData();
+    } catch (err: any) {
+      message.error(err.response?.data?.detail || err.response?.data?.message || 'Không thể nộp đề cương');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const getApprovalTag = (status: string, approvals: any[] = []) => {
+    const proxyApproved = approvals.some((a) => a.mode === 'PROXY' && a.decision === 'APPROVED');
+    switch (status) {
+      case 'FACULTY_APPROVED':
+        return (
+          <Tag color="green" icon={<CheckCircleOutlined />} style={{ fontWeight: 600 }}>
+            Đã duyệt 2 cấp (Khoa){proxyApproved ? ' • Ký thay' : ''}
+          </Tag>
+        );
+      case 'ADVISOR_APPROVED':
+        return (
+          <Tag color="blue" icon={<SolutionOutlined />} style={{ fontWeight: 600 }}>
+            GVHD đã duyệt • Chờ Trưởng Khoa
+          </Tag>
+        );
+      case 'REVISION_REQUIRED':
+        return (
+          <Tag color="orange" icon={<ExclamationCircleOutlined />} style={{ fontWeight: 600 }}>
+            Yêu cầu chỉnh sửa
+          </Tag>
+        );
+      case 'REJECTED':
+        return (
+          <Tag color="red" icon={<CloseCircleOutlined />} style={{ fontWeight: 600 }}>
+            Từ chối đề cương
+          </Tag>
+        );
+      default:
+        return (
+          <Tag color="gold" style={{ fontWeight: 600 }}>
+            Chờ GVHD thẩm định (Cấp 1)
+          </Tag>
+        );
+    }
+  };
+
+  const stats = {
+    total: outlines.length,
+    pendingAdvisor: outlines.filter((o) => o.approvalStatus === 'PENDING').length,
+    pendingFaculty: outlines.filter((o) => o.approvalStatus === 'ADVISOR_APPROVED').length,
+    approved: outlines.filter((o) => o.approvalStatus === 'FACULTY_APPROVED').length,
   };
 
   const columns = [
     {
-      title: 'TT',
-      dataIndex: 'index',
-      key: 'index',
-      width: 50,
-      align: 'center' as const,
-      render: (_: any, __: any, idx: number) => idx + 1,
-    },
-    {
       title: 'Mã đề tài',
-      dataIndex: 'project_id',
-      key: 'project_id',
+      dataIndex: 'projectId',
+      key: 'projectId',
       width: 170,
-      render: (val: string) => <b>{val}</b>,
-    },
-    {
-      title: 'Tên đề tài nghiên cứu',
-      dataIndex: 'title_vi',
-      key: 'title_vi',
-      render: (val: string, record: any) => (
-        <div>
-          <div
-            style={{ fontWeight: 600, color: '#262626', cursor: 'pointer' }}
-            onClick={() => navigate(`/projects/${record.project_id}`)}
-          >
-            {val}
-          </div>
-          <div style={{ fontSize: 11, color: '#8c8c8c', marginTop: 2 }}>
-            Đơn vị: {record.departments?.dept_name} • 12 mục đề cương theo Mẫu 2
-          </div>
-        </div>
+      render: (id: string, record: any) => (
+        <Space direction="vertical" size={2}>
+          <a onClick={() => navigate(`/projects/${id}`)} style={{ fontWeight: 700, color: '#C62828' }}>
+            {id}
+          </a>
+          <Tag color="default" style={{ fontSize: 11 }}>
+            {record.project?.department?.deptName || 'Khoa/Viện PTIT'}
+          </Tag>
+        </Space>
       ),
     },
     {
-      title: 'Chủ trì đề tài',
-      key: 'leader',
-      width: 170,
+      title: 'Tên đề tài & Nhóm thực hiện',
+      key: 'title',
       render: (_: any, record: any) => {
-        const leader = record.project_members?.find((m: any) => m.member_role === 'LEADER');
+        const lead = record.project?.members?.find((m: any) => m.memberRole === 'LEAD') || record.project?.members?.[0];
+        const adv = record.project?.advisors?.[0];
         return (
           <div>
-            <div style={{ fontWeight: 600 }}>{leader?.students?.users?.full_name || 'Nguyễn Văn An'}</div>
-            <div style={{ fontSize: 11, color: '#8c8c8c' }}>{leader?.students?.class_name || 'D23CQCN01-B'}</div>
-          </div>
-        );
-      },
-    },
-    {
-      title: 'GVHD',
-      key: 'advisor',
-      width: 170,
-      render: (_: any, record: any) => {
-        const advisor = record.project_advisors?.[0];
-        return (
-          <div>
-            <div style={{ fontWeight: 600 }}>
-              {advisor?.lecturers?.academic_rank ? advisor.lecturers.academic_rank + '. ' : ''}
-              {advisor?.lecturers?.users?.full_name || 'TS. Ngô Quốc Dũng'}
+            <Text strong style={{ color: '#262626' }}>
+              {record.project?.titleVi || '—'}
+            </Text>
+            <div style={{ fontSize: 12, color: '#595959', marginTop: 4 }}>
+              Chủ nhiệm: <b>{lead?.student?.user?.fullName || 'Chưa cập nhật'}</b> • GVHD:{' '}
+              <b>{adv?.lecturer?.user?.fullName || 'Chưa phân công'}</b>
             </div>
-            <div style={{ fontSize: 11, color: '#8c8c8c' }}>Khoa CNTT 1</div>
           </div>
         );
       },
     },
     {
-      title: 'Trạng thái Đề cương',
-      key: 'status',
-      width: 170,
-      align: 'center' as const,
-      render: () => (
-        <Tag color="green" style={{ borderRadius: 10, padding: '2px 10px' }}>
-          Đã phê duyệt 2 cấp
-        </Tag>
-      ),
+      title: 'Phiên bản',
+      dataIndex: 'versionNo',
+      key: 'versionNo',
+      width: 110,
+      render: (v: number) => <Tag color="geekblue">v{v}.0</Tag>,
+    },
+    {
+      title: 'Trạng thái duyệt 2 cấp (DFD 4.1)',
+      key: 'approvalStatus',
+      width: 240,
+      render: (_: any, record: any) => getApprovalTag(record.approvalStatus, record.approvals),
     },
     {
       title: 'Thao tác',
       key: 'action',
-      width: 160,
-      align: 'center' as const,
-      render: (_: any, record: any) => (
-        <Space size={6}>
-          <Button
-            size="small"
-            icon={<EyeOutlined />}
-            onClick={() => navigate(`/projects/${record.project_id}`)}
-          >
-            Xem Mẫu 2
-          </Button>
-          {isLecturer && (
+      width: 230,
+      render: (_: any, record: any) => {
+        const advisorApproved = record.approvals?.some(
+          (a: any) => a.role === 'ADVISOR' && a.decision === 'APPROVED',
+        );
+        const facultyBlocked =
+          (roleCode === 'FACULTY_LEADER' || roleCode === 'FACULTY_SECRETARY') && !advisorApproved;
+
+        return (
+          <Space>
             <Button
               size="small"
-              type="primary"
-              style={{ backgroundColor: '#52C41A', borderColor: '#52C41A' }}
-              onClick={() => handleApprove(record.project_id, 'GVHD Duyệt Cấp 1')}
+              icon={<EyeOutlined />}
+              onClick={() => openReviewModal(record)}
             >
-              GVHD
+              Chi tiết
             </Button>
-          )}
-          {isFacultyLeader && (
-            <Button
-              size="small"
-              type="primary"
-              style={{ backgroundColor: '#C62828', borderColor: '#C62828' }}
-              onClick={() => handleApprove(record.project_id, 'Trưởng khoa Ký duyệt Cấp 2')}
-            >
-              Trưởng khoa
-            </Button>
-          )}
-        </Space>
-      ),
+            {canReview && record.approvalStatus !== 'FACULTY_APPROVED' && (
+              <Tooltip
+                title={
+                  facultyBlocked
+                    ? 'Lãnh đạo Khoa chỉ ký duyệt sau khi GVHD phê duyệt (DFD 4.1)'
+                    : 'Thẩm định & Ký duyệt Đề cương'
+                }
+              >
+                <Button
+                  size="small"
+                  type="primary"
+                  style={{ backgroundColor: '#C62828', borderColor: '#C62828' }}
+                  disabled={facultyBlocked}
+                  onClick={() => openReviewModal(record)}
+                >
+                  {isLecturer ? 'GVHD duyệt' : 'Khoa duyệt'}
+                </Button>
+              </Tooltip>
+            )}
+          </Space>
+        );
+      },
     },
   ];
 
   return (
-    <div>
-      <div style={{ marginBottom: 16 }}>
-        <Title level={4} style={{ margin: 0, fontWeight: 700, color: '#262626' }}>
-          Quản lý Thuyết minh Đề cương chi tiết (Mẫu 2 - QĐ 521)
-        </Title>
-        <Text type="secondary" style={{ fontSize: 13 }}>
-          Theo dõi quy trình nộp đề cương, thẩm định nội dung phương pháp và phê duyệt 2 cấp (GVHD & Lãnh đạo Khoa).
-        </Text>
+    <div style={{ maxWidth: 1600, margin: '0 auto' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, flexWrap: 'wrap', gap: 12 }}>
+        <div>
+          <Title level={4} style={{ margin: 0, color: '#C62828', fontWeight: 700 }}>
+            Quản lý & Phê duyệt 2 cấp Đề cương Chi tiết (Mẫu 2 - QĐ 521)
+          </Title>
+          <Text type="secondary" style={{ fontSize: 13 }}>
+            Quy trình DFD 4.1: Chỉ nộp sau Quyết định giao đề tài; bắt buộc GVHD thẩm định (Cấp 1) trước khi Lãnh đạo Khoa ký duyệt (Cấp 2 - hỗ trợ Ký thay).
+          </Text>
+        </div>
+        <Space>
+          <Button icon={<ReloadOutlined />} onClick={fetchData} loading={loading}>
+            Làm mới
+          </Button>
+          {canSubmitOutline && (
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
+              style={{ backgroundColor: '#C62828', borderColor: '#C62828' }}
+              disabled={eligibleProjectsForSubmit.length === 0}
+              onClick={() => setSubmitModalVisible(true)}
+            >
+              Nộp Đề cương Mẫu 2
+            </Button>
+          )}
+        </Space>
       </div>
 
-      <Alert
-        message="Quy trình phê duyệt Đề cương chi tiết 2 cấp"
-        description="Theo quy chế QĐ 521, sau khi có Quyết định giao đề tài, sinh viên có 30 ngày để hoàn thiện Thuyết minh đề cương chi tiết (12 mục). Đề cương phải được GVHD thẩm định phê duyệt cấp 1 trước khi Trưởng khoa ký phê duyệt cấp 2."
-        type="info"
-        showIcon
-        style={{ marginBottom: 16 }}
-      />
+      <Row gutter={[16, 16]} style={{ marginBottom: 16 }}>
+        <Col xs={12} sm={6}>
+          <Card bordered={false} style={{ borderRadius: 8 }}>
+            <Statistic title="Tổng bản đề cương" value={stats.total} prefix={<FileTextOutlined />} />
+          </Card>
+        </Col>
+        <Col xs={12} sm={6}>
+          <Card bordered={false} style={{ borderRadius: 8 }}>
+            <Statistic title="Chờ GVHD duyệt (Cấp 1)" value={stats.pendingAdvisor} valueStyle={{ color: '#D48806' }} />
+          </Card>
+        </Col>
+        <Col xs={12} sm={6}>
+          <Card bordered={false} style={{ borderRadius: 8 }}>
+            <Statistic title="Chờ Lãnh đạo Khoa (Cấp 2)" value={stats.pendingFaculty} valueStyle={{ color: '#1890FF' }} />
+          </Card>
+        </Col>
+        <Col xs={12} sm={6}>
+          <Card bordered={false} style={{ borderRadius: 8 }}>
+            <Statistic title="Đã phê duyệt 2 cấp" value={stats.approved} valueStyle={{ color: '#389E0D' }} />
+          </Card>
+        </Col>
+      </Row>
 
-      <Card style={{ borderRadius: 8 }}>
+      <Card bordered={false} style={{ borderRadius: 8, boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
         <Table
-          rowKey="project_id"
+          loading={loading}
+          dataSource={outlines}
           columns={columns}
-          dataSource={projects}
-          loading={{ spinning: loading, indicator: <PtitSpinner tip="Đang tải danh sách đề cương..." size="small" minHeight={120} /> }}
+          rowKey="outlineId"
           pagination={{ pageSize: 10 }}
+          locale={{ emptyText: 'Chưa có bản đề cương nào được nộp trong CSDL' }}
         />
       </Card>
+
+      {/* Modal Thẩm định & Lịch sử duyệt 2 cấp */}
+      <Modal
+        title={`Hồ sơ Đề cương Mẫu 2 — ${selectedOutline?.projectId} (v${selectedOutline?.versionNo})`}
+        open={reviewModalVisible}
+        onCancel={() => setReviewModalVisible(false)}
+        footer={null}
+        width={760}
+      >
+        {selectedOutline && (
+          <div>
+            <Alert
+              type="info"
+              showIcon
+              style={{ marginBottom: 16 }}
+              message={selectedOutline.project?.titleVi}
+              description={`Tệp đính kèm số: ${selectedOutline.fileUrl}`}
+            />
+
+            <Title level={5} style={{ fontSize: 14, marginBottom: 8 }}>
+              Lịch sử Thẩm định & Ký duyệt 2 cấp (DFD 4.1)
+            </Title>
+            {selectedOutline.approvals?.length > 0 ? (
+              <Timeline
+                items={selectedOutline.approvals.map((app: any) => ({
+                  color: app.decision === 'APPROVED' ? 'green' : app.decision === 'REVISION_REQUIRED' ? 'orange' : 'red',
+                  children: (
+                    <div>
+                      <Text strong>
+                        {app.role === 'ADVISOR' ? 'Cấp 1: Giảng viên hướng dẫn' : 'Cấp 2: Lãnh đạo Khoa / Đơn vị'}
+                      </Text>{' '}
+                      <Tag color={app.decision === 'APPROVED' ? 'green' : 'orange'}>{app.decision}</Tag>
+                      {app.mode === 'PROXY' && <Tag color="purple">Ký thay (PROXY)</Tag>}
+                      <div style={{ fontSize: 12, color: '#595959', marginTop: 2 }}>{app.comment || 'Không có ghi chú'}</div>
+                      <div style={{ fontSize: 11, color: '#8c8c8c' }}>
+                        {new Date(app.decidedAt).toLocaleString('vi-VN')}
+                      </div>
+                    </div>
+                  ),
+                }))}
+              />
+            ) : (
+              <Text type="secondary">Chưa có lượt thẩm định nào cho phiên bản này.</Text>
+            )}
+
+            {canReview && selectedOutline.approvalStatus !== 'FACULTY_APPROVED' && (
+              <div style={{ marginTop: 16, paddingTop: 16, borderTop: '1px solid #f0f0f0' }}>
+                <Title level={5} style={{ fontSize: 14, color: '#C62828' }}>
+                  Ghi nhận quyết định thẩm định ({isLecturer ? 'Cấp 1: GVHD' : 'Cấp 2: Khoa'})
+                </Title>
+
+                <Space direction="vertical" style={{ width: '100%' }} size={12}>
+                  <div>
+                    <Text strong style={{ display: 'block', marginBottom: 4 }}>Quyết định:</Text>
+                    <Radio.Group value={reviewDecision} onChange={(e) => setReviewDecision(e.target.value)}>
+                      <Radio.Button value="APPROVED">Phê duyệt Đạt</Radio.Button>
+                      <Radio.Button value="REVISION_REQUIRED">Yêu cầu chỉnh sửa</Radio.Button>
+                      <Radio.Button value="REJECTED">Từ chối</Radio.Button>
+                    </Radio.Group>
+                  </div>
+
+                  {!isLecturer && (
+                    <div>
+                      <Text strong style={{ display: 'block', marginBottom: 4 }}>Hình thức ký duyệt (QĐ 521):</Text>
+                      <Radio.Group value={reviewMode} onChange={(e) => setReviewMode(e.target.value)}>
+                        <Radio value="DIRECT">Ký duyệt trực tiếp (DIRECT)</Radio>
+                        <Radio value="PROXY">Thư ký / Phó khoa Ký thay (PROXY)</Radio>
+                      </Radio.Group>
+                    </div>
+                  )}
+
+                  <div>
+                    <Text strong style={{ display: 'block', marginBottom: 4 }}>Nhận xét chuyên môn:</Text>
+                    <TextArea
+                      rows={3}
+                      value={reviewComment}
+                      onChange={(e) => setReviewComment(e.target.value)}
+                      placeholder="Nhập góp ý về mục tiêu, phương pháp nghiên cứu, dự toán..."
+                    />
+                  </div>
+
+                  <div style={{ textAlign: 'right' }}>
+                    <Space>
+                      <Button onClick={() => setReviewModalVisible(false)}>Đóng</Button>
+                      <Button
+                        type="primary"
+                        loading={submitting}
+                        style={{ backgroundColor: '#C62828', borderColor: '#C62828' }}
+                        onClick={handleConfirmReview}
+                      >
+                        Xác nhận thẩm định
+                      </Button>
+                    </Space>
+                  </div>
+                </Space>
+              </div>
+            )}
+          </div>
+        )}
+      </Modal>
+
+      {/* Modal Sinh viên nộp Đề cương Mẫu 2 */}
+      <Modal
+        title="Nộp phiên bản Đề cương chi tiết (Mẫu 2)"
+        open={submitModalVisible}
+        onCancel={() => setSubmitModalVisible(false)}
+        onOk={() => submitForm.submit()}
+        confirmLoading={submitting}
+        okText="Nộp Đề cương"
+        okButtonProps={{ style: { backgroundColor: '#C62828', borderColor: '#C62828' } }}
+      >
+        <Form form={submitForm} layout="vertical" onFinish={handleSubmitNewOutline}>
+          <Form.Item
+            name="projectId"
+            label="Chọn đề tài đã được giao thực hiện"
+            rules={[{ required: true, message: 'Vui lòng chọn đề tài' }]}
+          >
+            <Select placeholder="Chọn đề tài của bạn">
+              {eligibleProjectsForSubmit.map((p) => (
+                <Select.Option key={p.project_id} value={p.project_id}>
+                  {p.project_id} — {p.title_vi}
+                </Select.Option>
+              ))}
+            </Select>
+          </Form.Item>
+          <Form.Item name="fileUrl" label="Đường dẫn tệp Đề cương PDF (Mẫu 2)">
+            <Input placeholder="/storage/outlines/SV-2026-CNTT1-002_v2.pdf" />
+          </Form.Item>
+          <Form.Item name="objectives" label="Cập nhật Mục tiêu nghiên cứu (tùy chọn)">
+            <TextArea rows={2} placeholder="Mục tiêu nghiên cứu chi tiết..." />
+          </Form.Item>
+          <Form.Item name="methodology" label="Phương pháp nghiên cứu (tùy chọn)">
+            <TextArea rows={2} placeholder="Phương pháp thực nghiệm..." />
+          </Form.Item>
+        </Form>
+      </Modal>
     </div>
   );
 };
-

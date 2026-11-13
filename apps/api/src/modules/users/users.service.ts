@@ -14,14 +14,33 @@ export class UsersService {
         { user: { fullName: { contains: query.keyword, mode: 'insensitive' } } },
       ];
     }
-    return this.prisma.student.findMany({
+    const activePeriod = await this.prisma.nckhPeriod.findFirst({
+      where: { status: 'ACTIVE' },
+    });
+
+    const students = await this.prisma.student.findMany({
       where,
       include: {
         user: true,
         department: true,
+        memberships: {
+          where: {
+            project: {
+              ...(activePeriod ? { periodId: activePeriod.periodId } : {}),
+              status: { not: 'REJECTED' },
+            },
+          },
+          select: { projectId: true, memberRole: true },
+        },
       },
       take: 50,
     });
+
+    return students.map((s) => ({
+      ...s,
+      hasActiveProject: s.memberships.length > 0,
+      activeProjectId: s.memberships[0]?.projectId || null,
+    }));
   }
 
   async findLecturers(query?: { keyword?: string; deptId?: number }) {
@@ -33,17 +52,27 @@ export class UsersService {
         { user: { fullName: { contains: query.keyword, mode: 'insensitive' } } },
       ];
     }
-    return this.prisma.lecturer.findMany({
+    const lecturers = await this.prisma.lecturer.findMany({
       where,
       include: {
         user: true,
         department: true,
         advisoryRoles: {
-          where: { status: { in: ['ACTIVE', 'INVITED'] } },
+          where: {
+            status: { in: ['ACTIVE', 'INVITED'] },
+            project: { status: { not: 'REJECTED' } },
+          },
+          select: { advisorAssignmentId: true, projectId: true, status: true },
         },
       },
       take: 50,
     });
+
+    return lecturers.map((l) => ({
+      ...l,
+      activeProjectCount: l.advisoryRoles.length,
+      maxProjects: 2,
+    }));
   }
 
   async getDepartments() {

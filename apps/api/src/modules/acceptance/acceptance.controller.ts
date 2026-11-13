@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, ParseIntPipe, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { AcceptanceService } from './acceptance.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
@@ -8,6 +8,12 @@ import { CurrentUser } from '../../common/decorators/current-user.decorator';
 @Controller('api/acceptance')
 export class AcceptanceController {
   constructor(private acceptanceService: AcceptanceService) {}
+
+  @Get()
+  @ApiOperation({ summary: 'Danh sách toàn bộ Hội đồng & Hồ sơ Nghiệm thu kèm bộ 7 tiêu chí' })
+  async findAll() {
+    return this.acceptanceService.getAllAcceptances();
+  }
 
   @Get('project/:projectId')
   @ApiOperation({ summary: 'Lấy thông tin hội đồng và kết quả nghiệm thu của đề tài' })
@@ -29,12 +35,24 @@ export class AcceptanceController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @Post('score')
-  @ApiOperation({ summary: '5.3 Chấm điểm & nhận xét bảo vệ (Phiếu chấm Mẫu 4.1)' })
+  @ApiOperation({ summary: '5.3 Chấm điểm & nhận xét bảo vệ (Phiếu chấm Mẫu 4.1, kiểm tra điểm lệch >15đ)' })
   async submitScore(
     @CurrentUser() user: any,
     @Body() body: any,
   ) {
     return this.acceptanceService.submitScoreSheet(user, body);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @Post(':id/approve')
+  @ApiOperation({ summary: '5.5 P.QLKHCN Phê duyệt kết quả nghiệm thu & Quy đổi giờ chuẩn / ĐRL' })
+  async approveAcceptance(
+    @Param('id', ParseIntPipe) acceptanceId: number,
+    @CurrentUser() user: any,
+    @Body() body: { approvalDocNo?: string },
+  ) {
+    return this.acceptanceService.approveAcceptance(acceptanceId, user, body?.approvalDocNo);
   }
 }
 

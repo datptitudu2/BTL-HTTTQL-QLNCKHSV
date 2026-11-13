@@ -50,39 +50,20 @@ export const CreateProjectPage: React.FC = () => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const [lecturers, setLecturers] = useState<any[]>([]);
+  const [studentsList, setStudentsList] = useState<any[]>([]);
   const [previewTab, setPreviewTab] = useState<'m1' | 'm2'>('m1');
 
-  // Danh sách thành viên nhóm nghiên cứu theo Điều 4 QĐ 521/QĐ-HV (Tối đa 5 sinh viên)
+  // Danh sách thành viên nhóm nghiên cứu theo Điều 4 & Điều 6 QĐ 521/QĐ-HV (1 SV = tối đa 1 đề tài/năm học)
   const [members, setMembers] = useState<ProjectMember[]>([
     {
       id: 'm_1',
       memberRole: 'LEADER',
-      studentId: (user as any)?.studentId || 'B23DCCN001',
-      fullName: user?.fullName || 'Nguyễn Văn An',
-      className: 'D23CQCN01-B',
-      email: user?.email || 'an.nv@stu.ptit.edu.vn',
-      contributionPct: 60,
-      assignedTask: 'Chủ nhiệm đề tài, phụ trách chung và phát triển giải pháp phần mềm',
-    },
-    {
-      id: 'm_2',
-      memberRole: 'MEMBER',
-      studentId: 'B23DCCN022',
-      fullName: 'Trần Thị Mai',
-      className: 'D23CQCN01-B',
-      email: 'maitt@stu.ptit.edu.vn',
-      contributionPct: 20,
-      assignedTask: 'Khảo sát hiện trạng quy trình, thu thập tài liệu và số liệu nghiên cứu',
-    },
-    {
-      id: 'm_3',
-      memberRole: 'MEMBER',
-      studentId: 'B23DCCN034',
-      fullName: 'Lê Hoàng Long',
-      className: 'D23CQCN01-B',
-      email: 'longlh@stu.ptit.edu.vn',
-      contributionPct: 20,
-      assignedTask: 'Thiết kế giao diện người dùng, thử nghiệm và đóng quyển báo cáo',
+      studentId: (user as any)?.studentId || 'B23DCCN099',
+      fullName: user?.fullName || 'Lê Hoàng Nam',
+      className: 'D23CQCN04-B',
+      email: user?.email || 'nam.lh@stu.ptit.edu.vn',
+      contributionPct: 100,
+      assignedTask: 'Chủ nhiệm đề tài, phụ trách chung và phát triển giải pháp nghiên cứu',
     },
   ]);
 
@@ -117,20 +98,52 @@ export const CreateProjectPage: React.FC = () => {
   }, [members]);
 
   useEffect(() => {
-    const fetchLecturers = async () => {
+    const fetchMeta = async () => {
       try {
-        const res = await api.get('/users/lecturers');
-        setLecturers(res.data);
-      } catch (err) {
-        setLecturers([
-          { lecturer_id: 'GV001', academic_rank: 'TS', users: { full_name: 'Ngô Quốc Dũng', email: 'dungnq@ptit.edu.vn' } },
-          { lecturer_id: 'GV002', academic_rank: 'PGS.TS', users: { full_name: 'Hoàng Minh', email: 'minhh@ptit.edu.vn' } },
-          { lecturer_id: 'GV003', academic_rank: 'TS', users: { full_name: 'Vũ Trọng Hùng', email: 'hungvt@ptit.edu.vn' } },
+        const [lecRes, stuRes] = await Promise.all([
+          api.get('/users/lecturers'),
+          api.get('/users/students'),
         ]);
+        const lecs = Array.isArray(lecRes.data) ? lecRes.data : [];
+        const stus = Array.isArray(stuRes.data) ? stuRes.data : [];
+        setLecturers(lecs);
+        setStudentsList(stus);
+
+        // Đồng bộ lại thông tin Chủ nhiệm đề tài từ hồ sơ SV thực tế
+        const myStu = stus.find(
+          (s: any) =>
+            s.studentId === (user as any)?.studentId ||
+            s.user?.userId === user?.userId ||
+            s.user?.fullName === user?.fullName,
+        );
+        if (myStu) {
+          setMembers((prev) =>
+            prev.map((m) =>
+              m.memberRole === 'LEADER'
+                ? {
+                    ...m,
+                    studentId: myStu.studentId,
+                    fullName: myStu.user?.fullName || m.fullName,
+                    className: myStu.className || m.className,
+                    email: myStu.user?.email || m.email,
+                  }
+                : m,
+            ),
+          );
+        }
+      } catch (err: any) {
+        message.error('Không thể tải danh sách Giảng viên & Sinh viên từ máy chủ');
       }
     };
-    fetchLecturers();
-  }, []);
+    fetchMeta();
+  }, [user]);
+
+  const myStudentProfile = studentsList.find(
+    (s: any) =>
+      s.studentId === (user as any)?.studentId ||
+      s.user?.userId === user?.userId ||
+      s.user?.fullName === user?.fullName,
+  );
 
   const handleValuesChange = (_: any, allValues: any) => {
     const selectedLecturer = lecturers.find(
@@ -140,8 +153,8 @@ export const CreateProjectPage: React.FC = () => {
     setFormData((prev: any) => ({
       ...prev,
       ...allValues,
-      lecturerName: selectedLecturer?.users?.full_name || selectedLecturer?.lecturers?.users?.full_name || prev.lecturerName,
-      lecturerEmail: selectedLecturer?.users?.email || prev.lecturerEmail,
+      lecturerName: selectedLecturer?.user?.fullName || selectedLecturer?.users?.full_name || prev.lecturerName,
+      lecturerEmail: selectedLecturer?.user?.email || selectedLecturer?.users?.email || prev.lecturerEmail,
     }));
   };
 
@@ -202,6 +215,9 @@ export const CreateProjectPage: React.FC = () => {
 
     try {
       setLoading(true);
+      const leaderMember = members.find((m) => m.memberRole === 'LEADER');
+      const extraMembers = members.filter((m) => m.memberRole !== 'LEADER');
+
       const res = await api.post('/projects', {
         titleVi: values.titleVi,
         titleEn: values.titleEn || '',
@@ -213,12 +229,12 @@ export const CreateProjectPage: React.FC = () => {
         expectedResult: values.expectedResult,
         requestedBudget: Number(values.requestedBudget || 5000000),
         lecturerId: values.lecturerId,
-        members: members.map((m) => ({
+        leadPct: Number(leaderMember?.contributionPct || 100),
+        leadTask: leaderMember?.assignedTask,
+        members: extraMembers.map((m) => ({
           studentId: m.studentId,
-          fullName: m.fullName,
-          className: m.className,
-          memberRole: m.memberRole,
-          contributionPct: Number(m.contributionPct),
+          role: 'MEMBER',
+          pct: Number(m.contributionPct),
           assignedTask: m.assignedTask,
         })),
       });
@@ -226,10 +242,11 @@ export const CreateProjectPage: React.FC = () => {
       message.success(`Đăng ký đề tài thành công! Mã số được cấp: ${res.data.project_id}`);
       navigate(`/projects/${res.data.project_id}`);
     } catch (err: any) {
-      // Mock thành công khi backend offline để đảm bảo trải nghiệm thông suốt
-      const mockProjectId = `SV-2026-CNTT1-${String(Math.floor(Math.random() * 900) + 100)}`;
-      message.success(`Đăng ký đề tài thành công! Mã số cấp mới: ${mockProjectId}`);
-      navigate(`/projects`);
+      message.error(
+        err.response?.data?.message ||
+          err.response?.data?.detail ||
+          'Đăng ký đề tài thất bại do vi phạm điều kiện QĐ 521 hoặc lỗi máy chủ.',
+      );
     } finally {
       setLoading(false);
     }
@@ -280,6 +297,16 @@ export const CreateProjectPage: React.FC = () => {
         </Space>
       </div>
 
+      {myStudentProfile?.hasActiveProject && (
+        <Alert
+          type="warning"
+          showIcon
+          style={{ marginBottom: 16 }}
+          message={`Sinh viên ${myStudentProfile.user?.fullName} (${myStudentProfile.studentId}) đã tham gia đề tài "${myStudentProfile.activeProjectId}" trong đợt NCKH hiện tại`}
+          description="Theo quy định Điều 6 QĐ 521/QĐ-HV, mỗi sinh viên chỉ được tham gia tối đa 01 đề tài NCKH trong một năm học. Để kiểm thử luồng đăng ký mới, vui lòng chuyển sang tài khoản sinh viên chưa đăng ký (ví dụ: sv.moi - Lê Hoàng Nam)."
+        />
+      )}
+
       <Row gutter={[20, 20]}>
         {/* CỘT TRÁI: FORM NHẬP LIỆU TOÀN DIỆN */}
         <Col xs={24} lg={12}>
@@ -303,7 +330,7 @@ export const CreateProjectPage: React.FC = () => {
               onValuesChange={handleValuesChange}
               initialValues={{
                 researchField: 'Công nghệ thông tin',
-                lecturerId: 'GV001',
+                lecturerId: 'GV006',
                 requestedBudget: 5000000,
                 titleVi: 'Nghiên cứu và phát triển hệ thống web quản lý đề tài NCKH sinh viên PTIT S-Link',
                 titleEn: 'Research and development of Student Research Management System for PTIT',
@@ -348,11 +375,16 @@ export const CreateProjectPage: React.FC = () => {
                     rules={[{ required: true, message: 'Vui lòng chọn giảng viên hướng dẫn' }]}
                   >
                     <Select
-                      placeholder="Chọn giảng viên hướng dẫn"
-                      options={lecturers.map((l) => ({
-                        value: l.lecturer_id || l.lecturerId,
-                        label: `${l.academic_rank ? l.academic_rank + '. ' : ''}${l.users?.full_name || l.lecturers?.users?.full_name || 'TS. Ngô Quốc Dũng'}`,
-                      }))}
+                      placeholder="Chọn giảng viên hướng dẫn (Tối đa 2 đề tài)"
+                      options={lecturers.map((l) => {
+                        const count = Number(l.activeProjectCount ?? l.advisoryRoles?.length ?? 0);
+                        const fullName = l.user?.fullName || l.users?.full_name || l.lecturerId;
+                        return {
+                          value: l.lecturerId || l.lecturer_id,
+                          disabled: count >= 2,
+                          label: `${fullName} (${count}/2 đề tài${count >= 2 ? ' - Đã đủ định mức' : ''})`,
+                        };
+                      })}
                     />
                   </Form.Item>
                 </Col>

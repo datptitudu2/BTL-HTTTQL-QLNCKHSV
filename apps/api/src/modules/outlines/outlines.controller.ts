@@ -9,6 +9,12 @@ import { CurrentUser } from '../../common/decorators/current-user.decorator';
 export class OutlinesController {
   constructor(private outlinesService: OutlinesService) {}
 
+  @Get()
+  @ApiOperation({ summary: 'Lấy danh sách tất cả đề cương kèm trạng thái phê duyệt 2 cấp' })
+  async findAll() {
+    return this.outlinesService.findAll();
+  }
+
   @Get('project/:projectId')
   @ApiOperation({ summary: 'Lấy danh sách các phiên bản đề cương của đề tài' })
   async findByProject(@Param('projectId') projectId: string) {
@@ -29,13 +35,13 @@ export class OutlinesController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @Post(':id/approve')
-  @ApiOperation({ summary: '4.1.2 & 4.1.3 Phê duyệt đề cương (GVHD & Lãnh đạo Khoa)' })
+  @ApiOperation({ summary: '4.1.2 & 4.1.3 Phê duyệt đề cương (GVHD & Lãnh đạo Khoa, hỗ trợ Ký trực tiếp / Ký thay)' })
   async approve(
     @Param('id', ParseIntPipe) outlineId: number,
     @CurrentUser() user: any,
-    @Body() body: { decision: 'APPROVED' | 'REJECTED' | 'REVISION_REQUIRED'; comment?: string },
+    @Body() body: { decision: 'APPROVED' | 'REJECTED' | 'REVISION_REQUIRED'; comment?: string; mode?: 'DIRECT' | 'PROXY' },
   ) {
-    return this.outlinesService.approveOutline(outlineId, user, body.decision, body.comment);
+    return this.outlinesService.approveOutline(outlineId, user, body.decision, body.comment, body.mode);
   }
 }
 

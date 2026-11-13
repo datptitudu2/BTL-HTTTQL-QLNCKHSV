@@ -1,655 +1,594 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Card,
   Table,
   Tag,
-  Typography,
   Button,
+  Typography,
   Space,
+  Modal,
+  Form,
+  Select,
+  Input,
+  InputNumber,
   Alert,
   Row,
   Col,
-  Modal,
-  Tooltip,
-  Form,
-  Input,
-  InputNumber,
   Statistic,
+  Tabs,
   message,
 } from 'antd';
 import {
   TrophyOutlined,
+  SafetyCertificateOutlined,
+  StarOutlined,
+  PlusOutlined,
+  ReloadOutlined,
   QrcodeOutlined,
   CheckCircleOutlined,
-  PrinterOutlined,
+  ClockCircleOutlined,
   UserOutlined,
-  SolutionOutlined,
-  SafetyCertificateOutlined,
-  GlobalOutlined,
-  FileDoneOutlined,
-  ExportOutlined,
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
+import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
-import { PtitCertificate } from '../components/qd521/PtitCertificate';
-import { printElement } from '../utils/printHelper';
 
 const { Title, Text } = Typography;
+
+const GRADE_MAP: Record<string, { label: string; color: string }> = {
+  XUAT_SAC: { label: 'Xuất sắc', color: 'green' },
+  TOT: { label: 'Tốt', color: 'blue' },
+  KHA: { label: 'Khá', color: 'cyan' },
+  DAT: { label: 'Đạt', color: 'gold' },
+  KHONG_DAT: { label: 'Không đạt', color: 'red' },
+};
 
 export const AwardsPage: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const roleCode = user?.roleCode || 'STUDENT';
-  const isCTSV = roleCode === 'STUDENT_AFFAIRS' || roleCode === 'ADMIN';
 
+  const [data, setData] = useState<{
+    nominations: any[];
+    certificates: any[];
+    lecturerHours: any[];
+    studentBonuses: any[];
+  }>({
+    nominations: [],
+    certificates: [],
+    lecturerHours: [],
+    studentBonuses: [],
+  });
+  const [projects, setProjects] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [nomModalVisible, setNomModalVisible] = useState(false);
   const [certModalVisible, setCertModalVisible] = useState(false);
-  const [selectedAward, setSelectedAward] = useState<any>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [nomForm] = Form.useForm();
+  const [certForm] = Form.useForm();
 
-  // Modal phê duyệt cộng điểm & quyền lợi của Phòng CT&CTSV
-  const [bonusModalVisible, setBonusModalVisible] = useState(false);
-  const [selectedForBonus, setSelectedForBonus] = useState<any>(null);
-  const [form] = Form.useForm();
+  const isQLKHOrBoard = ['QLKHCN', 'BOARD', 'ADMIN'].includes(roleCode);
+  const isFacultyStaff = ['FACULTY_SECRETARY', 'FACULTY_LEADER', 'QLKHCN', 'BOARD', 'ADMIN'].includes(roleCode);
+  const isCTSV = ['STUDENT_AFFAIRS', 'ADMIN'].includes(roleCode);
 
-  // Danh mục đề tài khen thưởng & quyền lợi theo Điều 15 QĐ 521
-  const [awardsList, setAwardsList] = useState<any[]>([
-    {
-      id: 1,
-      projectCode: '32-SV-2025-RIPT',
-      title: 'Nghiên cứu, xây dựng mô hình xác thực 2FA ứng dụng RFID và vi điều khiển ESP32',
-      leader: 'NGUYỄN TIẾN ĐẠT (D23CCHT01)',
-      studentName: 'NGUYỄN TIẾN ĐẠT',
-      studentId: 'B23DCQT088',
-      studentClass: 'D23CCHT01',
-      department: 'Viện Khoa học Kỹ thuật Bưu điện',
-      academicYear: '2025',
-      decisionNo: '1842/QĐ-HV',
-      issueDate: 'ngày 24 tháng 6 năm 2026',
-      certificateNo: '32-SV-2025-RIPT',
-      certNo: '32-SV-2025-RIPT',
-      advisor: 'TS. Vũ Trọng Hùng',
-      score: 82.5,
-      result: 'Khá',
-      awardType: 'Chứng nhận Hoàn thành NCKH Sinh viên (Xếp loại Khá)',
-      studentBonus: '+5 điểm rèn luyện (CTSV) • Tích lũy 3 tín chỉ NCKH',
-      advisorHours: '20 giờ chuẩn NCKH • Hoàn thành nhiệm vụ hướng dẫn',
-      tagColor: 'blue',
-      // Trạng thái phê duyệt của Phòng CT&CTSV
-      bonusStatus: 'APPROVED',
-      drlPoints: 5,
-      gpaBonus: 0,
-      creditBonus: 3,
-      approvedBy: 'ThS. Bùi Văn Toàn (Phòng CT&CTSV)',
-      approvedDate: '26/06/2026',
-      decisionNotice: 'TB-CTSV/2026-14',
-    },
-    {
-      id: 2,
-      projectCode: 'SV-2026-CNTT1-001',
-      title: 'Hệ thống Quản lý Đề tài NCKH Sinh viên Học viện PTIT (SRMS)',
-      leader: 'NGUYỄN VĂN AN (D23CQCN01-B)',
-      studentName: 'NGUYỄN VĂN AN',
-      studentId: 'B23DCCN001',
-      studentClass: 'D23CQCN01-B',
-      department: 'Khoa Công nghệ thông tin 1',
-      academicYear: '2026',
-      decisionNo: '521/QĐ-HV',
-      issueDate: 'ngày 05 tháng 5 năm 2027',
-      certificateNo: 'GCN-NCKH-2027-001',
-      certNo: 'GCN-NCKH-2027-001',
-      advisor: 'TS. Ngô Quốc Dũng',
-      score: 93.8,
-      result: 'Xuất sắc',
-      awardType: 'Giải Nhất cấp Học viện & Đề cử Giải thưởng cấp Bộ',
-      studentBonus: '+0.4 điểm TBC xét học bổng • +20 điểm rèn luyện (CTSV)',
-      advisorHours: '30 giờ chuẩn NCKH • Ưu tiên xét danh hiệu thi đua (Điều 16)',
-      tagColor: 'gold',
-      bonusStatus: 'PENDING', // Đang chờ Phòng CT&CTSV duyệt cộng điểm
-      drlPoints: 20,
-      gpaBonus: 0.4,
-      creditBonus: 3,
-      approvedBy: null,
-      approvedDate: null,
-      decisionNotice: null,
-    },
-    {
-      id: 3,
-      projectCode: 'SV-2026-CNTT1-004',
-      title: 'PHƯƠNG PHÁP TIỀN XỬ LÝ VÀ TRÍCH XUẤT ĐẶC TRƯNG TỪ DỮ LIỆU POS',
-      leader: 'KIM NGỌC BÁCH (D23CQCN01-B)',
-      studentName: 'KIM NGỌC BÁCH',
-      studentId: 'B23DCCN088',
-      studentClass: 'D23CQCN01-B',
-      department: 'Khoa Công nghệ thông tin 1',
-      academicYear: '2026',
-      decisionNo: '521/QĐ-HV',
-      issueDate: 'ngày 05 tháng 5 năm 2027',
-      certificateNo: 'GCN-NCKH-2027-004',
-      certNo: 'GCN-NCKH-2027-004',
-      advisor: 'PGS.TS. Hoàng Minh',
-      score: 88.5,
-      result: 'Tốt (Giải Nhì)',
-      awardType: 'Giải Nhì cấp Học viện',
-      studentBonus: '+0.2 điểm TBC xét học bổng • +15 điểm rèn luyện (CTSV)',
-      advisorHours: '25 giờ chuẩn NCKH • Đạt định mức NCKH',
-      tagColor: 'cyan',
-      bonusStatus: 'APPROVED',
-      drlPoints: 15,
-      gpaBonus: 0.2,
-      creditBonus: 3,
-      approvedBy: 'ThS. Bùi Văn Toàn (Phòng CT&CTSV)',
-      approvedDate: '06/05/2027',
-      decisionNotice: 'TB-CTSV/2027-08',
-    },
-  ]);
-
-  const handleOpenCert = (record: any) => {
-    setSelectedAward(record);
-    setCertModalVisible(true);
-  };
-
-  // Mở modal duyệt cộng điểm dành riêng cho Phòng CT&CTSV
-  const handleOpenBonusModal = (record: any) => {
-    setSelectedForBonus(record);
-    form.setFieldsValue({
-      drlPoints: record.drlPoints || 20,
-      gpaBonus: record.gpaBonus || 0.4,
-      creditBonus: record.creditBonus || 3,
-      semester: 'Học kỳ 2 năm học 2026 - 2027',
-      noticeNo: record.decisionNotice || 'TB-CTSV-DRL-2027/02',
-      note: `Phòng CT&CTSV phê duyệt cộng điểm theo Điều 15 QĐ 521 cho sinh viên ${record.studentName} đạt kết quả ${record.result}.`,
-    });
-    setBonusModalVisible(true);
-  };
-
-  // Xử lý phê duyệt cộng điểm của Phòng CT&CTSV
-  const handleApproveBonus = (values: any) => {
-    if (!selectedForBonus) return;
-    const approverName = user?.fullName || 'ThS. Bùi Văn Toàn (Phòng CT&CTSV)';
-    const todayStr = new Date().toLocaleDateString('vi-VN');
-
-    setAwardsList((prev) =>
-      prev.map((item) =>
-        item.id === selectedForBonus.id
-          ? {
-              ...item,
-              bonusStatus: 'APPROVED',
-              drlPoints: values.drlPoints,
-              gpaBonus: values.gpaBonus,
-              creditBonus: values.creditBonus,
-              approvedBy: approverName,
-              approvedDate: todayStr,
-              decisionNotice: values.noticeNo,
-            }
-          : item,
-      ),
-    );
-
-    message.success(
-      `Phòng CT&CTSV đã phê duyệt và đồng bộ +${values.drlPoints} Điểm rèn luyện, +${values.gpaBonus} điểm TBC vào hồ sơ sinh viên ${selectedForBonus.studentName} trên Cổng S-Link thành công!`,
-    );
-    setBonusModalVisible(false);
-    setSelectedForBonus(null);
-  };
-
-  // Phê duyệt hàng loạt toàn bộ hồ sơ đang chờ
-  const handleBatchApprove = () => {
-    const pendingCount = awardsList.filter((a) => a.bonusStatus === 'PENDING').length;
-    if (pendingCount === 0) {
-      message.info('Không có hồ sơ nào đang chờ duyệt cộng điểm!');
-      return;
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      const [awardsRes, projRes] = await Promise.all([
+        api.get('/awards'),
+        api.get('/projects'),
+      ]);
+      setData(awardsRes.data);
+      setProjects(Array.isArray(projRes.data) ? projRes.data : []);
+    } catch (err: any) {
+      message.error(err.response?.data?.detail || err.response?.data?.message || 'Không thể tải dữ liệu Khen thưởng & Chứng nhận');
+    } finally {
+      setLoading(false);
     }
-    const approverName = user?.fullName || 'ThS. Bùi Văn Toàn (Phòng CT&CTSV)';
-    const todayStr = new Date().toLocaleDateString('vi-VN');
-
-    setAwardsList((prev) =>
-      prev.map((item) =>
-        item.bonusStatus === 'PENDING'
-          ? {
-              ...item,
-              bonusStatus: 'APPROVED',
-              approvedBy: approverName,
-              approvedDate: todayStr,
-              decisionNotice: 'TB-CTSV-BATCH-2027/01',
-            }
-          : item,
-      ),
-    );
-    message.success(`Phòng CT&CTSV đã duyệt và ghi nhận cộng điểm thành công cho toàn bộ ${pendingCount} đề tài!`);
   };
 
-  const handleExportList = () => {
-    message.loading('Đang trích xuất danh sách sinh viên được cộng điểm rèn luyện & xét học bổng...');
-    setTimeout(() => {
-      message.success('Xuất danh sách thành công! Tệp Danh_sach_cong_DRL_NCKH_2027.xlsx đã sẵn sàng.');
-    }, 700);
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const eligibleAcceptedProjects = projects.filter(
+    (p) => p.acceptances?.grade && ['XUAT_SAC', 'TOT', 'KHA'].includes(p.acceptances.grade),
+  );
+
+  const handleCreateNomination = async (values: any) => {
+    try {
+      setSubmitting(true);
+      await api.post('/awards/nominations', values);
+      message.success('Đã lập hồ sơ Đề cử Khen thưởng Mẫu 5 thành công!');
+      setNomModalVisible(false);
+      nomForm.resetFields();
+      await fetchData();
+    } catch (err: any) {
+      message.error(err.response?.data?.detail || err.response?.data?.message || 'Không thể tạo đề cử Mẫu 5');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
-  const pendingBonusCount = awardsList.filter((a) => a.bonusStatus === 'PENDING').length;
-  const approvedBonusCount = awardsList.filter((a) => a.bonusStatus === 'APPROVED').length;
+  const handleApproveNomination = async (nominationId: number) => {
+    try {
+      await api.patch(`/awards/nominations/${nominationId}/approve`, {});
+      message.success('Đã phê duyệt Giải thưởng & tự động đồng bộ điểm cộng học bổng cho Sinh viên!');
+      await fetchData();
+    } catch (err: any) {
+      message.error(err.response?.data?.detail || err.response?.data?.message || 'Không thể duyệt đề cử');
+    }
+  };
+
+  const handleIssueCertificates = async (values: any) => {
+    try {
+      setSubmitting(true);
+      const res = await api.post('/awards/certificates/issue', { projectId: values.projectId });
+      message.success(`Đã phát hành ${res.data.length} Giấy chứng nhận điện tử có mã QR!`);
+      setCertModalVisible(false);
+      certForm.resetFields();
+      await fetchData();
+    } catch (err: any) {
+      message.error(err.response?.data?.detail || err.response?.data?.message || 'Không đủ điều kiện cấp chứng nhận');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleApproveBonus = async (bonusId: number) => {
+    try {
+      await api.patch(`/awards/bonuses/${bonusId}/approve`, {});
+      message.success('Phòng CT&CTSV đã phê duyệt cộng ĐRL & Điểm học bổng!');
+      await fetchData();
+    } catch (err: any) {
+      message.error(err.response?.data?.detail || err.response?.data?.message || 'Không thể duyệt quyền lợi sinh viên');
+    }
+  };
+
+  const handleConfirmHours = async (hourId: number) => {
+    try {
+      await api.patch(`/awards/lecturer-hours/${hourId}/confirm`, {});
+      message.success('P.QLKHCN đã xác nhận quy đổi Giờ chuẩn NCKH cho Giảng viên!');
+      await fetchData();
+    } catch (err: any) {
+      message.error(err.response?.data?.detail || err.response?.data?.message || 'Lỗi xác nhận giờ chuẩn');
+    }
+  };
 
   return (
-    <div style={{ maxWidth: 1400, margin: '0 auto' }}>
-      {/* TIÊU ĐỀ & NÚT THAO TÁC HEADER */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, flexWrap: 'wrap', gap: 10 }}>
+    <div style={{ maxWidth: 1600, margin: '0 auto' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, flexWrap: 'wrap', gap: 12 }}>
         <div>
-          <Title level={4} style={{ margin: 0, fontWeight: 700, color: '#262626' }}>
-            Khen thưởng & Quyền lợi Nghiên cứu Khoa học (Điều 15 & 16 QĐ 521)
+          <Title level={4} style={{ margin: 0, color: '#C62828', fontWeight: 700 }}>
+            Khen thưởng (Mẫu 5), Chứng nhận số & Quyền lợi NCKH (QĐ 521 - D8)
           </Title>
           <Text type="secondary" style={{ fontSize: 13 }}>
-            Công nhận giải thưởng xuất sắc (Mẫu 5), cấp Giấy chứng nhận điện tử tra cứu QR và quy đổi quyền lợi điểm học tập cho sinh viên cùng giờ chuẩn cho giảng viên.
+            Đồng bộ dữ liệu thực Kho D8: Chứng nhận số QR (Điều 15.2.e ≥ Khá), ĐRL & Học bổng CTSV (Điều 15.2.h), Đề cử Mẫu 5 & Giờ chuẩn GVHD.
           </Text>
         </div>
-
-        <Space wrap>
-          {isCTSV && pendingBonusCount > 0 && (
+        <Space>
+          <Button icon={<ReloadOutlined />} onClick={fetchData} loading={loading}>
+            Làm mới
+          </Button>
+          {isFacultyStaff && (
+            <Button
+              icon={<PlusOutlined />}
+              onClick={() => setNomModalVisible(true)}
+              disabled={eligibleAcceptedProjects.length === 0}
+            >
+              Đề cử Giải thưởng Mẫu 5
+            </Button>
+          )}
+          {isQLKHOrBoard && (
             <Button
               type="primary"
-              style={{ backgroundColor: '#52C41A', borderColor: '#52C41A', fontWeight: 600 }}
-              icon={<CheckCircleOutlined />}
-              onClick={handleBatchApprove}
+              icon={<SafetyCertificateOutlined />}
+              style={{ backgroundColor: '#C62828', borderColor: '#C62828' }}
+              onClick={() => setCertModalVisible(true)}
+              disabled={eligibleAcceptedProjects.length === 0}
             >
-              Duyệt cộng điểm toàn bộ ({pendingBonusCount})
+              Cấp Giấy chứng nhận số
             </Button>
           )}
-
-          {isCTSV && (
-            <Button icon={<ExportOutlined />} onClick={handleExportList}>
-              Xuất DS gửi Hội đồng ĐRL & Học bổng
-            </Button>
-          )}
-
-          <Button
-            type="primary"
-            style={{ backgroundColor: '#C62828', borderColor: '#C62828' }}
-            onClick={() => navigate('/forms')}
-          >
-            Xem Công văn Khen thưởng (Mẫu 5)
-          </Button>
         </Space>
       </div>
 
-      {/* THÔNG BÁO VAI TRÒ CHUYÊN BIỆT CHO PHÒNG CT&CTSV */}
       <Alert
-        message={
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8 }}>
-            <span>
-              <b>Cổng dịch vụ Phòng Chính trị & Công tác Sinh viên (P.CT&CTSV):</b> Bạn đang đăng nhập với vai trò{' '}
-              <Tag color="cyan" style={{ fontWeight: 600 }}>{user?.roleName || 'Phòng CT&CTSV'}</Tag>
-              {isCTSV
-                ? '• Có thẩm quyền thẩm định kết quả nghiệm thu, phê duyệt cộng Điểm rèn luyện (Mục 4 S-Link) và xác nhận điểm thưởng xét học bổng khuyến khích cho sinh viên NCKH theo Điều 15 QĐ 521/QĐ-HV.'
-                : '• Theo dõi quyền lợi cộng điểm rèn luyện, điểm thưởng TBC và tra cứu Giấy chứng nhận số hóa có mã QR.'}
-            </span>
-          </div>
-        }
-        type={isCTSV ? 'info' : 'success'}
+        type="info"
         showIcon
-        style={{ marginBottom: 20, borderRadius: 8 }}
+        style={{ marginBottom: 16 }}
+        message="Chính sách Quyền lợi & Chứng nhận theo Điều 15 QĐ 521/QĐ-HV"
+        description="• Cấp Giấy chứng nhận: Đạt kết quả Nghiệm thu từ Khá trở lên (≥ 70đ). • Cộng Điểm rèn luyện (P.CTSV): Xuất sắc (+10đ), Tốt (+8đ), Khá (+6đ), Đạt (+4đ). • Cộng Điểm học bổng Giải thưởng Trong nước: Nhất (+0.4), Nhì (+0.3), Ba (+0.2), KK (+0.1)."
       />
 
-      {/* 4 THẺ CHỈ SỐ THỐNG KÊ QUYỀN LỢI NCKH DÀNH CHO PHÒNG CTSV */}
-      <Row gutter={[16, 16]} style={{ marginBottom: 20 }}>
-        <Col xs={24} sm={12} lg={6}>
-          <div style={{ backgroundColor: '#FFFFFF', border: '1px solid #EDEDEE', borderRadius: 8, padding: 18, borderLeft: '4px solid #1890FF' }}>
-            <Statistic
-              title={<span style={{ fontSize: 13, color: '#595959', fontWeight: 600 }}>Tổng đề tài được khen thưởng</span>}
-              value={awardsList.length}
-              suffix="đề tài"
-              valueStyle={{ color: '#1890FF', fontWeight: 800, fontSize: 22 }}
-            />
-            <div style={{ fontSize: 12, color: '#8c8c8c', marginTop: 4 }}>Quyết định 1842/QĐ-HV & 521/QĐ-HV</div>
-          </div>
+      <Row gutter={[16, 16]} style={{ marginBottom: 16 }}>
+        <Col xs={12} sm={6}>
+          <Card bordered={false} style={{ borderRadius: 8 }}>
+            <Statistic title="Giấy chứng nhận số đã cấp" value={data.certificates.length} prefix={<SafetyCertificateOutlined />} valueStyle={{ color: '#C62828' }} />
+          </Card>
         </Col>
-
-        <Col xs={24} sm={12} lg={6}>
-          <div style={{ backgroundColor: '#FFFFFF', border: '1px solid #EDEDEE', borderRadius: 8, padding: 18, borderLeft: '4px solid #52C41A' }}>
-            <Statistic
-              title={<span style={{ fontSize: 13, color: '#595959', fontWeight: 600 }}>Đã duyệt cộng Điểm rèn luyện</span>}
-              value={approvedBonusCount}
-              suffix="đề tài"
-              valueStyle={{ color: '#52C41A', fontWeight: 800, fontSize: 22 }}
-            />
-            <div style={{ fontSize: 12, color: '#8c8c8c', marginTop: 4 }}>Đã đồng bộ lên Cổng S-Link sinh viên</div>
-          </div>
+        <Col xs={12} sm={6}>
+          <Card bordered={false} style={{ borderRadius: 8 }}>
+            <Statistic title="Hồ sơ Giải thưởng Mẫu 5" value={data.nominations.length} prefix={<TrophyOutlined />} valueStyle={{ color: '#D48806' }} />
+          </Card>
         </Col>
-
-        <Col xs={24} sm={12} lg={6}>
-          <div style={{ backgroundColor: '#FFFFFF', border: '1px solid #EDEDEE', borderRadius: 8, padding: 18, borderLeft: '4px solid #FA8C16' }}>
-            <Statistic
-              title={<span style={{ fontSize: 13, color: '#595959', fontWeight: 600 }}>Hồ sơ chờ P.CTSV phê duyệt</span>}
-              value={pendingBonusCount}
-              suffix="hồ sơ"
-              valueStyle={{ color: '#FA8C16', fontWeight: 800, fontSize: 22 }}
-            />
-            <div style={{ fontSize: 12, color: '#8c8c8c', marginTop: 4 }}>
-              {pendingBonusCount > 0 ? 'Cần duyệt để sinh viên kịp xét học bổng' : 'Toàn bộ hồ sơ đã được xử lý'}
-            </div>
-          </div>
+        <Col xs={12} sm={6}>
+          <Card bordered={false} style={{ borderRadius: 8 }}>
+            <Statistic title="Lượt SV xét ĐRL & Học bổng" value={data.studentBonuses.length} prefix={<StarOutlined />} valueStyle={{ color: '#1890FF' }} />
+          </Card>
         </Col>
-
-        <Col xs={24} sm={12} lg={6}>
-          <div style={{ backgroundColor: '#FFFFFF', border: '1px solid #EDEDEE', borderRadius: 8, padding: 18, borderLeft: '4px solid #C62828' }}>
+        <Col xs={12} sm={6}>
+          <Card bordered={false} style={{ borderRadius: 8 }}>
             <Statistic
-              title={<span style={{ fontSize: 13, color: '#595959', fontWeight: 600 }}>Ưu tiên xét Học bổng khuyến khích</span>}
-              value={awardsList.filter((a) => a.score >= 85).length}
-              suffix="sinh viên"
-              valueStyle={{ color: '#C62828', fontWeight: 800, fontSize: 22 }}
+              title="Tổng Giờ chuẩn GVHD"
+              value={data.lecturerHours.reduce((s, h) => s + Number(h.convertedHours || 0), 0)}
+              suffix="giờ"
+              prefix={<ClockCircleOutlined />}
+              valueStyle={{ color: '#389E0D' }}
             />
-            <div style={{ fontSize: 12, color: '#8c8c8c', marginTop: 4 }}>Đạt giải Nhất, Nhì cấp Học viện</div>
-          </div>
+          </Card>
         </Col>
       </Row>
 
-      {/* BẢNG DANH MỤC ĐỀ TÀI & QUYỀN LỢI ĐIỂM THƯỞNG */}
-      <Card
-        title={
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontWeight: 700, fontSize: 15 }}>
-              Danh mục đề tài được công nhận giải thưởng & Phê duyệt quyền lợi sinh viên (Điều 15 QĐ 521)
-            </span>
-          </div>
-        }
-        style={{ borderRadius: 8 }}
-      >
-        <Table
-          rowKey="id"
-          dataSource={awardsList}
-          pagination={false}
-          columns={[
+      <Card bordered={false} style={{ borderRadius: 8 }}>
+        <Tabs
+          defaultActiveKey="certs"
+          items={[
             {
-              title: 'Mã & Tên đề tài',
-              key: 'topic',
-              render: (_, r) => (
-                <div>
-                  <div style={{ fontWeight: 700, color: '#262626', fontSize: 14 }}>{r.title}</div>
-                  <div style={{ fontSize: 12, color: '#8c8c8c', marginTop: 3 }}>
-                    Mã đề tài: <b style={{ color: '#C62828' }}>{r.projectCode}</b> • Khoa/Viện: <b>{r.department}</b> • Điểm: <b style={{ color: '#1890FF' }}>{r.score}đ</b>
-                  </div>
-                </div>
+              key: 'certs',
+              label: `Giấy chứng nhận số (${data.certificates.length})`,
+              children: (
+                <Table
+                  loading={loading}
+                  rowKey="certId"
+                  dataSource={data.certificates}
+                  pagination={{ pageSize: 8 }}
+                  columns={[
+                    {
+                      title: 'Mã Chứng nhận',
+                      dataIndex: 'certCode',
+                      key: 'certCode',
+                      render: (code: string) => <Text strong style={{ color: '#C62828' }}>{code}</Text>,
+                    },
+                    {
+                      title: 'Người được cấp & Vai trò',
+                      key: 'recipient',
+                      render: (_: any, r: any) => (
+                        <div>
+                          <Text strong>{r.recipient?.fullName}</Text>{' '}
+                          <Tag color={r.recipientType === 'STUDENT' ? 'blue' : 'purple'}>
+                            {r.recipientType === 'STUDENT' ? 'Sinh viên' : 'GVHD'}
+                          </Tag>
+                        </div>
+                      ),
+                    },
+                    {
+                      title: 'Đề tài & Khoa',
+                      key: 'project',
+                      render: (_: any, r: any) => (
+                        <div>
+                          <a onClick={() => navigate(`/projects/${r.projectId}`)} style={{ fontWeight: 600 }}>
+                            {r.projectId}
+                          </a>
+                          <div style={{ fontSize: 12, color: '#595959' }}>{r.project?.titleVi}</div>
+                        </div>
+                      ),
+                    },
+                    {
+                      title: 'Xếp loại NT',
+                      dataIndex: 'grade',
+                      key: 'grade',
+                      render: (g: string) => {
+                        const info = GRADE_MAP[g] || { label: g, color: 'default' };
+                        return <Tag color={info.color}>{info.label}</Tag>;
+                      },
+                    },
+                    {
+                      title: 'Xác thực QR',
+                      key: 'verify',
+                      render: (_: any, r: any) => (
+                        <Button
+                          size="small"
+                          icon={<QrcodeOutlined />}
+                          onClick={() => navigate(`/verify-cert?code=${encodeURIComponent(r.certCode)}`)}
+                        >
+                          Mở bản số & QR
+                        </Button>
+                      ),
+                    },
+                  ]}
+                />
               ),
             },
             {
-              title: 'Chủ trì & Người hướng dẫn',
-              key: 'people',
-              width: 220,
-              render: (_, r) => (
-                <div style={{ fontSize: 13 }}>
-                  <div><b>SV:</b> {r.leader}</div>
-                  <div style={{ fontSize: 12, color: '#595959', marginTop: 2 }}><b>GVHD:</b> {r.advisor}</div>
-                </div>
+              key: 'bonuses',
+              label: `ĐRL & Điểm học bổng SV (${data.studentBonuses.length})`,
+              children: (
+                <Table
+                  loading={loading}
+                  rowKey="bonusId"
+                  dataSource={data.studentBonuses}
+                  pagination={{ pageSize: 8 }}
+                  columns={[
+                    {
+                      title: 'Sinh viên',
+                      key: 'student',
+                      render: (_: any, r: any) => (
+                        <div>
+                          <Text strong>{r.student?.user?.fullName}</Text>
+                          <div style={{ fontSize: 12, color: '#595959' }}>
+                            {r.studentId} • {r.student?.className} ({r.student?.department?.deptCode})
+                          </div>
+                        </div>
+                      ),
+                    },
+                    {
+                      title: 'Đề tài & Xếp loại',
+                      key: 'project',
+                      render: (_: any, r: any) => {
+                        const g = r.project?.acceptance?.grade;
+                        const info = GRADE_MAP[g] || { label: g || '—', color: 'default' };
+                        return (
+                          <div>
+                            <a onClick={() => navigate(`/projects/${r.projectId}`)} style={{ fontWeight: 600 }}>
+                              {r.projectId}
+                            </a>{' '}
+                            <Tag color={info.color}>{info.label}</Tag>
+                          </div>
+                        );
+                      },
+                    },
+                    {
+                      title: 'Điểm ĐRL (P.CTSV)',
+                      dataIndex: 'trainingScore',
+                      key: 'trainingScore',
+                      render: (v: any) => <Tag color="green">+{Number(v)} điểm ĐRL</Tag>,
+                    },
+                    {
+                      title: 'Điểm cộng Học bổng (Đ15.2.h)',
+                      dataIndex: 'bonusPoints',
+                      key: 'bonusPoints',
+                      render: (v: any) =>
+                        Number(v) > 0 ? <Tag color="gold">+{Number(v)} điểm TB học kỳ</Tag> : <Text type="secondary">0</Text>,
+                    },
+                    {
+                      title: 'Trạng thái CTSV',
+                      key: 'approvalStatus',
+                      render: (_: any, r: any) =>
+                        r.approvalStatus === 'APPROVED' ? (
+                          <Tag color="green" icon={<CheckCircleOutlined />}>
+                            Đã duyệt ({r.decisionNotice || 'CTSV'})
+                          </Tag>
+                        ) : (
+                          <Tag color="orange">Chờ Phòng CT&CTSV duyệt</Tag>
+                        ),
+                    },
+                    {
+                      title: 'Thao tác',
+                      key: 'action',
+                      render: (_: any, r: any) =>
+                        isCTSV && r.approvalStatus !== 'APPROVED' ? (
+                          <Button
+                            size="small"
+                            type="primary"
+                            style={{ backgroundColor: '#C62828', borderColor: '#C62828' }}
+                            onClick={() => handleApproveBonus(r.bonusId)}
+                          >
+                            CTSV Phê duyệt
+                          </Button>
+                        ) : null,
+                    },
+                  ]}
+                />
               ),
             },
             {
-              title: 'Danh hiệu khen thưởng',
-              dataIndex: 'awardType',
-              key: 'awardType',
-              width: 230,
-              render: (v, r) => (
-                <Tag color={r.tagColor} style={{ fontSize: 12, padding: '4px 10px', fontWeight: 600 }}>
-                  <TrophyOutlined style={{ marginRight: 4 }} /> {v}
-                </Tag>
+              key: 'nominations',
+              label: `Giải thưởng Mẫu 5 (${data.nominations.length})`,
+              children: (
+                <Table
+                  loading={loading}
+                  rowKey="nominationId"
+                  dataSource={data.nominations}
+                  pagination={{ pageSize: 8 }}
+                  columns={[
+                    {
+                      title: 'Đề tài đề cử',
+                      key: 'project',
+                      render: (_: any, r: any) => (
+                        <div>
+                          <a onClick={() => navigate(`/projects/${r.projectId}`)} style={{ fontWeight: 700, color: '#C62828' }}>
+                            {r.projectId}
+                          </a>
+                          <div style={{ fontSize: 12 }}>{r.project?.titleVi}</div>
+                        </div>
+                      ),
+                    },
+                    {
+                      title: 'Cấp giải thưởng',
+                      dataIndex: 'awardLevel',
+                      key: 'awardLevel',
+                      render: (lvl: string) => (
+                        <Tag color={lvl === 'MINISTRY' ? 'purple' : 'blue'}>
+                          {lvl === 'MINISTRY' ? 'Cấp Bộ GD&ĐT' : 'Cấp Học viện'}
+                        </Tag>
+                      ),
+                    },
+                    {
+                      title: 'Xếp giải & Tiền thưởng',
+                      key: 'prize',
+                      render: (_: any, r: any) => (
+                        <div>
+                          <Text strong>{r.prizeGrade || 'Đề xuất'}</Text>
+                          <div style={{ fontSize: 12, color: '#389E0D' }}>
+                            Thưởng: {Number(r.rewardAmount || 0).toLocaleString('vi-VN')}đ
+                            {Number(r.supportFund || 0) > 0 && ` (+Hỗ trợ: ${Number(r.supportFund).toLocaleString('vi-VN')}đ)`}
+                          </div>
+                        </div>
+                      ),
+                    },
+                    {
+                      title: 'Trạng thái',
+                      key: 'status',
+                      render: (_: any, r: any) =>
+                        r.status === 'APPROVED' ? (
+                          <Tag color="green">Đã duyệt ({r.rewardDecisionNo})</Tag>
+                        ) : (
+                          <Tag color="gold">Chờ P.QLKHCN / BGĐ duyệt</Tag>
+                        ),
+                    },
+                    {
+                      title: 'Thao tác',
+                      key: 'action',
+                      render: (_: any, r: any) =>
+                        isQLKHOrBoard && r.status !== 'APPROVED' ? (
+                          <Button
+                            size="small"
+                            type="primary"
+                            style={{ backgroundColor: '#C62828', borderColor: '#C62828' }}
+                            onClick={() => handleApproveNomination(r.nominationId)}
+                          >
+                            Phê duyệt Giải
+                          </Button>
+                        ) : null,
+                    },
+                  ]}
+                />
               ),
             },
             {
-              title: 'Quyền lợi theo Điều 15 QĐ 521',
-              key: 'benefits',
-              width: 260,
-              render: (_, r) => (
-                <div style={{ fontSize: 12, lineHeight: 1.6 }}>
-                  <div><UserOutlined style={{ color: '#1890FF', marginRight: 4 }} /> <b>Sinh viên:</b> {r.studentBonus}</div>
-                  <div style={{ color: '#595959', marginTop: 2 }}><SolutionOutlined style={{ color: '#52C41A', marginRight: 4 }} /> <b>GVHD:</b> {r.advisorHours}</div>
-                </div>
-              ),
-            },
-            {
-              title: 'Trạng thái CTSV duyệt điểm',
-              key: 'bonusStatus',
-              width: 210,
-              align: 'center',
-              render: (_, r) => (
-                <div>
-                  {r.bonusStatus === 'APPROVED' ? (
-                    <div>
-                      <Tag color="green" style={{ fontWeight: 600, fontSize: 11, padding: '2px 8px' }}>
-                        <CheckCircleOutlined style={{ marginRight: 4 }} />
-                        Đã duyệt cộng ĐRL
-                      </Tag>
-                      <div style={{ fontSize: 11, color: '#52C41A', marginTop: 4, fontWeight: 500 }}>
-                        +{r.drlPoints} ĐRL • +{r.gpaBonus} điểm TBC
-                      </div>
-                      <div style={{ fontSize: 10, color: '#8c8c8c', marginTop: 2 }}>
-                        {r.approvedBy} ({r.approvedDate})
-                      </div>
-                    </div>
-                  ) : (
-                    <div>
-                      <Tag color="orange" style={{ fontWeight: 600, fontSize: 11, padding: '2px 8px' }}>
-                        Chờ P.CTSV duyệt điểm
-                      </Tag>
-                      <div style={{ fontSize: 11, color: '#D48806', marginTop: 4 }}>
-                        Dự kiến: +{r.drlPoints} ĐRL • +{r.gpaBonus} TBC
-                      </div>
-                    </div>
-                  )}
-                </div>
-              ),
-            },
-            {
-              title: 'Thao tác số hóa',
-              key: 'actions',
-              width: 220,
-              align: 'center',
-              render: (_, r) => (
-                <Space size={6} wrap>
-                  <Tooltip title="Xem Giấy chứng nhận NCKH điện tử chuẩn của Giám đốc Học viện">
-                    <Button
-                      size="small"
-                      type="primary"
-                      icon={<QrcodeOutlined />}
-                      style={{ backgroundColor: '#1890FF', borderColor: '#1890FF', fontSize: 11 }}
-                      onClick={() => handleOpenCert(r)}
-                    >
-                      GCN QR
-                    </Button>
-                  </Tooltip>
-
-                  {/* NÚT THAO TÁC DUYỆT CỘNG ĐIỂM DÀNH RIÊNG CHO PHÒNG CT&CTSV */}
-                  {isCTSV && r.bonusStatus === 'PENDING' && (
-                    <Tooltip title="Phòng CT&CTSV phê duyệt cộng Điểm rèn luyện & Điểm thưởng xét học bổng theo Điều 15 QĐ 521">
-                      <Button
-                        size="small"
-                        type="primary"
-                        style={{ backgroundColor: '#52C41A', borderColor: '#52C41A', fontWeight: 600, fontSize: 11 }}
-                        icon={<CheckCircleOutlined />}
-                        onClick={() => handleOpenBonusModal(r)}
-                      >
-                        Duyệt cộng điểm
-                      </Button>
-                    </Tooltip>
-                  )}
-
-                  {isCTSV && r.bonusStatus === 'APPROVED' && (
-                    <Tooltip title="Chỉnh sửa hoặc cập nhật lại quyết định cộng điểm">
-                      <Button
-                        size="small"
-                        style={{ fontSize: 11, borderColor: '#52C41A', color: '#52C41A' }}
-                        icon={<FileDoneOutlined />}
-                        onClick={() => handleOpenBonusModal(r)}
-                      >
-                        Sửa mức điểm
-                      </Button>
-                    </Tooltip>
-                  )}
-                </Space>
+              key: 'hours',
+              label: `Giờ chuẩn NCKH GVHD (${data.lecturerHours.length})`,
+              children: (
+                <Table
+                  loading={loading}
+                  rowKey="hourId"
+                  dataSource={data.lecturerHours}
+                  pagination={{ pageSize: 8 }}
+                  columns={[
+                    {
+                      title: 'Giảng viên hướng dẫn',
+                      key: 'lecturer',
+                      render: (_: any, r: any) => (
+                        <div>
+                          <Text strong>
+                            <UserOutlined /> {r.lecturer?.user?.fullName}
+                          </Text>
+                          <div style={{ fontSize: 12, color: '#595959' }}>
+                            {r.lecturerId} • {r.lecturer?.department?.deptName}
+                          </div>
+                        </div>
+                      ),
+                    },
+                    {
+                      title: 'Đề tài hướng dẫn',
+                      key: 'project',
+                      render: (_: any, r: any) => (
+                        <div>
+                          <a onClick={() => navigate(`/projects/${r.projectId}`)} style={{ fontWeight: 600 }}>
+                            {r.projectId}
+                          </a>
+                          <div style={{ fontSize: 12 }}>{r.project?.titleVi}</div>
+                        </div>
+                      ),
+                    },
+                    {
+                      title: 'Năm học',
+                      dataIndex: 'academicYear',
+                      key: 'academicYear',
+                    },
+                    {
+                      title: 'Giờ chuẩn quy đổi',
+                      dataIndex: 'convertedHours',
+                      key: 'convertedHours',
+                      render: (h: any) => <Tag color="blue">{Number(h)} giờ chuẩn</Tag>,
+                    },
+                    {
+                      title: 'Xác nhận',
+                      key: 'declarationStatus',
+                      render: (_: any, r: any) =>
+                        r.declarationStatus === 'CONFIRMED' ? (
+                          <Tag color="green" icon={<CheckCircleOutlined />}>
+                            Đã chốt giờ NCKH
+                          </Tag>
+                        ) : (
+                          <Tag color="gold">Chờ P.QLKHCN chốt</Tag>
+                        ),
+                    },
+                    {
+                      title: 'Thao tác',
+                      key: 'action',
+                      render: (_: any, r: any) =>
+                        isQLKHOrBoard && r.declarationStatus !== 'CONFIRMED' ? (
+                          <Button size="small" type="primary" onClick={() => handleConfirmHours(r.hourId)}>
+                            Chốt giờ NCKH
+                          </Button>
+                        ) : null,
+                    },
+                  ]}
+                />
               ),
             },
           ]}
         />
       </Card>
 
-      {/* MODAL PHÊ DUYỆT CỘNG ĐIỂM RÈN LUYỆN & HỌC BỔNG - PHÒNG CT&CTSV */}
+      {/* Modal Đề cử Mẫu 5 */}
       <Modal
-        title={
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <CheckCircleOutlined style={{ color: '#52C41A', fontSize: 18 }} />
-            <span>Phê duyệt Quyền lợi Điểm rèn luyện & Học bổng Sinh viên NCKH (P.CT&CTSV)</span>
-          </div>
-        }
-        open={bonusModalVisible}
-        onCancel={() => setBonusModalVisible(false)}
-        footer={null}
-        width={620}
+        title="Lập Đề cử Khen thưởng Đề tài Xuất sắc (Mẫu 5 - QĐ 521)"
+        open={nomModalVisible}
+        onCancel={() => setNomModalVisible(false)}
+        onOk={() => nomForm.submit()}
+        confirmLoading={submitting}
+        okText="Gửi đề cử Mẫu 5"
+        okButtonProps={{ style: { backgroundColor: '#C62828', borderColor: '#C62828' } }}
       >
-        {selectedForBonus && (
-          <Form form={form} layout="vertical" onFinish={handleApproveBonus}>
-            <div
-              style={{
-                backgroundColor: '#F6FFED',
-                border: '1px solid #B7EB8F',
-                borderRadius: 6,
-                padding: '12px 16px',
-                marginBottom: 16,
-                fontSize: 13,
-              }}
-            >
-              <div>
-                Sinh viên thụ hưởng: <b>{selectedForBonus.studentName}</b> ({selectedForBonus.studentClass})
-              </div>
-              <div style={{ marginTop: 3 }}>
-                Đề tài: <b>{selectedForBonus.projectCode}</b> - {selectedForBonus.title}
-              </div>
-              <div style={{ marginTop: 3 }}>
-                Kết quả nghiệm thu: <Tag color="gold" style={{ fontWeight: 700 }}>{selectedForBonus.result} ({selectedForBonus.score} điểm)</Tag> • Danh hiệu: <b>{selectedForBonus.awardType}</b>
-              </div>
-            </div>
-
-            <Row gutter={16}>
-              <Col span={12}>
-                <Form.Item
-                  name="drlPoints"
-                  label={<b>Điểm rèn luyện cộng vào S-Link (Mục 4)</b>}
-                  rules={[{ required: true, message: 'Nhập điểm rèn luyện' }]}
-                >
-                  <InputNumber min={0} max={30} style={{ width: '100%' }} suffix="điểm ĐRL" />
-                </Form.Item>
-              </Col>
-              <Col span={12}>
-                <Form.Item
-                  name="gpaBonus"
-                  label={<b>Điểm thưởng TBC xét học bổng KKHT</b>}
-                  rules={[{ required: true, message: 'Nhập điểm thưởng TBC' }]}
-                >
-                  <InputNumber min={0} max={1} step={0.05} style={{ width: '100%' }} suffix="điểm TBC" />
-                </Form.Item>
-              </Col>
-            </Row>
-
-            <Row gutter={16}>
-              <Col span={12}>
-                <Form.Item name="creditBonus" label="Tín chỉ NCKH được miễn / tích lũy">
-                  <InputNumber min={0} max={6} style={{ width: '100%' }} suffix="tín chỉ" />
-                </Form.Item>
-              </Col>
-              <Col span={12}>
-                <Form.Item name="semester" label="Kỳ học áp dụng quyền lợi">
-                  <Input />
-                </Form.Item>
-              </Col>
-            </Row>
-
-            <Form.Item
-              name="noticeNo"
-              label="Số Thông báo / Quyết định duyệt của Phòng CT&CTSV"
-              rules={[{ required: true, message: 'Nhập số thông báo' }]}
-            >
-              <Input placeholder="Ví dụ: TB-CTSV-DRL-2027/02" />
-            </Form.Item>
-
-            <Form.Item name="note" label="Ghi chú phê duyệt">
-              <Input.TextArea rows={2} />
-            </Form.Item>
-
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, marginTop: 20 }}>
-              <Button onClick={() => setBonusModalVisible(false)}>Hủy bỏ</Button>
-              <Button
-                type="primary"
-                htmlType="submit"
-                style={{ backgroundColor: '#52C41A', borderColor: '#52C41A', fontWeight: 600 }}
-                icon={<CheckCircleOutlined />}
-              >
-                Xác nhận & Đồng bộ Cổng S-Link
-              </Button>
-            </div>
-          </Form>
-        )}
+        <Form form={nomForm} layout="vertical" onFinish={handleCreateNomination}>
+          <Form.Item name="projectId" label="Chọn đề tài đã nghiệm thu (≥ Khá)" rules={[{ required: true }]}>
+            <Select placeholder="Chọn đề tài đạt Khá trở lên">
+              {eligibleAcceptedProjects.map((p) => (
+                <Select.Option key={p.project_id} value={p.project_id}>
+                  {p.project_id} — {p.title_vi} ({p.acceptances?.grade})
+                </Select.Option>
+              ))}
+            </Select>
+          </Form.Item>
+          <Form.Item name="awardLevel" label="Cấp đề cử" initialValue="INSTITUTE">
+            <Select>
+              <Select.Option value="INSTITUTE">Giải thưởng NCKH Cấp Học viện PTIT</Select.Option>
+              <Select.Option value="MINISTRY">Dự thi Sinh viên NCKH Cấp Bộ GD&ĐT</Select.Option>
+            </Select>
+          </Form.Item>
+          <Form.Item name="prizeGrade" label="Xếp giải đề xuất" initialValue="Đề xuất Giải Nhì">
+            <Input />
+          </Form.Item>
+          <Form.Item name="rewardAmount" label="Mức tiền thưởng đề xuất (VNĐ)" initialValue={3000000}>
+            <InputNumber style={{ width: '100%' }} min={500000} step={500000} />
+          </Form.Item>
+        </Form>
       </Modal>
 
-      {/* MODAL GIẤY CHỨNG NHẬN ĐIỆN TỬ TRA CỨU QR CHUẨN XÁC 100% THEO ẢNH BẠN GỬI */}
+      {/* Modal Cấp Giấy chứng nhận số */}
       <Modal
-        title={
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <SafetyCertificateOutlined style={{ color: '#C62828', fontSize: 18 }} />
-            <span>Giấy Chứng Nhận NCKH Sinh viên Học viện PTIT (Có Mã QR & Dấu Mộc Đỏ)</span>
-          </div>
-        }
+        title="Cấp Giấy chứng nhận Điện tử cho Đề tài (Điều 15.2.e)"
         open={certModalVisible}
         onCancel={() => setCertModalVisible(false)}
-        width={960}
-        footer={[
-          <Button key="close" onClick={() => setCertModalVisible(false)}>
-            Đóng
-          </Button>,
-          <Button
-            key="verify"
-            icon={<GlobalOutlined />}
-            onClick={() => {
-              window.open(
-                `/verify-cert?code=${encodeURIComponent(selectedAward?.certNo || '')}&student=${encodeURIComponent(
-                  selectedAward?.studentName || '',
-                )}&decision=${encodeURIComponent(selectedAward?.decisionNo || '')}&result=${encodeURIComponent(
-                  selectedAward?.result || '',
-                )}`,
-                '_blank',
-              );
-            }}
-          >
-            Trang Tra cứu QR Trực tuyến
-          </Button>,
-          <Button
-            key="print"
-            type="primary"
-            style={{ backgroundColor: '#C62828', borderColor: '#C62828' }}
-            icon={<PrinterOutlined />}
-            onClick={() => printElement('printable-ptit-certificate', `Giay_Chung_Nhan_${selectedAward?.certNo}`)}
-          >
-            In Giấy chứng nhận A4
-          </Button>,
-        ]}
+        onOk={() => certForm.submit()}
+        confirmLoading={submitting}
+        okText="Phát hành Chứng nhận & QR"
+        okButtonProps={{ style: { backgroundColor: '#C62828', borderColor: '#C62828' } }}
       >
-        {selectedAward && (
-          <div>
-            <div style={{ marginBottom: 12, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ fontSize: 13, color: '#595959' }}>
-                Mẫu giấy chứng nhận chuẩn theo mẫu phôi in ấn thực tế của Học viện PTIT. Mã QR nhỏ gọn ở góc trái dùng camera điện thoại quét trực tiếp để kiểm tra tính hợp lệ.
-              </span>
-            </div>
-
-            <PtitCertificate
-              studentName={selectedAward.studentName}
-              studentClass={selectedAward.studentClass}
-              department={selectedAward.department}
-              projectTitle={selectedAward.title}
-              projectCode={selectedAward.projectCode}
-              academicYear={selectedAward.academicYear}
-              result={selectedAward.result}
-              decisionNo={selectedAward.decisionNo}
-              issueDate={selectedAward.issueDate}
-              certNo={selectedAward.certNo}
-              signatoryTitle="GIÁM ĐỐC"
-              signatoryName="PGS.TS. Đặng Hoài Bắc"
-              printableId="printable-ptit-certificate"
-            />
-          </div>
-        )}
+        <Form form={certForm} layout="vertical" onFinish={handleIssueCertificates}>
+          <Form.Item name="projectId" label="Chọn đề tài đủ điều kiện (Nghiệm thu ≥ Khá)" rules={[{ required: true }]}>
+            <Select placeholder="Chọn đề tài">
+              {eligibleAcceptedProjects.map((p) => (
+                <Select.Option key={p.project_id} value={p.project_id}>
+                  {p.project_id} — {p.title_vi} ({p.acceptances?.avg_score}đ - {p.acceptances?.grade})
+                </Select.Option>
+              ))}
+            </Select>
+          </Form.Item>
+        </Form>
       </Modal>
     </div>
   );

@@ -1,24 +1,68 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { Button, Space, Alert } from 'antd';
+import { Button, Space, Alert, Spin } from 'antd';
 import {
   CheckCircleFilled,
   HomeOutlined,
   PrinterOutlined,
+  WarningOutlined,
 } from '@ant-design/icons';
 import { PtitCertificate } from '../components/qd521/PtitCertificate';
 import { printElement } from '../utils/printHelper';
+import api from '../services/api';
+
+const GRADE_LABEL: Record<string, string> = {
+  XUAT_SAC: 'Xuất sắc',
+  TOT: 'Tốt',
+  KHA: 'Khá',
+  DAT: 'Đạt',
+};
 
 export const VerifyCertificatePage: React.FC = () => {
   const [params] = useSearchParams();
   const navigate = useNavigate();
 
-  const code = params.get('code') || 'GCN-2025-RIPT-032';
-  const student = params.get('student') || 'NGUYỄN TIẾN ĐẠT';
+  const code = params.get('code') || 'CN-SV-2026-CNTT1-001-SV01';
+  const student = params.get('student') || '';
 
-  const isNguyenTienDat = student.toUpperCase().includes('ĐẠT') || code.includes('RIPT') || code.includes('032');
+  const [loading, setLoading] = useState(true);
+  const [dbCert, setDbCert] = useState<any>(null);
 
-  const certData = isNguyenTienDat
+  useEffect(() => {
+    const fetchCert = async () => {
+      try {
+        setLoading(true);
+        const res = await api.get(`/awards/certificates/verify/${encodeURIComponent(code)}`);
+        setDbCert(res.data);
+      } catch {
+        setDbCert(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchCert();
+  }, [code]);
+
+  const isLegacySample = !dbCert && (student.toUpperCase().includes('ĐẠT') || code.includes('RIPT') || code.includes('032'));
+
+  const certData = dbCert
+    ? {
+        studentName: (dbCert.recipient?.fullName || 'SINH VIÊN PTIT').toUpperCase(),
+        studentClass: dbCert.recipientType === 'ADVISOR' ? 'Giảng viên hướng dẫn' : 'Sinh viên PTIT',
+        department: dbCert.project?.department?.deptName || 'Học viện Công nghệ Bưu chính Viễn thông',
+        projectTitle: dbCert.project?.titleVi || '',
+        projectCode: dbCert.projectId,
+        academicYear: '2026-2027',
+        result: GRADE_LABEL[dbCert.grade] || dbCert.grade,
+        decisionNo: dbCert.project?.acceptance?.approvalDocNo || '521/QĐ-HV',
+        issueDate: dbCert.issuedDate
+          ? new Date(dbCert.issuedDate).toLocaleDateString('vi-VN')
+          : 'ngày 05 tháng 5 năm 2027',
+        certNo: dbCert.certCode,
+        signatoryTitle: 'GIÁM ĐỐC',
+        signatoryName: 'PGS.TS. Đặng Hoài Bắc',
+      }
+    : isLegacySample
     ? {
         studentName: 'NGUYỄN TIẾN ĐẠT',
         studentClass: 'D23CCHT01',
@@ -34,7 +78,7 @@ export const VerifyCertificatePage: React.FC = () => {
         signatoryName: 'PGS.TS. Đặng Hoài Bắc',
       }
     : {
-        studentName: 'NGUYỄN VĂN AN',
+        studentName: (student || 'NGUYỄN VĂN AN').toUpperCase(),
         studentClass: 'D23CQCN01-B',
         department: 'Khoa Công nghệ thông tin 1',
         projectTitle: 'Nghiên cứu và xây dựng hệ thống web quản lý đề tài NCKH sinh viên PTIT S-Link',
@@ -43,7 +87,7 @@ export const VerifyCertificatePage: React.FC = () => {
         result: 'Xuất sắc',
         decisionNo: '521/QĐ-HV',
         issueDate: 'ngày 05 tháng 5 năm 2027',
-        certNo: 'GCN-NCKH-2027-001',
+        certNo: code,
         signatoryTitle: 'GIÁM ĐỐC',
         signatoryName: 'PGS.TS. Đặng Hoài Bắc',
       };
@@ -51,7 +95,6 @@ export const VerifyCertificatePage: React.FC = () => {
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#F0F2F5', padding: '24px 16px' }}>
       <div style={{ maxWidth: 950, margin: '0 auto' }}>
-        {/* BANNER XÁC THỰC CHÍNH THỨC CỦA HỌC VIỆN PTIT */}
         <div
           style={{
             backgroundColor: '#FFFFFF',
@@ -93,34 +136,33 @@ export const VerifyCertificatePage: React.FC = () => {
           </Space>
         </div>
 
-        {/* THÔNG BÁO XÁC THỰC THÀNH CÔNG */}
-        <Alert
-          message={
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 14 }}>
-              <CheckCircleFilled style={{ color: '#52C41A', fontSize: 18 }} />
-              <b style={{ color: '#52C41A' }}>HỒ SƠ GIẤY CHỨNG NHẬN ĐIỆN TỬ HỢP LỆ & CHÍNH THỨC</b>
-            </div>
-          }
-          description={
-            <div style={{ fontSize: 13, marginTop: 4 }}>
-              Giấy chứng nhận số <b>{certData.certNo}</b> cấp cho sinh viên <b>{certData.studentName}</b> theo Quyết định số <b>{certData.decisionNo}</b> đã được ký số và đóng dấu mộc pháp lý bởi Giám đốc Học viện. Dữ liệu đối soát khớp 100% với Cơ sở Dữ liệu KH&CN Học viện PTIT.
-            </div>
-          }
-          type="success"
-          showIcon={false}
-          style={{ marginBottom: 20, borderRadius: 8, border: '1px solid #B7EB8F' }}
-        />
+        <Spin spinning={loading}>
+          {dbCert ? (
+            <Alert
+              type="success"
+              showIcon
+              icon={<CheckCircleFilled />}
+              style={{ marginBottom: 20 }}
+              message={`Chứng nhận số "${certData.certNo}" HỢP LỆ trên Hệ thống dữ liệu gốc PTIT SRMS`}
+              description={`Cấp cho ${certData.studentName} (${certData.department}) — Đề tài ${certData.projectCode}, xếp loại ${certData.result}.`}
+            />
+          ) : (
+            <Alert
+              type={isLegacySample ? 'info' : 'warning'}
+              showIcon
+              icon={isLegacySample ? <CheckCircleFilled /> : <WarningOutlined />}
+              style={{ marginBottom: 20 }}
+              message={
+                isLegacySample
+                  ? `Bản xem trước mẫu chứng nhận tham chiếu "${certData.certNo}"`
+                  : `Không tìm thấy mã chứng nhận "${code}" trong CSDL hiện tại — Đang hiển thị bản xem trước tham khảo`
+              }
+            />
+          )}
 
-        {/* TỜ GIẤY CHỨNG NHẬN CHUẨN XÁC 100% */}
-        <div style={{ boxShadow: '0 4px 16px rgba(0,0,0,0.1)', borderRadius: 4, overflow: 'hidden' }}>
           <PtitCertificate {...certData} />
-        </div>
-
-        <div style={{ textAlign: 'center', marginTop: 24, fontSize: 12, color: '#8c8c8c' }}>
-          Hệ thống Quản lý Đề tài Nghiên cứu Khoa học Sinh viên (SRMS) • Học viện Công nghệ Bưu chính Viễn thông
-        </div>
+        </Spin>
       </div>
     </div>
   );
 };
-

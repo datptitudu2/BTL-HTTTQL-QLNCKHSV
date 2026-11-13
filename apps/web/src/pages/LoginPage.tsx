@@ -57,8 +57,10 @@ export const LoginPage: React.FC = () => {
 
   // Danh mục tài khoản chuẩn hóa theo 9 vai trò PTIT (kèm nhiều GVHD theo Khoa)
   const quickAccounts = [
-    { role: 'Sinh viên', username: 'an.nv', code: 'STUDENT', desc: 'Nguyễn Văn An (Chủ nhiệm đề tài D23CQCN01-B)' },
+    { role: 'Sinh viên', username: 'an.nv', code: 'STUDENT', desc: 'Nguyễn Văn An (Chủ nhiệm SV-2026-CNTT1-001)' },
+    { role: 'SV mới (chưa ĐK)', username: 'sv.moi', code: 'STUDENT', desc: 'Lê Hoàng Nam (B23DCCN099 - chưa có đề tài để test Đăng ký mới)' },
     { role: 'GVHD (CNTT)', username: 'dungnq', code: 'LECTURER', desc: 'TS. Ngô Quốc Dũng - Bộ môn CNPM, Khoa CNTT 1' },
+    { role: 'GVHD (DL)', username: 'hungvt', code: 'LECTURER', desc: 'TS. Vũ Trọng Hùng - Khoa CNTT 1 (1/2 đề tài)' },
     { role: 'GVHD (ĐPT)', username: 'tritd', code: 'LECTURER', desc: 'TS. Trần Đình Trí - Khoa Đa phương tiện' },
     { role: 'GVHD (QTKD)', username: 'huydq', code: 'LECTURER', desc: 'TS. Đinh Quang Huy - Khoa Quản trị kinh doanh' },
     { role: 'GVHD (ATTT)', username: 'tuannv', code: 'LECTURER', desc: 'TS. Nguyễn Văn Tuấn - Khoa An toàn thông tin' },

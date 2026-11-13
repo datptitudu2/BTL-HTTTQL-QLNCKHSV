@@ -29,11 +29,13 @@ export class AuthService {
   async validateUser(username: string, pass: string) {
     const usernameAliases: Record<string, string> = {
       'an.nv': 'sv001',
+      'sv.moi': 'sv015',
       'dungnq': 'gv001',
       'tritd': 'gv002',
       'huydq': 'gv003',
       'tuannv': 'gv004',
       'minhh': 'gv005',
+      'hungvt': 'gv006',
       'thukycntt1': 'tk001',
       'khoacntt1': 'lead001',
       'qlkhcn': 'qlkh001',
