@@ -77,9 +77,12 @@ const formatRemindChannels = (channels?: string) => {
 
 const REQUEST_TYPE_LABEL: Record<string, string> = {
   EXTENSION: 'Gia hạn tiến độ',
+  ADJUSTMENT: 'Điều chỉnh nội dung / Thành viên',
   MEMBER_CHANGE: 'Điều chỉnh thành viên',
   TITLE_CHANGE: 'Điều chỉnh tên đề tài',
+  CHANGE_ADVISOR: 'Thay đổi GVHD',
   ADVISOR_CHANGE: 'Thay đổi GVHD',
+  CANCELLATION: 'Xin rút / Hủy đề tài',
   CANCEL: 'Xin dừng đề tài',
 };
 
@@ -126,6 +129,8 @@ export const ProgressPage: React.FC = () => {
 
   const [extraInviteesText, setExtraInviteesText] = useState('');
   const [minutesFeedback, setMinutesFeedback] = useState('');
+  const [minutesOverallAssessment, setMinutesOverallAssessment] = useState('');
+  const [minutesRevisionRequests, setMinutesRevisionRequests] = useState('');
   const [reportReviewAssessment, setReportReviewAssessment] = useState<'PASS' | 'WARNING_DELAY'>('PASS');
   const [reportReviewComment, setReportReviewComment] = useState('');
 
@@ -234,10 +239,15 @@ export const ProgressPage: React.FC = () => {
       setSubmitting(true);
       await api.patch(`/progress/seminars/${minutesModalSeminar.seminarId}/minutes`, {
         feedback: minutesFeedback,
+        discussion: minutesFeedback,
+        overallAssessment: minutesOverallAssessment,
+        revisionRequests: minutesRevisionRequests,
       });
       message.success('Đã lưu Biên bản Sinh hoạt khoa học Mẫu 3.5!');
       setMinutesModalSeminar(null);
       setMinutesFeedback('');
+      setMinutesOverallAssessment('');
+      setMinutesRevisionRequests('');
       await fetchAll();
     } catch (err: any) {
       message.error(err.response?.data?.detail || err.response?.data?.message || 'Không thể lưu biên bản');
@@ -539,7 +549,7 @@ export const ProgressPage: React.FC = () => {
                               >
                                 <b>Kết luận Hội thảo Mẫu 3.5:</b>{' '}
                                 <span style={{ color: '#262626' }}>
-                                  {sem.feedback || 'Đã hoàn tất sinh hoạt khoa học trước giai đoạn nghiệm thu.'}
+                                  {sem.overallAssessment || sem.discussion || sem.feedback || 'Đã hoàn tất sinh hoạt khoa học trước giai đoạn nghiệm thu.'}
                                 </span>
                               </div>
                             )}
@@ -577,7 +587,9 @@ export const ProgressPage: React.FC = () => {
                                 icon={<FileDoneOutlined />}
                                 onClick={() => {
                                   setMinutesModalSeminar(sem);
-                                  setMinutesFeedback(sem.feedback || '');
+                                  setMinutesFeedback(sem.discussion || sem.feedback || '');
+                                  setMinutesOverallAssessment(sem.overallAssessment || 'Đề tài thực hiện đúng tiến độ, đạt yêu cầu trình Hội đồng nghiệm thu.');
+                                  setMinutesRevisionRequests(sem.revisionRequests || 'Hoàn thiện thêm phần thực nghiệm và trình bày báo cáo tổng kết Mẫu 3.3.');
                                 }}
                               >
                                 {isSeminarClosed ? 'Xem Biên bản Mẫu 3.5' : 'Biên bản Mẫu 3.5'}
@@ -740,8 +752,20 @@ export const ProgressPage: React.FC = () => {
                           key: 'action',
                           render: (_: any, r: any) => {
                             if (r.resultStatus !== 'PENDING') return null;
-                            if (!['LECTURER', 'FACULTY_LEADER', 'FACULTY_SECRETARY', 'QLKHCN', 'BOARD', 'ADMIN'].includes(roleCode)) {
-                              return null;
+                            const advisorOk = r.approvals?.some((a: any) => a.stage === 'ADVISOR' && a.decision === 'APPROVED');
+                            const facultyOk = r.approvals?.some((a: any) => a.stage === 'FACULTY_LEADER' && a.decision === 'APPROVED');
+                            const canCurrentRoleAct =
+                              roleCode === 'ADMIN' ||
+                              (roleCode === 'LECTURER' && !advisorOk) ||
+                              ((roleCode === 'FACULTY_LEADER' || roleCode === 'FACULTY_SECRETARY') && advisorOk && !facultyOk) ||
+                              (['QLKHCN', 'BOARD'].includes(roleCode) && facultyOk);
+
+                            if (!canCurrentRoleAct) {
+                              return (
+                                <Text type="secondary" style={{ fontSize: 11 }}>
+                                  {!advisorOk ? 'Chờ GVHD' : !facultyOk ? 'Chờ Khoa' : 'Chờ P.QLKHCN'}
+                                </Text>
+                              );
                             }
                             return (
                               <Space>
@@ -907,7 +931,7 @@ export const ProgressPage: React.FC = () => {
         footer={[
           <Button key="close" onClick={() => setMinutesModalSeminar(null)}>Đóng</Button>,
           (isStaff || isLecturer) &&
-            !['SUBMITTED', 'ACCEPTED', 'REJECTED'].includes(minutesModalSeminar?.project?.status) && (
+            !['SUBMITTED', 'ACCEPTED', 'REJECTED', 'CANCELLED'].includes(minutesModalSeminar?.project?.status) && (
             <Button
               key="save"
               type="primary"
@@ -920,13 +944,38 @@ export const ProgressPage: React.FC = () => {
           ),
         ]}
       >
-        <TextArea
-          rows={5}
-          value={minutesFeedback}
-          onChange={(e) => setMinutesFeedback(e.target.value)}
-          disabled={(!isStaff && !isLecturer) || ['SUBMITTED', 'ACCEPTED', 'REJECTED'].includes(minutesModalSeminar?.project?.status)}
-          placeholder="Ghi chép ý kiến đóng góp chuyên môn của Hội đồng Khoa/Bộ môn & Kết luận cho nhóm nghiên cứu..."
-        />
+        <Space direction="vertical" style={{ width: '100%' }} size={12}>
+          <div>
+            <Text strong style={{ display: 'block', marginBottom: 4 }}>1. Tóm tắt nội dung thảo luận (discussion):</Text>
+            <TextArea
+              rows={3}
+              value={minutesFeedback}
+              onChange={(e) => setMinutesFeedback(e.target.value)}
+              disabled={(!isStaff && !isLecturer) || ['SUBMITTED', 'ACCEPTED', 'REJECTED', 'CANCELLED'].includes(minutesModalSeminar?.project?.status)}
+              placeholder="Ghi chép ý kiến đóng góp chuyên môn của Hội đồng Khoa/Bộ môn..."
+            />
+          </div>
+          <div>
+            <Text strong style={{ display: 'block', marginBottom: 4 }}>2. Đánh giá chung của Hội thảo (overall_assessment):</Text>
+            <TextArea
+              rows={2}
+              value={minutesOverallAssessment}
+              onChange={(e) => setMinutesOverallAssessment(e.target.value)}
+              disabled={(!isStaff && !isLecturer) || ['SUBMITTED', 'ACCEPTED', 'REJECTED', 'CANCELLED'].includes(minutesModalSeminar?.project?.status)}
+              placeholder="Đánh giá chung về tiến độ, kết quả và khả năng trình Hội đồng nghiệm thu..."
+            />
+          </div>
+          <div>
+            <Text strong style={{ display: 'block', marginBottom: 4 }}>3. Những nội dung cần bổ sung, sửa đổi (revision_requests):</Text>
+            <TextArea
+              rows={2}
+              value={minutesRevisionRequests}
+              onChange={(e) => setMinutesRevisionRequests(e.target.value)}
+              disabled={(!isStaff && !isLecturer) || ['SUBMITTED', 'ACCEPTED', 'REJECTED', 'CANCELLED'].includes(minutesModalSeminar?.project?.status)}
+              placeholder="Các yêu cầu chỉnh sửa hoàn thiện trước khi nộp báo cáo tổng kết..."
+            />
+          </div>
+        </Space>
       </Modal>
 
       {/* Modal SV nộp Báo cáo tiến độ */}

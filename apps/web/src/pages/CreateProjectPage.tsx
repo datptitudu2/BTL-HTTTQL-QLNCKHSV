@@ -4,6 +4,7 @@ import {
   Form,
   Input,
   Select,
+  AutoComplete,
   InputNumber,
   Button,
   Typography,
@@ -72,9 +73,11 @@ export const CreateProjectPage: React.FC = () => {
     titleVi: '',
     titleEn: '',
     researchField: 'Công nghệ thông tin',
-    lecturerId: 'GV001',
+    lecturerId: 'GV006',
     lecturerName: 'TS. Ngô Quốc Dũng',
     lecturerEmail: 'dungnq@ptit.edu.vn',
+    deptName: 'Khoa Công nghệ thông tin 1',
+    deptCode: 'CNTT1',
     objectives: '',
     content: '',
     methodology: '',
@@ -116,6 +119,18 @@ export const CreateProjectPage: React.FC = () => {
             s.user?.userId === user?.userId ||
             s.user?.fullName === user?.fullName,
         );
+        const defaultLec = lecs.find((l: any) => (l.lecturerId || l.lecturer_id) === form.getFieldValue('lecturerId')) || lecs[0];
+        if (defaultLec) {
+          form.setFieldValue('lecturerId', defaultLec.lecturerId || defaultLec.lecturer_id);
+        }
+        setFormData((prev: any) => ({
+          ...prev,
+          deptName: myStu?.department?.deptName || prev.deptName,
+          deptCode: myStu?.department?.deptCode || prev.deptCode,
+          lecturerId: defaultLec?.lecturerId || defaultLec?.lecturer_id || prev.lecturerId,
+          lecturerName: defaultLec?.user?.fullName || defaultLec?.users?.full_name || prev.lecturerName,
+          lecturerEmail: defaultLec?.user?.email || defaultLec?.users?.email || prev.lecturerEmail,
+        }));
         if (myStu) {
           setMembers((prev) =>
             prev.map((m) =>
@@ -168,7 +183,7 @@ export const CreateProjectPage: React.FC = () => {
       memberRole: 'MEMBER',
       studentId: '',
       fullName: '',
-      className: 'D23CQCN01-B',
+      className: '',
       email: '',
       contributionPct: 0,
       assignedTask: 'Hỗ trợ thu thập tài liệu và thử nghiệm',
@@ -186,7 +201,24 @@ export const CreateProjectPage: React.FC = () => {
   };
 
   const handleUpdateMember = (id: string, field: keyof ProjectMember, value: any) => {
-    setMembers(members.map((m) => (m.id === id ? { ...m, [field]: value } : m)));
+    setMembers((prev) => prev.map((m) => (m.id === id ? { ...m, [field]: value } : m)));
+  };
+
+  const applyStudentToMember = (rowId: string, stu: any) => {
+    if (!stu) return;
+    setMembers((prev) =>
+      prev.map((row) =>
+        row.id === rowId
+          ? {
+              ...row,
+              studentId: stu.studentId,
+              fullName: stu.user?.fullName || '',
+              className: stu.className || '',
+              email: stu.user?.email || '',
+            }
+          : row,
+      ),
+    );
   };
 
   const totalContribution = members.reduce((sum, m) => sum + (Number(m.contributionPct) || 0), 0);
@@ -510,27 +542,103 @@ export const CreateProjectPage: React.FC = () => {
                       <Row gutter={[10, 8]}>
                         <Col span={6}>
                           <div style={{ fontSize: 11, color: '#8c8c8c', marginBottom: 2 }}>Mã SV *</div>
-                          <Input
-                            size="small"
-                            value={m.studentId}
-                            onChange={(e) => handleUpdateMember(m.id, 'studentId', e.target.value)}
-                            placeholder="B23DCCN001"
-                          />
+                          {m.memberRole === 'LEADER' ? (
+                            <Input size="small" value={m.studentId} disabled />
+                          ) : (
+                            <AutoComplete
+                              size="small"
+                              style={{ width: '100%' }}
+                              placeholder="Nhập hoặc chọn Mã SV"
+                              value={m.studentId}
+                              onChange={(val) => {
+                                handleUpdateMember(m.id, 'studentId', val);
+                                const exact = studentsList.find(
+                                  (s) =>
+                                    s.studentId?.toLowerCase() === String(val || '').trim().toLowerCase() &&
+                                    !s.hasActiveProject &&
+                                    !members.some((other) => other.id !== m.id && other.studentId === s.studentId),
+                                );
+                                if (exact) applyStudentToMember(m.id, exact);
+                              }}
+                              onSelect={(_val, option: any) => applyStudentToMember(m.id, option?.student)}
+                              filterOption={(inputValue, option: any) =>
+                                String(option?.searchText || '')
+                                  .toLowerCase()
+                                  .includes(inputValue.toLowerCase())
+                              }
+                              options={[...studentsList]
+                                .sort((a: any, b: any) => Number(Boolean(a.hasActiveProject)) - Number(Boolean(b.hasActiveProject)))
+                                .map((s: any) => {
+                                  const alreadyInGroup = members.some((other) => other.id !== m.id && other.studentId === s.studentId);
+                                  const isBlocked = Boolean(s.hasActiveProject) || alreadyInGroup;
+                                  return {
+                                    value: s.studentId,
+                                    student: s,
+                                    disabled: isBlocked,
+                                    searchText: `${s.studentId} ${s.user?.fullName || ''} ${s.className || ''}`,
+                                    label: (
+                                      <div style={{ display: 'flex', justifyContent: 'space-between', gap: 6, fontSize: 12 }}>
+                                        <span>
+                                          <strong>{s.studentId}</strong> - {s.user?.fullName || ''}
+                                        </span>
+                                        <span style={{ color: isBlocked ? '#8c8c8c' : '#389E0D', fontSize: 11 }}>
+                                          {alreadyInGroup ? 'Đã trong nhóm' : s.hasActiveProject ? 'Đã có đề tài' : 'Sẵn sàng'}
+                                        </span>
+                                      </div>
+                                    ),
+                                  };
+                                })}
+                            />
+                          )}
                         </Col>
                         <Col span={7}>
                           <div style={{ fontSize: 11, color: '#8c8c8c', marginBottom: 2 }}>Họ và tên *</div>
-                          <Input
-                            size="small"
-                            value={m.fullName}
-                            onChange={(e) => handleUpdateMember(m.id, 'fullName', e.target.value)}
-                            placeholder="Nguyễn Văn An"
-                          />
+                          {m.memberRole === 'LEADER' ? (
+                            <Input size="small" value={m.fullName} disabled />
+                          ) : (
+                            <AutoComplete
+                              size="small"
+                              style={{ width: '100%' }}
+                              placeholder="Nhập hoặc tìm tên SV..."
+                              value={m.fullName}
+                              onChange={(val) => handleUpdateMember(m.id, 'fullName', val)}
+                              onSelect={(_val, option: any) => applyStudentToMember(m.id, option?.student)}
+                              filterOption={(inputValue, option: any) =>
+                                String(option?.searchText || '')
+                                  .toLowerCase()
+                                  .includes(inputValue.toLowerCase())
+                              }
+                              options={[...studentsList]
+                                .sort((a: any, b: any) => Number(Boolean(a.hasActiveProject)) - Number(Boolean(b.hasActiveProject)))
+                                .map((s: any) => {
+                                  const alreadyInGroup = members.some((other) => other.id !== m.id && other.studentId === s.studentId);
+                                  const isBlocked = Boolean(s.hasActiveProject) || alreadyInGroup;
+                                  return {
+                                    value: s.user?.fullName || s.studentId,
+                                    student: s,
+                                    disabled: isBlocked,
+                                    searchText: `${s.user?.fullName || ''} ${s.studentId} ${s.className || ''}`,
+                                    label: (
+                                      <div style={{ display: 'flex', justifyContent: 'space-between', gap: 6, fontSize: 12 }}>
+                                        <span>
+                                          {s.user?.fullName || ''} ({s.studentId})
+                                        </span>
+                                        <span style={{ color: isBlocked ? '#8c8c8c' : '#389E0D', fontSize: 11 }}>
+                                          {alreadyInGroup ? 'Đã trong nhóm' : s.hasActiveProject ? 'Đã có đề tài' : 'Sẵn sàng'}
+                                        </span>
+                                      </div>
+                                    ),
+                                  };
+                                })}
+                            />
+                          )}
                         </Col>
                         <Col span={6}>
                           <div style={{ fontSize: 11, color: '#8c8c8c', marginBottom: 2 }}>Lớp sinh hoạt</div>
                           <Input
                             size="small"
                             value={m.className}
+                            disabled={m.memberRole === 'LEADER'}
                             onChange={(e) => handleUpdateMember(m.id, 'className', e.target.value)}
                             placeholder="D23CQCN01-B"
                           />
@@ -579,17 +687,17 @@ export const CreateProjectPage: React.FC = () => {
                 </div>
               </div>
 
-              <Button
-                type="primary"
-                block
-                size="large"
-                style={{ backgroundColor: '#C62828', borderColor: '#C62828', height: 46, fontWeight: 700, marginTop: 14 }}
-                htmlType="submit"
-                loading={loading}
-                icon={<SendOutlined />}
-              >
-                Gửi Hồ Sơ Đăng Ký Đề Tài (Chính Thức)
-              </Button>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 18 }}>
+                <Button
+                  type="primary"
+                  style={{ backgroundColor: '#C62828', borderColor: '#C62828', height: 38, paddingInline: 24, fontWeight: 600 }}
+                  htmlType="submit"
+                  loading={loading}
+                  icon={<SendOutlined />}
+                >
+                  Gửi Hồ Sơ Đăng Ký Đề Tài (Chính Thức)
+                </Button>
+              </div>
             </Form>
           </Card>
         </Col>
@@ -648,8 +756,8 @@ export const CreateProjectPage: React.FC = () => {
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
                       <div style={{ textAlign: 'center', width: '48%' }}>
                         <div style={{ fontSize: 11, fontWeight: 'bold' }}>HỌC VIỆN CÔNG NGHỆ BƯU CHÍNH VIỄN THÔNG</div>
-                        <div style={{ fontSize: 11, fontWeight: 'bold', textDecoration: 'underline' }}>KHOA CÔNG NGHỆ THÔNG TIN 1</div>
-                        <div style={{ fontSize: 11, marginTop: 4 }}>Số: &nbsp;&nbsp;&nbsp;&nbsp; /HV-CNTT1</div>
+                        <div style={{ fontSize: 11, fontWeight: 'bold', textDecoration: 'underline' }}>{(formData.deptName || 'KHOA CÔNG NGHỆ THÔNG TIN 1').toUpperCase()}</div>
+                        <div style={{ fontSize: 11, marginTop: 4 }}>Số: &nbsp;&nbsp;&nbsp;&nbsp; /HV-{formData.deptCode || 'CNTT1'}</div>
                         <div style={{ fontSize: 10, fontStyle: 'italic' }}>V/v Đăng ký đề tài NCKH sinh viên</div>
                       </div>
                       <div style={{ textAlign: 'center', width: '48%' }}>
@@ -669,7 +777,7 @@ export const CreateProjectPage: React.FC = () => {
                     </div>
 
                     <Paragraph style={{ textIndent: 24, fontSize: 13, marginBottom: 10 }}>
-                      Căn cứ Kế hoạch hoạt động nghiên cứu khoa học của sinh viên năm học 2026 - 2027, Khoa Công nghệ thông tin 1 kính chuyển hồ sơ đăng ký đề tài NCKH của sinh viên với thông tin chi tiết như sau:
+                      Căn cứ Kế hoạch hoạt động nghiên cứu khoa học của sinh viên năm học 2026 - 2027, {formData.deptName || 'Khoa Công nghệ thông tin 1'} kính chuyển hồ sơ đăng ký đề tài NCKH của sinh viên với thông tin chi tiết như sau:
                     </Paragraph>
 
                     <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12, marginBottom: 14 }} border={1}>
@@ -713,12 +821,12 @@ export const CreateProjectPage: React.FC = () => {
                       <div>
                         <div style={{ fontWeight: 'bold' }}>CHỦ TỊCH HỘI ĐỒNG KH KHOA</div>
                         <div style={{ fontStyle: 'italic', fontSize: 10 }}>(Ký và ghi rõ họ tên)</div>
-                        <div style={{ marginTop: 45, fontWeight: 'bold' }}>PGS.TS. Hoàng Minh</div>
+                        <div style={{ marginTop: 45, fontWeight: 'bold' }}>............................................</div>
                       </div>
                       <div>
                         <div style={{ fontWeight: 'bold' }}>TRƯỞNG KHOA</div>
                         <div style={{ fontStyle: 'italic', fontSize: 10 }}>(Ký và ghi rõ họ tên)</div>
-                        <div style={{ marginTop: 45, fontWeight: 'bold' }}>Trần Đình Trưởng Khoa</div>
+                        <div style={{ marginTop: 45, fontWeight: 'bold' }}>............................................</div>
                       </div>
                     </div>
                   </div>
@@ -728,7 +836,7 @@ export const CreateProjectPage: React.FC = () => {
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 14 }}>
                       <div style={{ textAlign: 'center', width: '48%' }}>
                         <div style={{ fontSize: 10, fontWeight: 'bold' }}>HỌC VIỆN CÔNG NGHỆ BƯU CHÍNH VIỄN THÔNG</div>
-                        <div style={{ fontSize: 10, fontWeight: 'bold', textDecoration: 'underline' }}>KHOA CÔNG NGHỆ THÔNG TIN 1</div>
+                        <div style={{ fontSize: 10, fontWeight: 'bold', textDecoration: 'underline' }}>{(formData.deptName || 'KHOA CÔNG NGHỆ THÔNG TIN 1').toUpperCase()}</div>
                       </div>
                       <div style={{ textAlign: 'center', width: '48%' }}>
                         <div style={{ fontSize: 10, fontWeight: 'bold' }}>CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</div>
@@ -768,17 +876,29 @@ export const CreateProjectPage: React.FC = () => {
                           </tr>
                         </thead>
                         <tbody>
-                          <tr><td style={{ textAlign: 'center' }}>1</td><td>Xây dựng và hoàn thiện thuyết minh đề cương</td><td style={{ textAlign: 'right', paddingRight: 6 }}>1,000,000</td></tr>
-                          <tr><td style={{ textAlign: 'center' }}>2</td><td>Nghiên cứu tài liệu và viết báo cáo chuyên đề</td><td style={{ textAlign: 'right', paddingRight: 6 }}>2,000,000</td></tr>
-                          <tr><td style={{ textAlign: 'center' }}>3</td><td>Tổ chức sinh hoạt khoa học / Hội thảo Khoa (Mẫu 3.5)</td><td style={{ textAlign: 'right', paddingRight: 6 }}>1,000,000</td></tr>
-                          <tr><td style={{ textAlign: 'center' }}>4</td><td>Họp Hội đồng nghiệm thu đánh giá (05 thành viên)</td><td style={{ textAlign: 'right', paddingRight: 6 }}>700,000</td></tr>
-                          <tr><td style={{ textAlign: 'center' }}>5</td><td>Văn phòng phẩm, in ấn, đóng bìa cứng báo cáo</td><td style={{ textAlign: 'right', paddingRight: 6 }}>300,000</td></tr>
-                          <tr style={{ fontWeight: 'bold' }}>
-                            <td colSpan={2} style={{ textAlign: 'center' }}>Tổng cộng dự toán</td>
-                            <td style={{ textAlign: 'right', paddingRight: 6, color: '#C62828' }}>
-                              {Number(formData.requestedBudget || 5000000).toLocaleString('vi-VN')}
-                            </td>
-                          </tr>
+                          {(() => {
+                            const total = Number(formData.requestedBudget || 5000000);
+                            const r1 = Math.round(total * 0.2);
+                            const r2 = Math.round(total * 0.4);
+                            const r3 = Math.round(total * 0.2);
+                            const r4 = Math.round(total * 0.14);
+                            const r5 = Math.max(0, total - r1 - r2 - r3 - r4);
+                            return (
+                              <>
+                                <tr><td style={{ textAlign: 'center' }}>1</td><td>Xây dựng và hoàn thiện thuyết minh đề cương</td><td style={{ textAlign: 'right', paddingRight: 6 }}>{r1.toLocaleString('vi-VN')}</td></tr>
+                                <tr><td style={{ textAlign: 'center' }}>2</td><td>Nghiên cứu tài liệu và viết báo cáo chuyên đề</td><td style={{ textAlign: 'right', paddingRight: 6 }}>{r2.toLocaleString('vi-VN')}</td></tr>
+                                <tr><td style={{ textAlign: 'center' }}>3</td><td>Tổ chức sinh hoạt khoa học / Hội thảo Khoa (Mẫu 3.5)</td><td style={{ textAlign: 'right', paddingRight: 6 }}>{r3.toLocaleString('vi-VN')}</td></tr>
+                                <tr><td style={{ textAlign: 'center' }}>4</td><td>Họp Hội đồng nghiệm thu đánh giá (05 thành viên)</td><td style={{ textAlign: 'right', paddingRight: 6 }}>{r4.toLocaleString('vi-VN')}</td></tr>
+                                <tr><td style={{ textAlign: 'center' }}>5</td><td>Văn phòng phẩm, in ấn, đóng bìa cứng báo cáo</td><td style={{ textAlign: 'right', paddingRight: 6 }}>{r5.toLocaleString('vi-VN')}</td></tr>
+                                <tr style={{ fontWeight: 'bold' }}>
+                                  <td colSpan={2} style={{ textAlign: 'center' }}>Tổng cộng dự toán</td>
+                                  <td style={{ textAlign: 'right', paddingRight: 6, color: '#C62828' }}>
+                                    {total.toLocaleString('vi-VN')}
+                                  </td>
+                                </tr>
+                              </>
+                            );
+                          })()}
                         </tbody>
                       </table>
 
@@ -831,7 +951,7 @@ export const CreateProjectPage: React.FC = () => {
                       <div>
                         <div style={{ fontWeight: 'bold' }}>Trưởng Khoa</div>
                         <div style={{ fontStyle: 'italic', fontSize: 10 }}>(Ký, ghi rõ họ tên)</div>
-                        <div style={{ marginTop: 40, fontWeight: 'bold' }}>Trần Đình Trưởng Khoa</div>
+                        <div style={{ marginTop: 40, fontWeight: 'bold' }}>............................................</div>
                       </div>
                     </div>
                   </div>

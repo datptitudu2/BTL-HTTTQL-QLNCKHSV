@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
+import { TERMINAL_PROJECT_STATUSES } from '../projects/projects.service';
 
 @Injectable()
 export class UsersService {
@@ -25,6 +26,7 @@ export class UsersService {
         department: true,
         memberships: {
           where: {
+            confirmStatus: { not: 'DECLINED' },
             project: {
               ...(activePeriod ? { periodId: activePeriod.periodId } : {}),
               status: { not: 'REJECTED' },
@@ -52,6 +54,9 @@ export class UsersService {
         { user: { fullName: { contains: query.keyword, mode: 'insensitive' } } },
       ];
     }
+    const activePeriod = await this.prisma.nckhPeriod.findFirst({
+      where: { status: 'ACTIVE' },
+    });
     const lecturers = await this.prisma.lecturer.findMany({
       where,
       include: {
@@ -59,8 +64,11 @@ export class UsersService {
         department: true,
         advisoryRoles: {
           where: {
-            status: { in: ['ACTIVE', 'INVITED'] },
-            project: { status: { not: 'REJECTED' } },
+            status: 'ACTIVE',
+            project: {
+              ...(activePeriod ? { periodId: activePeriod.periodId } : {}),
+              status: { notIn: TERMINAL_PROJECT_STATUSES },
+            },
           },
           select: { advisorAssignmentId: true, projectId: true, status: true },
         },

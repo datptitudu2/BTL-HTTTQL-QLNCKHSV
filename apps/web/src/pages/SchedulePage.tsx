@@ -36,9 +36,11 @@ import {
   DollarOutlined,
   TeamOutlined,
   ApartmentOutlined,
+  BellOutlined,
 } from '@ant-design/icons';
 import { useAuth } from '../context/AuthContext';
 import { scheduleService, CalendarEvent } from '../services/scheduleService';
+import { notificationService } from '../services/notificationService';
 
 const { Title } = Typography;
 
@@ -51,7 +53,35 @@ export const SchedulePage: React.FC = () => {
   const [selectedView, setSelectedView] = useState<'week' | 'day'>('week');
   const [activeModalEvent, setActiveModalEvent] = useState<CalendarEvent | null>(null);
   const [addModalVisible, setAddModalVisible] = useState(false);
+  const [reminding, setReminding] = useState(false);
   const [form] = Form.useForm();
+
+  const handleRemindMe = async () => {
+    if (!activeModalEvent) return;
+    setReminding(true);
+    try {
+      await notificationService.createSelfReminder({
+        scheduleRef: activeModalEvent.projectId || activeModalEvent.id,
+        title: `Nhắc lịch: ${activeModalEvent.title}`,
+        content: `Thời gian: ${activeModalEvent.startTime} - ${activeModalEvent.endTime} ngày ${activeModalEvent.startDate}. Địa điểm: ${activeModalEvent.location || 'Hệ thống SRMS'}.`,
+        type:
+          activeModalEvent.type === 'Mốc hạn NCKH'
+            ? 'DEADLINE'
+            : activeModalEvent.type === 'Sinh hoạt KH'
+              ? 'SEMINAR'
+              : activeModalEvent.type === 'Hội đồng thẩm định'
+                ? 'ACCEPTANCE'
+                : 'GENERAL',
+        urgent: activeModalEvent.type === 'Mốc hạn NCKH' || activeModalEvent.type === 'Hội đồng thẩm định',
+        targetUrl: '/calendar',
+      });
+      message.success('Đã tạo nhắc nhở vào Hộp thư Thông báo (D9)!');
+    } catch {
+      message.error('Không thể tạo nhắc nhở lúc này.');
+    } finally {
+      setReminding(false);
+    }
+  };
 
   // Chế độ xem: 'my_schedule' (lịch theo phân quyền cá nhân/vai trò) hoặc 'all' (toàn trường)
   const [calendarScope, setCalendarScope] = useState<'my_schedule' | 'all'>('my_schedule');
@@ -160,7 +190,7 @@ export const SchedulePage: React.FC = () => {
     { label: '15 CN', fullDate: '15/11/2026' },
   ];
 
-  const timeRows = [10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20];
+  const timeRows = [8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20];
 
   const handleAddEvent = async (values: any) => {
     let targetRoles = [roleCode];
@@ -738,7 +768,17 @@ export const SchedulePage: React.FC = () => {
         open={!!activeModalEvent}
         onCancel={() => setActiveModalEvent(null)}
         footer={[
-          activeModalEvent && (activeModalEvent.id?.startsWith('nckh_usr_') || isLeadershipOrAdmin) && (
+          activeModalEvent && (
+            <Button
+              key="remind"
+              icon={<BellOutlined />}
+              loading={reminding}
+              onClick={handleRemindMe}
+            >
+              Nhắc nhở tôi
+            </Button>
+          ),
+          activeModalEvent && (!String(activeModalEvent.id).startsWith('nckh_') || String(activeModalEvent.id).startsWith('nckh_usr_') || isLeadershipOrAdmin) && (
             <Button
               key="delete"
               danger

@@ -304,4 +304,22 @@ body {
   animation-duration: 0.8s;
 }
 
+/* Nút thu gọn Sidebar màu đỏ chuẩn PTIT S-Link */
+.ant-layout-sider .ant-layout-sider-trigger {
+  background-color: #C62828 !important;
+  color: #FFFFFF !important;
+  border-top: 1px solid #B71C1C !important;
+  font-weight: 700;
+  transition: background-color 0.2s ease;
+}
+
+.ant-layout-sider .ant-layout-sider-trigger:hover {
+  background-color: #B71C1C !important;
+}
+
+.ant-layout-sider .ant-layout-sider-trigger .anticon {
+  color: #FFFFFF !important;
+  font-size: 15px;
+}
+
 

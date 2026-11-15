@@ -7,9 +7,7 @@ generator client {
   provider = "prisma-client-js"
 }
 
-// ==========================================
 // KHO D1: TÀI KHOẢN & HỒ SƠ NGƯỜI DÙNG
-// ==========================================
 
 model Role {
   roleId      Int      @id @default(autoincrement()) @map("role_id")
@@ -32,17 +30,22 @@ model User {
   createdAt      DateTime      @default(now()) @map("created_at")
   updatedAt      DateTime      @updatedAt @map("updated_at")
 
-  role           Role          @relation(fields: [roleId], references: [roleId])
-  student        Student?
-  lecturer       Lecturer?
-  credentials    UserCredential?
-  refreshTokens  RefreshToken[]
-  notifications  Notification[]
-  certificates   Certificate[]
-  positions      DeptPosition[]
-  auditLogs      AuditLog[]
-  scheduleEvents ScheduleEvent[]
+  role                Role                 @relation(fields: [roleId], references: [roleId])
+  student             Student?
+  lecturer            Lecturer?
+  credentials         UserCredential?
+  refreshTokens       RefreshToken[]
+  passwordResetTokens PasswordResetToken[]
+  notifications       Notification[]
+  certificates        Certificate[]
+  positions           DeptPosition[]
+  outlineApprovals    OutlineApproval[]
+  requestApprovals    RequestApproval[]
+  seminarMemberships  SeminarMember[]
+  auditLogs           AuditLog[]
+  scheduleEvents      ScheduleEvent[]
 
+  @@index([roleId])
   @@map("users")
 }
 
@@ -75,6 +78,8 @@ model DeptPosition {
   user       User       @relation(fields: [userId], references: [userId])
   department Department @relation(fields: [deptId], references: [deptId])
 
+  @@index([userId])
+  @@index([deptId])
   @@map("dept_positions")
 }
 
@@ -87,7 +92,9 @@ model Student {
   ethnicity     String?        @db.VarChar(30) @map("ethnicity")
   className     String?        @db.VarChar(25) @map("class_name")
   cohort        String?        @db.VarChar(15) @map("cohort") // D23
+  major         String?        @db.VarChar(100) @map("major")
   studyYear     Int?           @map("study_year")
+  programYears  Int            @default(4) @map("program_years")
   gpa           Decimal?       @db.Decimal(3, 2) @map("gpa")
 
   user          User           @relation(fields: [userId], references: [userId])
@@ -95,6 +102,7 @@ model Student {
   memberships   ProjectMember[]
   bonuses       StudentBonus[]
 
+  @@index([deptId])
   @@map("students")
 }
 
@@ -113,12 +121,11 @@ model Lecturer {
   councilMembers     CouncilMember[]
   hours              LecturerHour[]
 
+  @@index([deptId])
   @@map("lecturers")
 }
 
-// ==========================================
 // KHO D2: KẾ HOẠCH & ĐỢT NCKH
-// ==========================================
 
 model NckhPeriod {
   periodId         Int               @id @default(autoincrement()) @map("period_id")
@@ -151,26 +158,28 @@ model PeriodMilestone {
   period           NckhPeriod       @relation(fields: [periodId], references: [periodId])
   reports          ProgressReport[]
 
+  @@index([periodId])
   @@map("period_milestones")
 }
 
 model EvaluationCriteria {
-  criteriaId  Int         @id @default(autoincrement()) @map("criteria_id")
-  periodId    Int         @map("period_id")
-  orderNo     Int         @map("order_no")
-  title       String      @db.VarChar(255) @map("title")
-  description String?     @db.Text @map("description")
-  maxScore    Decimal     @db.Decimal(4, 1) @map("max_score")
+  criteriaId  Int          @id @default(autoincrement()) @map("criteria_id")
+  periodId    Int          @map("period_id")
+  orderNo     Int          @map("order_no")
+  title       String       @db.VarChar(255) @map("title")
+  description String?      @db.Text @map("description")
+  maxScore    Decimal      @db.Decimal(4, 1) @map("max_score")
+  isActive    Boolean      @default(true) @map("is_active")
 
-  period      NckhPeriod  @relation(fields: [periodId], references: [periodId])
+  period      NckhPeriod   @relation(fields: [periodId], references: [periodId])
   sheetScores SheetScore[]
 
+  @@unique([periodId, orderNo])
+  @@index([periodId])
   @@map("evaluation_criteria")
 }
 
-// ==========================================
 // KHO D3: ĐỀ TÀI & NHÓM NGHIÊN CỨU
-// ==========================================
 
 model Project {
   projectId          String          @id @db.VarChar(30) @map("project_id") // SV-YYYY-KHOA-XXX
@@ -181,13 +190,14 @@ model Project {
   titleVi            String          @db.VarChar(300) @map("title_vi")
   titleEn            String?         @db.VarChar(300) @map("title_en")
   researchField      String          @db.VarChar(150) @map("research_field")
+  coordinatingUnit   String?         @db.VarChar(150) @map("coordinating_unit")
+  keywords           String?         @db.VarChar(200) @map("keywords")
   objectives         String          @db.Text @map("objectives")
   content            String          @db.Text @map("content")
   methodology        String          @db.Text @map("methodology")
   expectedResult     String          @db.Text @map("expected_result")
-  prelimScore        Decimal?        @db.Decimal(5, 2) @map("prelim_score")
-  prelimRank         String?         @db.VarChar(20) @map("prelim_rank")
-  status             String          @default("Draft") @db.VarChar(30) @map("status")
+  prelimResult       String?         @db.VarChar(20) @map("prelim_result") // APPROVED, REJECTED, REVISE
+  status             String          @default("DRAFT") @db.VarChar(30) @map("status")
   registeredAt       DateTime        @default(now()) @map("registered_at")
   updatedAt          DateTime        @updatedAt @map("updated_at")
 
@@ -210,6 +220,11 @@ model Project {
   studentBonuses     StudentBonus[]
   lecturerHours      LecturerHour[]
 
+  @@index([status, periodId])
+  @@index([periodId])
+  @@index([deptId])
+  @@index([dossierId])
+  @@index([decisionId])
   @@map("projects")
 }
 
@@ -225,6 +240,9 @@ model ProjectMember {
   project         Project  @relation(fields: [projectId], references: [projectId])
   student         Student  @relation(fields: [studentId], references: [studentId])
 
+  @@unique([projectId, studentId])
+  @@index([projectId])
+  @@index([studentId])
   @@map("project_members")
 }
 
@@ -242,12 +260,12 @@ model ProjectAdvisor {
   lecturer            Lecturer  @relation(fields: [lecturerId], references: [lecturerId])
   lecturerHours       LecturerHour[]
 
+  @@index([projectId])
+  @@index([lecturerId])
   @@map("project_advisors")
 }
 
-// ==========================================
 // KHO D4: ĐỀ CƯƠNG & TIẾN ĐỘ THỰC HIỆN
-// ==========================================
 
 model Outline {
   outlineId       Int               @id @default(autoincrement()) @map("outline_id")
@@ -261,6 +279,7 @@ model Outline {
   project         Project           @relation(fields: [projectId], references: [projectId])
   approvals       OutlineApproval[]
 
+  @@index([projectId])
   @@map("outlines")
 }
 
@@ -275,7 +294,11 @@ model OutlineApproval {
   decidedAt      DateTime  @default(now()) @map("decided_at")
 
   outline        Outline   @relation(fields: [outlineId], references: [outlineId])
+  approver       User      @relation(fields: [approverUserId], references: [userId])
 
+  @@unique([outlineId, role])
+  @@index([outlineId])
+  @@index([approverUserId])
   @@map("outline_approvals")
 }
 
@@ -292,24 +315,30 @@ model ProgressReport {
   project         Project         @relation(fields: [projectId], references: [projectId])
   milestone       PeriodMilestone @relation(fields: [pmId], references: [pmId])
 
+  @@index([projectId])
+  @@index([pmId])
   @@map("progress_reports")
 }
 
 model Seminar {
-  seminarId       Int              @id @default(autoincrement()) @map("seminar_id")
-  projectId       String           @db.VarChar(30) @map("project_id")
-  planTitle       String?          @db.VarChar(200) @map("plan_title")
-  heldAt          DateTime         @map("held_at")
-  location        String           @db.VarChar(150) @map("location")
-  meetingLink     String?          @db.VarChar(255) @map("meeting_link")
-  invitationCode  String?          @db.VarChar(50) @map("invitation_code")
-  status          String           @default("PLANNED") @db.VarChar(30) @map("status") // PLANNED, INVITED, COMPLETED
-  feedback        String?          @db.Text @map("feedback")
-  minutesFileUrl  String?          @db.VarChar(255) @map("minutes_file_url")
+  seminarId         Int              @id @default(autoincrement()) @map("seminar_id")
+  projectId         String           @db.VarChar(30) @map("project_id")
+  planTitle         String?          @db.VarChar(200) @map("plan_title")
+  heldAt            DateTime         @map("held_at")
+  location          String           @db.VarChar(150) @map("location")
+  meetingLink       String?          @db.VarChar(255) @map("meeting_link")
+  invitationCode    String?          @db.VarChar(50) @map("invitation_code")
+  status            String           @default("PLANNED") @db.VarChar(30) @map("status") // PLANNED, INVITED, COMPLETED
+  feedback          String?          @db.Text @map("feedback")
+  discussion        String?          @db.Text @map("discussion")
+  overallAssessment String?          @db.VarChar(500) @map("overall_assessment")
+  revisionRequests  String?          @db.VarChar(500) @map("revision_requests")
+  minutesFileUrl    String?          @db.VarChar(255) @map("minutes_file_url")
 
-  project         Project          @relation(fields: [projectId], references: [projectId])
-  members         SeminarMember[]
+  project           Project          @relation(fields: [projectId], references: [projectId])
+  members           SeminarMember[]
 
+  @@index([projectId])
   @@map("seminars")
 }
 
@@ -325,7 +354,10 @@ model SeminarMember {
   respondedAt  DateTime? @map("responded_at")
 
   seminar      Seminar   @relation(fields: [seminarId], references: [seminarId])
+  user         User?     @relation(fields: [userId], references: [userId])
 
+  @@index([seminarId])
+  @@index([userId])
   @@map("seminar_members")
 }
 
@@ -342,6 +374,7 @@ model ChangeRequest {
   project       Project           @relation(fields: [projectId], references: [projectId])
   approvals     RequestApproval[]
 
+  @@index([projectId])
   @@map("change_requests")
 }
 
@@ -350,18 +383,20 @@ model RequestApproval {
   requestId      Int           @map("request_id")
   approverUserId Int           @map("approver_user_id")
   stage          String        @db.VarChar(30) @map("stage") // ADVISOR, FACULTY_LEADER, QLKHCN
+  approvalMode   String        @default("DIRECT") @db.VarChar(15) @map("approval_mode") // DIRECT, PROXY
   decision       String        @db.VarChar(20) @map("decision") // APPROVED, REVISION_REQUIRED, REJECTED
   comment        String?       @db.Text @map("comment")
   decidedAt      DateTime      @default(now()) @map("decided_at")
 
   request        ChangeRequest @relation(fields: [requestId], references: [requestId])
+  approver       User          @relation(fields: [approverUserId], references: [userId])
 
+  @@index([requestId])
+  @@index([approverUserId])
   @@map("request_approvals")
 }
 
-// ==========================================
 // KHO D5: HỒ SƠ XÉT DUYỆT & QUYẾT ĐỊNH
-// ==========================================
 
 model FacultyDossier {
   dossierId        Int        @id @default(autoincrement()) @map("dossier_id")
@@ -376,6 +411,8 @@ model FacultyDossier {
   department       Department @relation(fields: [deptId], references: [deptId])
   projects         Project[]
 
+  @@index([periodId])
+  @@index([deptId])
   @@map("faculty_dossiers")
 }
 
@@ -392,12 +429,11 @@ model Decision {
   period       NckhPeriod @relation(fields: [periodId], references: [periodId])
   projects     Project[]
 
+  @@index([periodId])
   @@map("decisions")
 }
 
-// ==========================================
 // KHO D6: HỒ SƠ NGHIỆM THU & KẾT QUẢ
-// ==========================================
 
 model ProjectDocument {
   docId            Int      @id @default(autoincrement()) @map("doc_id")
@@ -412,18 +448,20 @@ model ProjectDocument {
 
   project          Project  @relation(fields: [projectId], references: [projectId])
 
+  @@index([projectId])
   @@map("project_documents")
 }
 
 model Council {
-  councilId   Int             @id @default(autoincrement()) @map("council_id")
-  councilName String          @db.VarChar(150) @map("council_name")
-  decisionNo  String?         @db.VarChar(50) @map("decision_no")
-  defenseDate DateTime        @map("defense_date")
-  location    String          @db.VarChar(150) @map("location")
+  councilId    Int             @id @default(autoincrement()) @map("council_id")
+  councilName  String          @db.VarChar(150) @map("council_name")
+  decisionNo   String?         @db.VarChar(50) @map("decision_no")
+  decisionDate DateTime?       @map("decision_date") @db.Date
+  defenseDate  DateTime        @map("defense_date")
+  location     String          @db.VarChar(150) @map("location")
 
-  members     CouncilMember[]
-  acceptances Acceptance[]
+  members      CouncilMember[]
+  acceptances  Acceptance[]
 
   @@map("councils")
 }
@@ -433,11 +471,15 @@ model CouncilMember {
   councilId   Int               @map("council_id")
   lecturerId  String            @db.VarChar(15) @map("lecturer_id")
   councilRole String            @db.VarChar(30) @map("council_role") // CHAIR, SECRETARY, MEMBER
+  attendance  String            @default("Có mặt") @db.VarChar(10) @map("attendance")
 
   council     Council           @relation(fields: [councilId], references: [councilId])
   lecturer    Lecturer          @relation(fields: [lecturerId], references: [lecturerId])
   sheets      EvaluationSheet[]
 
+  @@unique([councilId, lecturerId])
+  @@index([councilId])
+  @@index([lecturerId])
   @@map("council_members")
 }
 
@@ -457,26 +499,32 @@ model Acceptance {
   council         Council           @relation(fields: [councilId], references: [councilId])
   sheets          EvaluationSheet[]
 
+  @@index([councilId])
   @@map("acceptances")
 }
 
 model EvaluationSheet {
-  sheetId         Int           @id @default(autoincrement()) @map("sheet_id")
-  acceptanceId    Int           @map("acceptance_id")
-  cmId            Int           @map("cm_id")
-  scorePaperBonus Decimal       @default(0) @db.Decimal(4, 1) @map("score_paper_bonus")
-  totalScore      Decimal       @default(0) @db.Decimal(5, 1) @map("total_score")
-  isOutlier       Boolean       @default(false) @map("is_outlier")
-  strengths       String?       @db.Text @map("strengths")
-  limitations     String?       @db.Text @map("limitations")
-  qaNotes         String?       @db.Text @map("qa_notes")
-  recommendAward  Boolean       @default(false) @map("recommend_award")
-  submittedAt     DateTime?     @map("submitted_at")
+  sheetId            Int           @id @default(autoincrement()) @map("sheet_id")
+  acceptanceId       Int           @map("acceptance_id")
+  cmId               Int           @map("cm_id")
+  totalScore         Decimal       @default(0) @db.Decimal(5, 1) @map("total_score")
+  isOutlier          Boolean       @default(false) @map("is_outlier")
+  strengths          String?       @db.Text @map("strengths")
+  limitations        String?       @db.Text @map("limitations")
+  qaNotes            String?       @db.Text @map("qa_notes")
+  qaComment          String?       @db.Text @map("qa_comment")
+  conclusionAwardRec String?       @db.Text @map("conclusion_award_rec")
+  recommendAward     Boolean       @default(false) @map("recommend_award")
+  submittedAt        DateTime?     @map("submitted_at")
+  scoredAt           DateTime?     @map("scored_at")
 
-  acceptance      Acceptance    @relation(fields: [acceptanceId], references: [acceptanceId])
-  councilMember   CouncilMember @relation(fields: [cmId], references: [cmId])
-  scores          SheetScore[]
+  acceptance         Acceptance    @relation(fields: [acceptanceId], references: [acceptanceId])
+  councilMember      CouncilMember @relation(fields: [cmId], references: [cmId])
+  scores             SheetScore[]
 
+  @@unique([acceptanceId, cmId])
+  @@index([acceptanceId])
+  @@index([cmId])
   @@map("evaluation_sheets")
 }
 
@@ -489,12 +537,13 @@ model SheetScore {
   sheet      EvaluationSheet    @relation(fields: [sheetId], references: [sheetId])
   criteria   EvaluationCriteria @relation(fields: [criteriaId], references: [criteriaId])
 
+  @@unique([sheetId, criteriaId])
+  @@index([sheetId])
+  @@index([criteriaId])
   @@map("sheet_scores")
 }
 
-// ==========================================
 // KHO D7: KINH PHÍ & QUYẾT TOÁN
-// ==========================================
 
 model Budget {
   budgetId         Int          @id @default(autoincrement()) @map("budget_id")
@@ -526,12 +575,11 @@ model Settlement {
 
   budget           Budget    @relation(fields: [budgetId], references: [budgetId])
 
+  @@index([budgetId])
   @@map("settlements")
 }
 
-// ==========================================
 // KHO D8: KHEN THƯỞNG & CHỨNG NHẬN
-// ==========================================
 
 model Certificate {
   certId          Int      @id @default(autoincrement()) @map("cert_id")
@@ -545,22 +593,28 @@ model Certificate {
   project         Project  @relation(fields: [projectId], references: [projectId])
   recipient       User     @relation(fields: [recipientUserId], references: [userId])
 
+  @@unique([projectId, recipientUserId])
+  @@index([projectId])
+  @@index([recipientUserId])
   @@map("certificates")
 }
 
 model LecturerHour {
-  hourId             Int            @id @default(autoincrement()) @map("hour_id")
-  lecturerId         String         @db.VarChar(15) @map("lecturer_id")
-  projectId          String         @db.VarChar(30) @map("project_id")
-  advisorAssignmentId Int?          @map("advisor_assignment_id")
-  academicYear       String         @db.VarChar(9) @map("academic_year")
-  convertedHours     Decimal        @db.Decimal(6, 1) @map("converted_hours")
-  declarationStatus  String         @default("PENDING") @db.VarChar(20) @map("declaration_status")
+  hourId              Int            @id @default(autoincrement()) @map("hour_id")
+  lecturerId          String         @db.VarChar(15) @map("lecturer_id")
+  projectId           String         @db.VarChar(30) @map("project_id")
+  advisorAssignmentId Int            @map("advisor_assignment_id")
+  academicYear        String         @db.VarChar(9) @map("academic_year")
+  convertedHours      Decimal        @db.Decimal(6, 1) @map("converted_hours")
+  declarationStatus   String         @default("PENDING") @db.VarChar(20) @map("declaration_status")
 
-  lecturer           Lecturer       @relation(fields: [lecturerId], references: [lecturerId])
-  project            Project        @relation(fields: [projectId], references: [projectId])
-  advisorAssignment  ProjectAdvisor? @relation(fields: [advisorAssignmentId], references: [advisorAssignmentId])
+  lecturer            Lecturer       @relation(fields: [lecturerId], references: [lecturerId])
+  project             Project        @relation(fields: [projectId], references: [projectId])
+  advisorAssignment   ProjectAdvisor @relation(fields: [advisorAssignmentId], references: [advisorAssignmentId])
 
+  @@index([lecturerId])
+  @@index([projectId])
+  @@index([advisorAssignmentId])
   @@map("lecturer_hours")
 }
 
@@ -570,7 +624,6 @@ model StudentBonus {
   projectId           String    @db.VarChar(30) @map("project_id")
   bonusPoints         Decimal   @default(0) @db.Decimal(4, 1) @map("bonus_points")
   trainingScore       Decimal   @default(0) @db.Decimal(4, 1) @map("training_score")
-  creditBonus         Int       @default(3) @map("credit_bonus")
   scholarshipPriority Boolean   @default(false) @map("scholarship_priority")
   approvalStatus      String    @default("PENDING") @db.VarChar(20) @map("approval_status") // PENDING, APPROVED
   decisionNotice      String?   @db.VarChar(50) @map("decision_notice")
@@ -580,6 +633,8 @@ model StudentBonus {
   student             Student   @relation(fields: [studentId], references: [studentId])
   project             Project   @relation(fields: [projectId], references: [projectId])
 
+  @@index([studentId])
+  @@index([projectId])
   @@map("student_bonus")
 }
 
@@ -591,16 +646,18 @@ model AwardNomination {
   prizeGrade       String?  @db.VarChar(50) @map("prize_grade")
   rewardAmount     Decimal? @db.Decimal(12, 0) @map("reward_amount")
   supportFund      Decimal? @db.Decimal(10, 0) @map("support_fund")
+  supportAmount    Decimal? @db.Decimal(12, 0) @map("support_amount")
+  qlkhReviewStatus String   @default("PENDING") @db.VarChar(20) @map("qlkh_review_status")
+  approvalStatus   String   @default("PENDING") @db.VarChar(20) @map("approval_status")
   status           String   @default("PENDING") @db.VarChar(20) @map("status")
 
   project          Project  @relation(fields: [projectId], references: [projectId])
 
+  @@index([projectId])
   @@map("award_nominations")
 }
 
-// ==========================================
 // KHO D9: LỊCH HẠN & THÔNG BÁO
-// ==========================================
 
 model Notification {
   notifId        Int       @id @default(autoincrement()) @map("notif_id")
@@ -620,12 +677,11 @@ model Notification {
 
   user           User      @relation(fields: [userId], references: [userId])
 
+  @@index([userId])
   @@map("notifications")
 }
 
-// ==========================================
 // BẢNG KỸ THUẬT (TECHNICAL TABLES)
-// ==========================================
 
 model UserCredential {
   credentialId   Int       @id @default(autoincrement()) @map("credential_id")
@@ -651,6 +707,7 @@ model RefreshToken {
 
   user      User     @relation(fields: [userId], references: [userId])
 
+  @@index([userId])
   @@map("refresh_tokens")
 }
 
@@ -662,6 +719,9 @@ model PasswordResetToken {
   used      Boolean  @default(false) @map("used")
   createdAt DateTime @default(now()) @map("created_at")
 
+  user      User     @relation(fields: [userId], references: [userId])
+
+  @@index([userId])
   @@map("password_reset_tokens")
 }
 

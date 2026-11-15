@@ -1,6 +1,8 @@
 import { Injectable, NotFoundException, BadRequestException, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 
+export const TERMINAL_PROJECT_STATUSES = ['REJECTED', 'CANCELLED', 'ACCEPTED'];
+
 @Injectable()
 export class ProjectsService {
   constructor(private prisma: PrismaService) { }
@@ -78,8 +80,8 @@ export class ProjectsService {
       title_en: p.titleEn,
       research_field: p.researchField,
       status: p.status,
-      prelim_score: p.prelimScore,
-      prelim_rank: p.prelimRank,
+      prelim_result: p.prelimResult,
+      prelim_rank: p.prelimResult,
       registered_at: p.registeredAt,
       dossier: p.dossier,
       decision: p.decision,
@@ -98,6 +100,7 @@ export class ProjectsService {
         student_id: m.studentId,
         member_role: m.memberRole === 'LEAD' ? 'LEADER' : m.memberRole,
         contribution_pct: m.contributionPct,
+        confirm_status: m.confirmStatus,
         assigned_task: m.assignedTask,
         students: {
           class_name: m.student.className,
@@ -108,7 +111,10 @@ export class ProjectsService {
         },
       })),
       project_advisors: p.advisors.map((a) => ({
+        advisor_assignment_id: a.advisorAssignmentId,
         lecturer_id: a.lecturerId,
+        assigned_by: a.assignedBy,
+        status: a.status,
         lecturers: {
           academic_rank: a.lecturer.academicRank,
           users: {
@@ -118,6 +124,7 @@ export class ProjectsService {
       })),
       budgets: p.budget
         ? {
+          budget_id: p.budget.budgetId,
           requested_amount: p.budget.requestedAmount,
           faculty_proposed: p.budget.facultyProposed,
           approved_amount: p.budget.approvedAmount,
@@ -210,6 +217,7 @@ export class ProjectsService {
         },
         certificates: true,
         studentBonuses: true,
+        awardNominations: true,
       },
     });
 
@@ -220,6 +228,9 @@ export class ProjectsService {
       title_vi: p.titleVi,
       title_en: p.titleEn,
       research_field: p.researchField,
+      coordinating_unit: p.coordinatingUnit,
+      keywords: p.keywords,
+      prelim_result: p.prelimResult,
       objectives: p.objectives,
       content: p.content,
       methodology: p.methodology,
@@ -232,6 +243,7 @@ export class ProjectsService {
       },
       nckh_periods: {
         period_name: p.period.periodName,
+        academic_year: p.period.academicYear,
         milestones: (p.period.milestones || [])
           .slice()
           .sort((a, b) => a.pmId - b.pmId)
@@ -241,12 +253,22 @@ export class ProjectsService {
             milestone_name: m.milestoneName,
             due_date: m.dueDate,
           })),
+        criteria: (p.period.criteria || [])
+          .slice()
+          .sort((a, b) => a.orderNo - b.orderNo)
+          .map((c) => ({
+            criteria_id: c.criteriaId,
+            order_no: c.orderNo,
+            title: c.title,
+            max_score: c.maxScore,
+          })),
       },
       project_members: p.members.map((m) => ({
         member_id: m.memberId,
         student_id: m.studentId,
         member_role: m.memberRole === 'LEAD' ? 'LEADER' : m.memberRole,
         contribution_pct: m.contributionPct,
+        confirm_status: m.confirmStatus,
         assigned_task: m.assignedTask,
         students: {
           class_name: m.student.className,
@@ -257,7 +279,10 @@ export class ProjectsService {
         },
       })),
       project_advisors: p.advisors.map((a) => ({
+        advisor_assignment_id: a.advisorAssignmentId,
         lecturer_id: a.lecturerId,
+        assigned_by: a.assignedBy,
+        status: a.status,
         lecturers: {
           academic_rank: a.lecturer.academicRank,
           users: {
@@ -267,6 +292,7 @@ export class ProjectsService {
       })),
       budgets: p.budget
         ? {
+          budget_id: p.budget.budgetId,
           requested_amount: p.budget.requestedAmount,
           faculty_proposed: p.budget.facultyProposed,
           approved_amount: p.budget.approvedAmount,
@@ -300,6 +326,9 @@ export class ProjectsService {
         invitation_code: sm.invitationCode,
         status: sm.status,
         feedback: sm.feedback,
+        discussion: sm.discussion || sm.feedback,
+        overall_assessment: sm.overallAssessment,
+        revision_requests: sm.revisionRequests,
         minutes_file_url: sm.minutesFileUrl,
       })),
       documents: p.documents.map((doc) => ({
@@ -310,14 +339,29 @@ export class ProjectsService {
         library_code: doc.libraryCode,
         visibility: doc.visibility,
       })),
+      certificates: (p.certificates || []).map((c) => ({
+        cert_id: c.certId,
+        cert_code: c.certCode,
+        grade: c.grade,
+        issued_date: c.issuedDate,
+      })),
+      award_nominations: (p.awardNominations || []).map((an) => ({
+        nomination_id: an.nominationId,
+        award_level: an.awardLevel,
+        prize_grade: an.prizeGrade,
+        approval_status: an.approvalStatus,
+        reward_decision_no: an.rewardDecisionNo,
+      })),
       acceptances: p.acceptance
         ? {
           acceptance_id: p.acceptance.acceptanceId,
           avg_score: p.acceptance.avgScore,
           grade: p.acceptance.grade,
+          approval_doc_no: p.acceptance.approvalDocNo,
           councils: p.acceptance.council
             ? {
               council_name: p.acceptance.council.councilName,
+              decision_no: p.acceptance.council.decisionNo,
               council_members: p.acceptance.council.members.map((cm) => ({
                 cm_id: cm.cmId,
                 council_role: cm.councilRole,
@@ -376,18 +420,20 @@ export class ProjectsService {
     const existingMembership = await this.prisma.projectMember.findFirst({
       where: {
         studentId: student.studentId,
+        confirmStatus: { not: 'DECLINED' },
         project: {
-          periodId: period.periodId,
-          status: { not: 'REJECTED' },
+          period: { academicYear: period.academicYear },
+          status: { notIn: ['REJECTED', 'CANCELLED'] },
         },
       },
       include: { project: true },
     });
 
     if (existingMembership) {
-      throw new BadRequestException(
-        `Sinh viên ${student.studentId} đã tham gia đề tài "${existingMembership.project.projectId}" trong đợt ${period.periodName}. Theo QĐ 521, mỗi sinh viên chỉ được tham gia tối đa 01 đề tài/năm học.`,
-      );
+      throw new BadRequestException({
+        code: 'STUDENT_PROJECT_LIMIT_EXCEEDED',
+        message: `Sinh viên ${student.studentId} hiện đang có 01 đề tài ("${existingMembership.project.projectId}") trong năm học ${period.academicYear}. Theo Điều 15 khoản 2 điểm a QĐ 521/QĐ-HV, mỗi sinh viên chỉ được tham gia tối đa 01 đề tài/năm học.`,
+      });
     }
 
     const extraMembers: Array<{ studentId: string; role?: string; pct?: number; assignedTask?: string }> =
@@ -398,26 +444,46 @@ export class ProjectsService {
     }
 
     const seenIds = new Set<string>([student.studentId]);
+    const validExtraStudents: Array<{ studentId: string; userId: number; fullName?: string }> = [];
     for (const m of extraMembers) {
-      if (seenIds.has(m.studentId)) {
-        throw new BadRequestException(`Sinh viên ${m.studentId} bị trùng lặp trong danh sách nhóm`);
+      const normalizedId = String(m.studentId || '').trim().toUpperCase();
+      if (seenIds.has(normalizedId)) {
+        throw new BadRequestException(`Sinh viên ${normalizedId} bị trùng lặp trong danh sách nhóm`);
       }
-      seenIds.add(m.studentId);
+      seenIds.add(normalizedId);
+
+      const targetStudent = await this.prisma.student.findFirst({
+        where: { studentId: { equals: normalizedId, mode: 'insensitive' } },
+        include: { user: true },
+      });
+      if (!targetStudent) {
+        throw new BadRequestException(
+          `Không tìm thấy sinh viên có mã "${m.studentId}" trong hệ thống. Vui lòng chọn sinh viên từ danh sách gợi ý.`,
+        );
+      }
+      m.studentId = targetStudent.studentId;
+      validExtraStudents.push({
+        studentId: targetStudent.studentId,
+        userId: targetStudent.userId,
+        fullName: targetStudent.user?.fullName,
+      });
 
       const memberActive = await this.prisma.projectMember.findFirst({
         where: {
-          studentId: m.studentId,
+          studentId: targetStudent.studentId,
+          confirmStatus: { not: 'DECLINED' },
           project: {
-            periodId: period.periodId,
-            status: { not: 'REJECTED' },
+            period: { academicYear: period.academicYear },
+            status: { notIn: ['REJECTED', 'CANCELLED'] },
           },
         },
         include: { project: true },
       });
       if (memberActive) {
-        throw new BadRequestException(
-          `Thành viên ${m.studentId} đã thuộc đề tài "${memberActive.project.projectId}" trong đợt này (QĐ 521: tối đa 01 đề tài/năm học).`,
-        );
+        throw new BadRequestException({
+          code: 'STUDENT_PROJECT_LIMIT_EXCEEDED',
+          message: `Thành viên ${targetStudent.studentId} hiện đang có 01 đề tài ("${memberActive.project.projectId}") trong năm học ${period.academicYear}. Theo Điều 15 khoản 2 điểm a QĐ 521/QĐ-HV, mỗi sinh viên chỉ được tham gia tối đa 01 đề tài/năm học.`,
+        });
       }
     }
 
@@ -482,15 +548,88 @@ export class ProjectsService {
       await this.assignAdvisor(projectId, dto.lecturerId, 'STUDENT');
     }
 
+    if (validExtraStudents.length > 0) {
+      await this.prisma.notification
+        .createMany({
+          data: validExtraStudents.map((s) => ({
+            userId: s.userId,
+            title: `Lời mời tham gia đề tài NCKH ${projectId}`,
+            content: `Bạn được mời làm thành viên phối hợp trong đề tài "${dto.titleVi}" (${projectId}). Vui lòng kiểm tra và xác nhận tham gia.`,
+            channel: 'WEB',
+            deliveryStatus: 'SENT',
+            urgent: true,
+            targetUrl: `/projects/${projectId}`,
+            type: 'GENERAL',
+          })),
+        })
+        .catch(() => {});
+    }
+
     return {
       project_id: project.projectId,
       ...project,
     };
   }
 
-  async assignAdvisor(projectId: string, lecturerId: string, assignedBy = 'STUDENT') {
-    const project = await this.prisma.project.findUnique({ where: { projectId } });
+  private async syncLecturerActiveCount(lecturerId: string) {
+    const activeCount = await this.prisma.projectAdvisor.count({
+      where: {
+        lecturerId,
+        status: 'ACTIVE',
+        project: { status: { notIn: TERMINAL_PROJECT_STATUSES } },
+      },
+    });
+    await this.prisma.lecturer
+      .update({
+        where: { lecturerId },
+        data: { activeProjectCount: activeCount },
+      })
+      .catch(() => {});
+  }
+
+  private async verifyFacultyDeptAccess(user: any, targetDeptId: number, actionLabel: string) {
+    if (!user?.userId || !['FACULTY_SECRETARY', 'FACULTY_LEADER'].includes(user?.roleCode)) return;
+    const targetDeptStaffCount = await this.prisma.deptPosition.count({
+      where: { deptId: targetDeptId, isActive: true },
+    });
+    if (targetDeptStaffCount === 0) return;
+
+    const myPositions = await this.prisma.deptPosition.findMany({
+      where: { userId: user.userId, isActive: true },
+      select: { deptId: true },
+    });
+    const myDeptIds = myPositions.map((p) => p.deptId);
+    if (myDeptIds.length > 0 && !myDeptIds.includes(targetDeptId)) {
+      throw new ForbiddenException(`Bạn chỉ có quyền ${actionLabel} cho đề tài thuộc Khoa mình quản lý`);
+    }
+  }
+
+  async assignAdvisor(projectId: string, lecturerId: string, assignedBy = 'STUDENT', user?: any) {
+    const project = await this.prisma.project.findUnique({
+      where: { projectId },
+      include: { members: true },
+    });
     if (!project) throw new NotFoundException(`Không tìm thấy đề tài ${projectId}`);
+
+    const roleCode = user?.roleCode;
+    if (user) {
+      if (roleCode === 'STUDENT') {
+        const isLead = project.members.some(
+          (m) => m.studentId === user.studentId && (m.memberRole === 'LEAD' || m.memberRole === 'LEADER'),
+        );
+        if (!isLead) {
+          throw new ForbiddenException('Chỉ Chủ nhiệm đề tài mới có quyền mời Giảng viên hướng dẫn');
+        }
+      } else if (!['FACULTY_SECRETARY', 'FACULTY_LEADER', 'QLKHCN', 'ADMIN'].includes(roleCode)) {
+        throw new ForbiddenException('Bạn không có quyền phân công Giảng viên hướng dẫn');
+      } else if (['FACULTY_SECRETARY', 'FACULTY_LEADER'].includes(roleCode)) {
+        await this.verifyFacultyDeptAccess(user, project.deptId, 'phân công GVHD');
+      }
+    }
+
+    const effectiveAssignType = ['FACULTY_SECRETARY', 'FACULTY_LEADER', 'QLKHCN', 'ADMIN'].includes(roleCode)
+      ? 'FACULTY'
+      : assignedBy || 'STUDENT';
 
     const duplicate = await this.prisma.projectAdvisor.findFirst({
       where: { projectId, lecturerId, status: { in: ['ACTIVE', 'INVITED'] } },
@@ -499,70 +638,149 @@ export class ProjectsService {
       throw new BadRequestException(`Giảng viên ${lecturerId} đã được mời/phân công hướng dẫn đề tài này`);
     }
 
+    if (effectiveAssignType === 'STUDENT') {
+      const existingAdvisor = await this.prisma.projectAdvisor.findFirst({
+        where: { projectId, status: { in: ['ACTIVE', 'INVITED'] } },
+      });
+      if (existingAdvisor) {
+        throw new BadRequestException('Đề tài đã có Giảng viên hướng dẫn đang chờ xác nhận hoặc đang hướng dẫn');
+      }
+    }
+
     const currentAssignments = await this.prisma.projectAdvisor.count({
       where: {
         lecturerId,
-        status: { in: ['ACTIVE', 'INVITED'] },
-        project: { status: { not: 'REJECTED' } },
+        status: 'ACTIVE',
+        project: { status: { notIn: TERMINAL_PROJECT_STATUSES } },
       },
     });
 
     if (currentAssignments >= 2) {
-      throw new BadRequestException(`Giảng viên ${lecturerId} đã đạt định mức hướng dẫn tối đa (2 đề tài) theo QĐ 521`);
+      throw new BadRequestException({
+        code: 'ADVISOR_QUOTA_EXCEEDED',
+        message: `Giảng viên ${lecturerId} hiện đang có ${currentAssignments}/02 phân công hướng dẫn ACTIVE. Theo Điều 16 khoản 2 điểm a QĐ 521/QĐ-HV, mỗi giảng viên chỉ được hướng dẫn tối đa 02 đề tài cùng thời gian.`,
+      });
     }
 
-    if (assignedBy === 'FACULTY') {
+    if (effectiveAssignType === 'FACULTY') {
       await this.prisma.projectAdvisor.updateMany({
-        where: { projectId, status: 'ACTIVE' },
+        where: { projectId, status: { in: ['ACTIVE', 'INVITED'] } },
         data: { status: 'REPLACED', endedAt: new Date(), replaceReason: 'Điều chuyển phân công cấp Khoa' },
       });
     }
 
-    return this.prisma.projectAdvisor.create({
+    const createdAdvisor = await this.prisma.projectAdvisor.create({
       data: {
         projectId,
         lecturerId,
-        assignedBy,
-        status: assignedBy === 'STUDENT' ? 'INVITED' : 'ACTIVE',
+        assignedBy: effectiveAssignType,
+        status: effectiveAssignType === 'STUDENT' ? 'INVITED' : 'ACTIVE',
         assignedAt: new Date(),
       },
     });
+    await this.syncLecturerActiveCount(lecturerId);
+    return createdAdvisor;
   }
 
-  async inviteMember(projectId: string, studentId: string, role = 'MEMBER', pct = 20) {
-    const project = await this.prisma.project.findUnique({ where: { projectId } });
+  async respondAdvisorInvite(
+    projectId: string,
+    advisorAssignmentId: number,
+    decision: 'ACTIVE' | 'REJECTED',
+    reason?: string,
+    user?: any,
+  ) {
+    const assignment = await this.prisma.projectAdvisor.findUnique({
+      where: { advisorAssignmentId },
+    });
+    if (!assignment || assignment.projectId !== projectId) {
+      throw new NotFoundException('Không tìm thấy lời mời hướng dẫn đề tài');
+    }
+
+    if (user && user.roleCode !== 'ADMIN') {
+      if (user.roleCode !== 'LECTURER' || user.lecturerId !== assignment.lecturerId) {
+        throw new ForbiddenException('Chỉ Giảng viên được mời mới có quyền xác nhận hoặc từ chối hướng dẫn');
+      }
+    }
+
+    if (assignment.status !== 'INVITED') {
+      throw new BadRequestException(`Lời mời đã ở trạng thái ${assignment.status}, không thể phản hồi lại`);
+    }
+
+    if (decision === 'ACTIVE') {
+      const activeCount = await this.prisma.projectAdvisor.count({
+        where: {
+          lecturerId: assignment.lecturerId,
+          status: 'ACTIVE',
+          project: { status: { notIn: TERMINAL_PROJECT_STATUSES } },
+        },
+      });
+      if (activeCount >= 2) {
+        throw new BadRequestException({
+          code: 'ADVISOR_QUOTA_EXCEEDED',
+          message: `Giảng viên ${assignment.lecturerId} hiện đang có ${activeCount}/02 phân công hướng dẫn ACTIVE. Theo Điều 16 khoản 2 điểm a QĐ 521/QĐ-HV, mỗi giảng viên chỉ được hướng dẫn tối đa 02 đề tài cùng thời gian.`,
+        });
+      }
+    }
+
+    const updatedAdvisor = await this.prisma.projectAdvisor.update({
+      where: { advisorAssignmentId },
+      data: {
+        status: decision,
+        replaceReason: decision === 'REJECTED' ? reason || 'Giảng viên từ chối lời mời hướng dẫn' : null,
+        endedAt: decision === 'REJECTED' ? new Date() : null,
+      },
+    });
+    await this.syncLecturerActiveCount(assignment.lecturerId);
+    return updatedAdvisor;
+  }
+
+  async inviteMember(projectId: string, studentId: string, role = 'MEMBER', pct = 20, user?: any) {
+    const project = await this.prisma.project.findUnique({
+      where: { projectId },
+      include: { members: true },
+    });
     if (!project) throw new NotFoundException(`Không tìm thấy đề tài ${projectId}`);
 
-    const currentMembers = await this.prisma.projectMember.findMany({
-      where: { projectId },
-    });
+    if (user && user.roleCode !== 'ADMIN' && user.roleCode !== 'QLKHCN') {
+      const isLead = project.members.some(
+        (m) => m.studentId === user.studentId && (m.memberRole === 'LEAD' || m.memberRole === 'LEADER'),
+      );
+      if (!isLead) {
+        throw new ForbiddenException('Chỉ Chủ nhiệm đề tài mới có quyền mời thêm thành viên vào nhóm');
+      }
+    }
 
-    if (currentMembers.length >= 5) {
+    const activeMembers = project.members.filter((m) => m.confirmStatus !== 'DECLINED');
+
+    if (activeMembers.length >= 5) {
       throw new BadRequestException('Mỗi đề tài NCKH sinh viên tối đa không quá 5 thành viên theo QĐ 521');
     }
 
-    if (currentMembers.some((m) => m.studentId === studentId)) {
+    if (activeMembers.some((m) => m.studentId === studentId)) {
       throw new BadRequestException(`Sinh viên ${studentId} đã thuộc nhóm đề tài này`);
     }
 
+    const targetPeriod = await this.prisma.nckhPeriod.findUnique({ where: { periodId: project.periodId } });
     const existingMembership = await this.prisma.projectMember.findFirst({
       where: {
         studentId,
+        confirmStatus: { not: 'DECLINED' },
         project: {
-          periodId: project.periodId,
-          status: { not: 'REJECTED' },
+          ...(targetPeriod ? { period: { academicYear: targetPeriod.academicYear } } : { periodId: project.periodId }),
+          status: { notIn: ['REJECTED', 'CANCELLED'] },
         },
       },
       include: { project: true },
     });
 
     if (existingMembership) {
-      throw new BadRequestException(
-        `Sinh viên ${studentId} đã tham gia đề tài "${existingMembership.project.projectId}" trong cùng đợt NCKH (tối đa 01 đề tài/năm học)`,
-      );
+      throw new BadRequestException({
+        code: 'STUDENT_PROJECT_LIMIT_EXCEEDED',
+        message: `Sinh viên ${studentId} hiện đang có 01 đề tài ("${existingMembership.project.projectId}") trong năm học ${targetPeriod?.academicYear || ''}. Theo Điều 15 khoản 2 điểm a QĐ 521/QĐ-HV, mỗi sinh viên chỉ được tham gia tối đa 01 đề tài/năm học.`,
+      });
     }
 
-    const totalOtherPct = currentMembers.reduce((sum, m) => sum + Number(m.contributionPct || 0), 0);
+    const totalOtherPct = activeMembers.reduce((sum, m) => sum + Number(m.contributionPct || 0), 0);
     if (totalOtherPct + pct > 100) {
       throw new BadRequestException(`Tổng % đóng góp vượt quá 100% (hiện tại đã dùng ${totalOtherPct}%)`);
     }
@@ -579,7 +797,40 @@ export class ProjectsService {
     });
   }
 
-  async updateStatus(projectId: string, newStatus: string, reason?: string, user?: any) {
+  async respondMemberInvite(
+    projectId: string,
+    memberId: number,
+    decision: 'ACCEPTED' | 'DECLINED',
+    user?: any,
+  ) {
+    const member = await this.prisma.projectMember.findUnique({ where: { memberId } });
+    if (!member || member.projectId !== projectId) {
+      throw new NotFoundException('Không tìm thấy lời mời tham gia nhóm đề tài');
+    }
+
+    if (user && user.roleCode !== 'ADMIN') {
+      if (user.roleCode !== 'STUDENT' || user.studentId !== member.studentId) {
+        throw new ForbiddenException('Chỉ sinh viên được mời mới có quyền xác nhận hoặc từ chối tham gia nhóm');
+      }
+    }
+
+    if (member.confirmStatus !== 'PENDING') {
+      throw new BadRequestException(`Lời mời thành viên đã được xử lý (${member.confirmStatus})`);
+    }
+
+    return this.prisma.projectMember.update({
+      where: { memberId },
+      data: { confirmStatus: decision },
+    });
+  }
+
+  async updateStatus(
+    projectId: string,
+    newStatus: string,
+    reason?: string,
+    user?: any,
+    options?: { decisionNo?: string; approvedBudget?: number; officialLetterNo?: string },
+  ) {
     const project = await this.prisma.project.findUnique({
       where: { projectId },
       include: { budget: true, department: true },
@@ -589,15 +840,17 @@ export class ProjectsService {
     const roleCode = user?.roleCode;
     const dataToUpdate: any = { status: newStatus };
 
-    if (newStatus === 'FACULTY_APPROVED' || newStatus === 'REJECTED') {
-      if (roleCode && !['FACULTY_SECRETARY', 'FACULTY_LEADER', 'QLKHCN', 'ADMIN'].includes(roleCode)) {
-        throw new ForbiddenException('Chỉ Thư ký Khoa / Lãnh đạo Khoa / QLKHCN mới có quyền sơ tuyển đề tài (DFD 3)');
+    if (newStatus === 'FACULTY_APPROVED') {
+      if (roleCode && !['FACULTY_SECRETARY', 'FACULTY_LEADER', 'ADMIN'].includes(roleCode)) {
+        throw new ForbiddenException('Chỉ Thư ký Khoa / Lãnh đạo Khoa mới có quyền sơ tuyển đề tài cấp Khoa (DFD 3)');
+      }
+      if (roleCode && ['FACULTY_SECRETARY', 'FACULTY_LEADER'].includes(roleCode)) {
+        await this.verifyFacultyDeptAccess(user, project.deptId, 'sơ tuyển đề tài');
       }
 
-      dataToUpdate.prelimRank = newStatus === 'FACULTY_APPROVED' ? 'PASSED' : 'FAILED';
-      dataToUpdate.prelimScore = newStatus === 'FACULTY_APPROVED' ? 88 : 42;
+      dataToUpdate.prelimResult = 'APPROVED';
 
-      if (newStatus === 'FACULTY_APPROVED' && !project.dossierId) {
+      if (!project.dossierId) {
         let dossier = await this.prisma.facultyDossier.findFirst({
           where: { deptId: project.deptId, periodId: project.periodId },
         });
@@ -606,7 +859,7 @@ export class ProjectsService {
             data: {
               deptId: project.deptId,
               periodId: project.periodId,
-              officialLetterNo: `CV-${project.department.deptCode}-${new Date().getFullYear()}`,
+              officialLetterNo: options?.officialLetterNo || `CV-${project.department.deptCode}-${new Date().getFullYear()}`,
               reviewStatus: 'APPROVED',
             },
           });
@@ -618,17 +871,57 @@ export class ProjectsService {
         await this.prisma.budget.update({
           where: { budgetId: project.budget.budgetId },
           data: {
-            facultyProposed: newStatus === 'FACULTY_APPROVED' ? project.budget.requestedAmount : 0,
-            status: newStatus === 'REJECTED' ? 'REJECTED' : 'FACULTY_PROPOSED',
+            facultyProposed: project.budget.requestedAmount,
+            status: 'FACULTY_PROPOSED',
+          },
+        });
+      }
+    } else if (newStatus === 'REJECTED') {
+      if (roleCode && !['FACULTY_SECRETARY', 'FACULTY_LEADER', 'QLKHCN', 'BOARD', 'ADMIN'].includes(roleCode)) {
+        throw new ForbiddenException('Bạn không có quyền từ chối đề tài ở giai đoạn này');
+      }
+      if (roleCode && ['FACULTY_SECRETARY', 'FACULTY_LEADER'].includes(roleCode)) {
+        await this.verifyFacultyDeptAccess(user, project.deptId, 'từ chối đề tài');
+      }
+
+      dataToUpdate.prelimResult = 'REJECTED';
+
+      if (project.budget) {
+        await this.prisma.budget.update({
+          where: { budgetId: project.budget.budgetId },
+          data: {
+            facultyProposed: 0,
+            approvedAmount: 0,
+            status: 'REJECTED',
           },
         });
       }
     } else if (newStatus === 'ONGOING') {
-      if (roleCode && !['QLKHCN', 'BOARD', 'FACULTY_LEADER', 'ADMIN'].includes(roleCode)) {
-        throw new ForbiddenException('Chỉ P.QLKHCN hoặc Ban Giám Đốc mới có thẩm quyền phê duyệt giao đề tài');
+      if (roleCode && !['QLKHCN', 'BOARD', 'ADMIN'].includes(roleCode)) {
+        throw new ForbiddenException('Chỉ P.QLKHCN hoặc Ban Giám Đốc mới có thẩm quyền phê duyệt giao đề tài (DFD 3)');
+      }
+      if (roleCode !== 'ADMIN' && project.status !== 'FACULTY_APPROVED') {
+        throw new BadRequestException('Đề tài phải được Hội đồng Khoa sơ tuyển (Khoa đã duyệt) trước khi Học viện ban hành Quyết định giao');
       }
 
-      if (!project.decisionId) {
+      const customDecisionNo = options?.decisionNo?.trim();
+      const targetDecisionNo = customDecisionNo || undefined;
+
+      if (targetDecisionNo) {
+        let decision = await this.prisma.decision.findUnique({ where: { decisionNo: targetDecisionNo } });
+        if (!decision) {
+          decision = await this.prisma.decision.create({
+            data: {
+              periodId: project.periodId,
+              decisionNo: targetDecisionNo,
+              decisionType: 'ASSIGN',
+              issuedDate: new Date(),
+              totalBudget: options?.approvedBudget || project.budget?.facultyProposed || project.budget?.requestedAmount || 5000000,
+            },
+          });
+        }
+        dataToUpdate.decisionId = decision.decisionId;
+      } else if (!project.decisionId) {
         let decision = await this.prisma.decision.findFirst({
           where: { periodId: project.periodId, decisionType: 'ASSIGN' },
         });
@@ -639,7 +932,7 @@ export class ProjectsService {
               decisionNo: `${Math.floor(100 + Math.random() * 800)}/QĐ-HV`,
               decisionType: 'ASSIGN',
               issuedDate: new Date(),
-              totalBudget: project.budget?.requestedAmount || 5000000,
+              totalBudget: options?.approvedBudget || project.budget?.requestedAmount || 5000000,
             },
           });
         }
@@ -647,7 +940,13 @@ export class ProjectsService {
       }
 
       if (project.budget) {
-        const finalBudget = Number(project.budget.approvedAmount || project.budget.facultyProposed || project.budget.requestedAmount || 5000000);
+        const finalBudget = Number(
+          options?.approvedBudget ??
+            (project.budget.approvedAmount && Number(project.budget.approvedAmount) > 0 ? project.budget.approvedAmount : undefined) ??
+            project.budget.facultyProposed ??
+            project.budget.requestedAmount ??
+            5000000,
+        );
         await this.prisma.budget.update({
           where: { budgetId: project.budget.budgetId },
           data: {
@@ -679,7 +978,12 @@ export class ProjectsService {
     const updated = await this.prisma.project.update({
       where: { projectId },
       data: dataToUpdate,
+      include: { advisors: true },
     });
+
+    for (const adv of updated.advisors || []) {
+      await this.syncLecturerActiveCount(adv.lecturerId);
+    }
 
     if (user?.userId) {
       await this.prisma.auditLog.create({

@@ -95,7 +95,40 @@ export const PeriodsPage: React.FC = () => {
     },
   ];
 
-  const [milestonesList, setMilestonesList] = useState(defaultMilestones);
+  const [milestonesList, setMilestonesList] = useState<any[]>(defaultMilestones);
+
+  const syncMilestonesFromPeriod = (p: any) => {
+    if (p?.milestones && Array.isArray(p.milestones) && p.milestones.length > 0) {
+      const colorByType: Record<string, string> = {
+        OUTLINE: 'green',
+        PROGRESS_1: 'blue',
+        PROGRESS_2: 'orange',
+        ACCEPTANCE: 'red',
+      };
+      const statusByDate = (d: string) => {
+        const dt = new Date(d);
+        if (Number.isNaN(dt.getTime())) return 'Kế hoạch';
+        const diffDays = (dt.getTime() - Date.now()) / (1000 * 3600 * 24);
+        if (diffDays < 0) return 'Đã qua hạn';
+        if (diffDays <= 30) return 'Sắp tới';
+        return 'Kế hoạch';
+      };
+      setMilestonesList(
+        p.milestones.map((m: any, idx: number) => ({
+          id: m.pmId || m.pm_id || idx + 1,
+          title: m.milestoneName || m.milestone_name || `Mốc ${idx + 1}`,
+          dueDateRaw: m.dueDate || m.due_date,
+          dueDate: m.dueDate ? new Date(m.dueDate).toLocaleDateString('vi-VN') : '—',
+          remindDays: m.remindDaysBefore ?? m.remind_days_before ?? 5,
+          desc: `Loại mốc: ${m.milestoneType || m.milestone_type || 'Tiến độ'} • Kênh nhắc: ${m.remindChannels || 'IN_APP, EMAIL'}`,
+          status: statusByDate(m.dueDate || m.due_date),
+          color: colorByType[m.milestoneType || m.milestone_type] || 'blue',
+        })),
+      );
+    } else {
+      setMilestonesList(defaultMilestones);
+    }
+  };
 
   const fetchActive = async () => {
     try {
@@ -103,19 +136,22 @@ export const PeriodsPage: React.FC = () => {
       const res = await api.get('/periods/active');
       if (res.data) {
         setPeriod(res.data);
+        syncMilestonesFromPeriod(res.data);
       }
     } catch (err) {
       // Dữ liệu fallback đồng bộ chuẩn hóa
-      setPeriod({
-        period_id: 1,
-        academic_year: '2026-2027',
-        period_name: 'Đợt Nghiên cứu khoa học Sinh viên Năm học 2026 - 2027',
-        start_date: '2026-09-01T00:00:00.000Z',
-        end_date: '2027-06-30T00:00:00.000Z',
-        quota_projects: 150,
-        total_budget_limit: 800000000,
+      const fallback = {
+        periodId: 1,
+        academicYear: '2026-2027',
+        periodName: 'Đợt Nghiên cứu khoa học Sinh viên Năm học 2026 - 2027',
+        startDate: '2026-09-01T00:00:00.000Z',
+        endDate: '2027-06-30T00:00:00.000Z',
+        quotaProjects: 150,
+        totalBudgetLimit: 800000000,
         status: 'ACTIVE',
-      });
+      };
+      setPeriod(fallback);
+      syncMilestonesFromPeriod(fallback);
     } finally {
       setLoading(false);
     }
@@ -139,27 +175,18 @@ export const PeriodsPage: React.FC = () => {
         status: values.status,
       };
 
-      try {
-        await api.put(`/periods/${period?.period_id || 1}`, payload);
-      } catch (e) {
-        // Cập nhật local state nếu backend offline
+      const res = await api.put(`/periods/${period?.periodId || period?.period_id || 1}`, payload);
+      if (res.data) {
+        setPeriod(res.data);
+        syncMilestonesFromPeriod(res.data);
+      } else {
+        await fetchActive();
       }
-
-      setPeriod((prev: any) => ({
-        ...prev,
-        period_name: payload.periodName,
-        academic_year: payload.academicYear,
-        start_date: payload.startDate,
-        end_date: payload.endDate,
-        quota_projects: payload.quotaProjects,
-        total_budget_limit: payload.totalBudgetLimit,
-        status: payload.status,
-      }));
 
       message.success('Cập nhật cấu hình đợt NCKH thành công!');
       setEditModalVisible(false);
     } catch (err: any) {
-      message.error('Lỗi khi cập nhật cấu hình đợt NCKH');
+      message.error(err?.response?.data?.message || 'Lỗi khi cập nhật cấu hình đợt NCKH');
     } finally {
       setSubmitting(false);
     }
@@ -170,25 +197,20 @@ export const PeriodsPage: React.FC = () => {
     try {
       setSubmitting(true);
       const targetId = values.milestoneId;
-      const updatedList = milestonesList.map((m) => {
-        if (m.id === targetId) {
-          return {
-            ...m,
-            title: values.title || m.title,
-            dueDate: values.dueDate ? values.dueDate.format('DD/MM/YYYY') : m.dueDate,
-            remindDays: values.remindDays || m.remindDays,
-            desc: values.desc || m.desc,
-          };
-        }
-        return m;
-      });
+      const periodId = period?.periodId || period?.period_id || 1;
+      const payload = {
+        milestoneName: values.title || undefined,
+        dueDate: values.dueDate ? values.dueDate.format('YYYY-MM-DD') : undefined,
+        remindDaysBefore: values.remindDays !== undefined ? Number(values.remindDays) : undefined,
+      };
 
-      setMilestonesList(updatedList);
+      await api.put(`/periods/${periodId}/milestones/${targetId}`, payload);
+      await fetchActive();
       message.success('Cập nhật mốc tiến độ thành công!');
       setMilestoneModalVisible(false);
       milestoneForm.resetFields();
-    } catch (err) {
-      message.error('Lỗi khi lưu mốc tiến độ');
+    } catch (err: any) {
+      message.error(err?.response?.data?.message || 'Lỗi khi lưu mốc tiến độ');
     } finally {
       setSubmitting(false);
     }
@@ -198,27 +220,28 @@ export const PeriodsPage: React.FC = () => {
   const handleCreatePeriod = async (values: any) => {
     try {
       setSubmitting(true);
-      const newPeriod = {
-        period_id: Date.now(),
-        period_name: values.periodName,
-        academic_year: values.academicYear,
-        start_date: values.dateRange ? values.dateRange[0].format('YYYY-MM-DD') : '2027-09-01',
-        end_date: values.dateRange ? values.dateRange[1].format('YYYY-MM-DD') : '2028-06-30',
-        quota_projects: Number(values.quotaProjects),
-        total_budget_limit: Number(values.totalBudgetLimit),
+      const payload = {
+        periodName: values.periodName,
+        academicYear: values.academicYear,
+        startDate: values.dateRange ? values.dateRange[0].format('YYYY-MM-DD') : '2027-09-01',
+        endDate: values.dateRange ? values.dateRange[1].format('YYYY-MM-DD') : '2028-06-30',
+        quotaProjects: Number(values.quotaProjects),
+        totalBudgetLimit: Number(values.totalBudgetLimit),
         status: 'ACTIVE',
       };
 
-      try {
-        await api.post('/periods', newPeriod);
-      } catch (e) {}
-
-      setPeriod(newPeriod);
+      const res = await api.post('/periods', payload);
+      if (res.data) {
+        setPeriod(res.data);
+        syncMilestonesFromPeriod(res.data);
+      } else {
+        await fetchActive();
+      }
       message.success(`Đã ban hành đợt NCKH mới: ${values.periodName}`);
       setCreateModalVisible(false);
       createForm.resetFields();
-    } catch (err) {
-      message.error('Lỗi khi khởi tạo đợt NCKH mới');
+    } catch (err: any) {
+      message.error(err?.response?.data?.message || 'Lỗi khi khởi tạo đợt NCKH mới');
     } finally {
       setSubmitting(false);
     }
@@ -226,14 +249,14 @@ export const PeriodsPage: React.FC = () => {
 
   const openEditModal = () => {
     editForm.setFieldsValue({
-      periodName: period?.period_name || 'Đợt Nghiên cứu khoa học Sinh viên Năm học 2026 - 2027',
-      academicYear: period?.academic_year || '2026-2027',
+      periodName: period?.periodName || period?.period_name || 'Đợt Nghiên cứu khoa học Sinh viên Năm học 2026 - 2027',
+      academicYear: period?.academicYear || period?.academic_year || '2026-2027',
       dateRange: [
-        dayjs(period?.start_date || '2026-09-01'),
-        dayjs(period?.end_date || '2027-06-30'),
+        dayjs(period?.startDate || period?.start_date || '2026-09-01'),
+        dayjs(period?.endDate || period?.end_date || '2027-06-30'),
       ],
-      quotaProjects: period?.quota_projects || 150,
-      totalBudgetLimit: period?.total_budget_limit || 800000000,
+      quotaProjects: period?.quotaProjects ?? period?.quota_projects ?? 150,
+      totalBudgetLimit: Number(period?.totalBudgetLimit ?? period?.total_budget_limit ?? 800000000),
       status: period?.status || 'ACTIVE',
     });
     setEditModalVisible(true);
@@ -324,7 +347,7 @@ export const PeriodsPage: React.FC = () => {
               title={
                 <Space>
                   <CalendarOutlined style={{ color: '#C62828' }} />
-                  <span style={{ fontWeight: 700 }}>{period?.period_name || 'Đợt NCKH Sinh viên Năm học 2026 - 2027'}</span>
+                  <span style={{ fontWeight: 700 }}>{period?.periodName || period?.period_name || 'Đợt NCKH Sinh viên Năm học 2026 - 2027'}</span>
                 </Space>
               }
               extra={
@@ -332,7 +355,7 @@ export const PeriodsPage: React.FC = () => {
                   {period?.status === 'ACTIVE' || period?.status === 'OPEN' ? (
                     <Tag color="green" style={{ fontWeight: 600 }}>ĐANG MỞ ĐĂNG KÝ</Tag>
                   ) : (
-                    <Tag color="default">{period?.status === 'CLOSED' ? 'ĐÃ ĐÓNG' : period?.status || 'ĐÃ ĐÓNG'}</Tag>
+                    <Tag color="default">{period?.status === 'CLOSED' ? 'ĐÃ ĐÓNG' : period?.status === 'EVALUATING' ? 'ĐANG NGHIỆM THU' : period?.status === 'ONGOING' ? 'ĐANG TRIỂN KHAI' : period?.status || 'ĐÃ ĐÓNG'}</Tag>
                   )}
                   {canConfigure && (
                     <Tooltip title="Chỉnh sửa cấu hình này">
@@ -346,28 +369,28 @@ export const PeriodsPage: React.FC = () => {
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12, fontSize: 13 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: 8, borderBottom: '1px solid #F0F0F0' }}>
                   <Text type="secondary">Năm học triển khai:</Text>
-                  <b>{period?.academic_year || '2026-2027'}</b>
+                  <b>{period?.academicYear || period?.academic_year || '2026-2027'}</b>
                 </div>
 
                 <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: 8, borderBottom: '1px solid #F0F0F0' }}>
                   <Text type="secondary">Thời gian triển khai:</Text>
                   <b>
-                    {period?.start_date ? new Date(period.start_date).toLocaleDateString('vi-VN') : '01/09/2026'} –{' '}
-                    {period?.end_date ? new Date(period.end_date).toLocaleDateString('vi-VN') : '30/06/2027'}
+                    {(period?.startDate || period?.start_date) ? new Date(period.startDate || period.start_date).toLocaleDateString('vi-VN') : '01/09/2026'} –{' '}
+                    {(period?.endDate || period?.end_date) ? new Date(period.endDate || period.end_date).toLocaleDateString('vi-VN') : '30/06/2027'}
                   </b>
                 </div>
 
                 <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: 8, borderBottom: '1px solid #F0F0F0' }}>
                   <Text type="secondary">Chỉ tiêu đề tài toàn Học viện:</Text>
                   <Tag color="volcano" style={{ fontWeight: 600 }}>
-                    {period?.quota_projects || 150} đề tài
+                    {period?.quotaProjects ?? period?.quota_projects ?? 150} đề tài
                   </Tag>
                 </div>
 
                 <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: 8, borderBottom: '1px solid #F0F0F0' }}>
                   <Text type="secondary">Tổng ngân sách Học viện cấp:</Text>
                   <b style={{ color: '#C62828', fontSize: 15 }}>
-                    {Number(period?.total_budget_limit || 800000000).toLocaleString('vi-VN')} VNĐ
+                    {Number(period?.totalBudgetLimit ?? period?.total_budget_limit ?? 800000000).toLocaleString('vi-VN')} VNĐ
                   </b>
                 </div>
 
@@ -436,15 +459,23 @@ export const PeriodsPage: React.FC = () => {
 
               <Table
                 columns={criteriaColumns}
-                dataSource={[
-                  { order_no: 1, criteria_name: '1. Tổng quan tình hình nghiên cứu thuộc lĩnh vực đề tài', max_score: 20 },
-                  { order_no: 2, criteria_name: '2. Tính cấp thiết, mục tiêu và cách tiếp cận của đề tài', max_score: 20 },
-                  { order_no: 3, criteria_name: '3. Phương pháp nghiên cứu và kỹ thuật triển khai', max_score: 20 },
-                  { order_no: 4, criteria_name: '4. Kết quả, sản phẩm và mức độ hoàn thành nội dung', max_score: 15 },
-                  { order_no: 5, criteria_name: '5. Khả năng ứng dụng thực tiễn hoặc công bố khoa học', max_score: 10 },
-                  { order_no: 6, criteria_name: '6. Bố cục và hình thức trình bày báo cáo tổng kết', max_score: 10 },
-                  { order_no: 7, criteria_name: '7. Kỹ năng thuyết trình và trả lời chất vấn của Hội đồng', max_score: 5 },
-                ]}
+                dataSource={
+                  period?.criteria && Array.isArray(period.criteria) && period.criteria.length > 0
+                    ? period.criteria.map((c: any) => ({
+                        order_no: c.orderNo ?? c.order_no,
+                        criteria_name: `${c.orderNo ?? c.order_no}. ${c.title ?? c.criteria_name}`,
+                        max_score: Number(c.maxScore ?? c.max_score ?? 0),
+                      }))
+                    : [
+                        { order_no: 1, criteria_name: '1. Tổng quan tình hình nghiên cứu thuộc lĩnh vực đề tài', max_score: 10 },
+                        { order_no: 2, criteria_name: '2. Tính cấp thiết, mục tiêu và cách tiếp cận của đề tài', max_score: 15 },
+                        { order_no: 3, criteria_name: '3. Phương pháp nghiên cứu và kỹ thuật triển khai', max_score: 15 },
+                        { order_no: 4, criteria_name: '4. Kết quả, sản phẩm và mức độ hoàn thành nội dung', max_score: 35 },
+                        { order_no: 5, criteria_name: '5. Khả năng ứng dụng thực tiễn hoặc công bố khoa học', max_score: 15 },
+                        { order_no: 6, criteria_name: '6. Bố cục và hình thức trình bày báo cáo tổng kết', max_score: 5 },
+                        { order_no: 7, criteria_name: '7. Kỹ năng thuyết trình và trả lời chất vấn của Hội đồng', max_score: 5 },
+                      ]
+                }
                 rowKey="order_no"
                 pagination={false}
                 size="small"

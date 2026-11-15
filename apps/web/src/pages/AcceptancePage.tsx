@@ -13,7 +13,6 @@ import {
   Row,
   Col,
   Select,
-  Statistic,
   message,
   DatePicker,
   Checkbox,
@@ -143,7 +142,7 @@ export const AcceptancePage: React.FC = () => {
       limitations:
         existingSheet?.limitations ||
         'Cần tiếp tục mở rộng tập dữ liệu kiểm thử và hoàn thiện thêm bài báo khoa học.',
-      qaComment: existingSheet?.qaNotes || 'Nhóm trả lời rõ ràng các câu hỏi phản biện của Hội đồng.',
+      qaComment: existingSheet?.qaComment || existingSheet?.qaNotes || 'Nhóm trả lời rõ ràng các câu hỏi phản biện của Hội đồng.',
       recommendAward: existingSheet ? Boolean(existingSheet.recommendAward) : true,
     });
   };
@@ -261,38 +260,109 @@ export const AcceptancePage: React.FC = () => {
       </div>
 
       {!isStudent && (
-        <Card bordered={false} size="small" style={{ marginBottom: 16, borderRadius: 8 }} bodyStyle={{ padding: '14px 20px' }}>
-          <Row gutter={[24, 12]}>
-            <Col xs={12} sm={6}>
-              <Statistic
-                title={isLecturer ? 'Hội đồng phụ trách' : 'Tổng Hồ sơ Nghiệm thu'}
-                value={acceptances.length}
-                prefix={<AuditOutlined />}
-              />
+        <Card
+          bordered={false}
+          style={{ marginBottom: 16, borderRadius: 10, border: '1px solid #F0F0F0' }}
+          bodyStyle={{ padding: '14px 16px' }}
+        >
+          <div style={{ fontWeight: 700, fontSize: 13, color: '#262626', marginBottom: 10 }}>
+            {isLecturer ? 'Tổng hợp Hội đồng Nghiệm thu phụ trách' : 'Thống kê Hồ sơ Hội đồng Nghiệm thu'}
+          </div>
+          <Row gutter={[12, 12]}>
+            <Col xs={24} sm={12} md={6}>
+              <div
+                style={{
+                  background: 'linear-gradient(90deg, #F0F7FF 0%, #E6F4FF 100%)',
+                  borderRadius: 8,
+                  padding: '12px 14px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'space-between',
+                  minHeight: 74,
+                }}
+              >
+                <AuditOutlined style={{ color: '#1677FF', fontSize: 16 }} />
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginTop: 8, gap: 6 }}>
+                  <span style={{ fontSize: 12, color: '#595959', fontWeight: 500 }}>
+                    {isLecturer ? 'Hội đồng phụ trách' : 'Tổng Hồ sơ Nghiệm thu'}
+                  </span>
+                  <span style={{ fontSize: 22, fontWeight: 800, color: '#1677FF', lineHeight: 1 }}>
+                    {acceptances.length}
+                  </span>
+                </div>
+              </div>
             </Col>
-            <Col xs={12} sm={6}>
-              <Statistic
-                title="Đã phê duyệt P.QLKHCN"
-                value={acceptances.filter((a) => Boolean(a.approvalDocNo)).length}
-                valueStyle={{ color: '#389E0D' }}
-                prefix={<CheckCircleOutlined />}
-              />
+
+            <Col xs={24} sm={12} md={6}>
+              <div
+                style={{
+                  background: 'linear-gradient(90deg, #F6FFED 0%, #EAF7EC 100%)',
+                  borderRadius: 8,
+                  padding: '12px 14px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'space-between',
+                  minHeight: 74,
+                }}
+              >
+                <CheckCircleOutlined style={{ color: '#389E0D', fontSize: 16 }} />
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginTop: 8, gap: 6 }}>
+                  <span style={{ fontSize: 12, color: '#595959', fontWeight: 500 }}>
+                    Đã phê duyệt P.QLKHCN
+                  </span>
+                  <span style={{ fontSize: 22, fontWeight: 800, color: '#389E0D', lineHeight: 1 }}>
+                    {acceptances.filter((a) => Boolean(a.approvalDocNo)).length}
+                  </span>
+                </div>
+              </div>
             </Col>
-            <Col xs={12} sm={6}>
-              <Statistic
-                title="Đạt Xuất sắc / Tốt"
-                value={acceptances.filter((a) => ['XUAT_SAC', 'TOT'].includes(a.grade)).length}
-                valueStyle={{ color: '#C62828' }}
-                prefix={<TrophyOutlined />}
-              />
+
+            <Col xs={24} sm={12} md={6}>
+              <div
+                style={{
+                  background: 'linear-gradient(90deg, #FFF5F5 0%, #FFF0EC 100%)',
+                  borderRadius: 8,
+                  padding: '12px 14px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'space-between',
+                  minHeight: 74,
+                }}
+              >
+                <TrophyOutlined style={{ color: '#C62828', fontSize: 16 }} />
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginTop: 8, gap: 6 }}>
+                  <span style={{ fontSize: 12, color: '#595959', fontWeight: 500 }}>
+                    Đạt Xuất sắc / Tốt
+                  </span>
+                  <span style={{ fontSize: 22, fontWeight: 800, color: '#C62828', lineHeight: 1 }}>
+                    {acceptances.filter((a) => ['XUAT_SAC', 'TOT'].includes(a.grade)).length}
+                  </span>
+                </div>
+              </div>
             </Col>
-            <Col xs={12} sm={6}>
-              <Statistic
-                title="Có phiếu lệch > 15đ (Mẫu 4.2)"
-                value={acceptances.filter((a) => a.sheets?.some((s: any) => s.isOutlier)).length}
-                valueStyle={{ color: '#D48806' }}
-                prefix={<WarningOutlined />}
-              />
+
+            <Col xs={24} sm={12} md={6}>
+              <div
+                style={{
+                  backgroundColor: '#FFFBEB',
+                  borderRadius: 8,
+                  padding: '12px 14px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'space-between',
+                  minHeight: 74,
+                }}
+              >
+                <WarningOutlined style={{ color: '#D48806', fontSize: 16 }} />
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginTop: 8, gap: 6 }}>
+                  <span style={{ fontSize: 12, color: '#595959', fontWeight: 500 }}>
+                    Có phiếu lệch &gt; 15đ (Mẫu 4.2)
+                  </span>
+                  <span style={{ fontSize: 22, fontWeight: 800, color: '#D48806', lineHeight: 1 }}>
+                    {acceptances.filter((a) => a.sheets?.some((s: any) => s.isOutlier)).length}
+                  </span>
+                </div>
+              </div>
             </Col>
           </Row>
         </Card>
@@ -581,7 +651,7 @@ export const AcceptancePage: React.FC = () => {
                 { title: 'Ủy viên Hội đồng', render: (_: any, s: any) => s.councilMember?.lecturer?.user?.fullName || 'Thành viên Hội đồng' },
                 { title: 'Điểm tổng', render: (_: any, s: any) => (s.totalScore != null ? `${Number(s.totalScore).toFixed(1)}đ` : 'Đã chấm (Bảo mật)') },
                 { title: 'Hiệu lực', render: (_: any, s: any) => (s.totalScore == null ? 'Đang tổng hợp' : s.isOutlier ? 'Loại trừ (>15đ)' : 'Hợp lệ') },
-                { title: 'Nhận xét', render: (_: any, s: any) => s.strengths || '—' },
+                { title: 'Nhận xét & Kết luận (Khung 1–4)', render: (_: any, s: any) => s.conclusionAwardRec || s.strengths || '—' },
               ]}
             />
           </div>

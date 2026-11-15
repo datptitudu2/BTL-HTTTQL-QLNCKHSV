@@ -22,6 +22,7 @@ import {
   InputNumber,
   Row,
   Col,
+  Table,
 } from 'antd';
 import {
   CopyOutlined,
@@ -36,7 +37,6 @@ import {
   TagOutlined,
   FilePdfOutlined,
   EyeOutlined,
-  DownloadOutlined,
   FullscreenOutlined,
   ZoomInOutlined,
   ZoomOutOutlined,
@@ -44,6 +44,7 @@ import {
   SaveOutlined,
   SendOutlined,
   MailOutlined,
+  LockOutlined,
 } from '@ant-design/icons';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
@@ -81,7 +82,11 @@ export const ProjectDetailPage: React.FC = () => {
   const [councilModalVisible, setCouncilModalVisible] = useState(false);
   const [scoreModalVisible, setScoreModalVisible] = useState(false);
   const [settleModalVisible, setSettleModalVisible] = useState(false);
-  const [outlinePreviewModalVisible, setOutlinePreviewModalVisible] = useState(false);
+  const [docPreviewModal, setDocPreviewModal] = useState<{
+    code: 'm1' | 'm2' | 'm3' | 'm34' | 'm35' | 'm41' | 'm42' | 'm43' | 'm5';
+    title: string;
+    gwduDoc?: string;
+  } | null>(null);
   const [previewZoom, setPreviewZoom] = useState(100);
 
   // Forms
@@ -410,7 +415,7 @@ export const ProjectDetailPage: React.FC = () => {
     }
   };
 
-  // 5.3 Chấm điểm Phiếu Mẫu 4.1 (7 tiêu chí chuẩn)
+  // 5.3 Chấm điểm Phiếu Mẫu 4.1 (7 tiêu chí chuẩn QĐ 521: 20-20-20-15-10-10-5)
   const handleScoreSubmit = async (values: any) => {
     try {
       const acceptanceId = project?.acceptances?.acceptance_id;
@@ -418,45 +423,75 @@ export const ProjectDetailPage: React.FC = () => {
         message.error('Chưa có thông tin hồ sơ nghiệm thu');
         return;
       }
+      const periodCriteria: any[] = [...(project?.nckh_periods?.criteria || [])].sort(
+        (a, b) => Number(a.order_no ?? a.orderNo ?? 0) - Number(b.order_no ?? b.orderNo ?? 0),
+      );
+      const getCid = (orderIdx: number) =>
+        Number(periodCriteria[orderIdx]?.criteria_id ?? periodCriteria[orderIdx]?.criteriaId ?? orderIdx + 1);
+
       await api.post('/acceptance/score', {
         acceptanceId,
-        strengths: values.strengths || 'Đề tài có tính cấp thiết và giá trị thực tiễn cao, giao diện web S-Link đẹp',
+        strengths: values.strengths || 'Đề tài có tính cấp thiết và giá trị thực tiễn cao, giao diện web S-Link hoàn thiện',
         limitations: values.limitations || 'Cần bổ sung thêm tài liệu hướng dẫn vận hành hệ thống',
         qaComment: values.qaComment || 'Nhóm sinh viên trả lời lưu loát, nắm chắc kỹ thuật',
-        conclusionAwardRec: values.awardRec || 'Đề nghị trao giải Nhất cấp Học viện và xét chuyển đề tài cấp Bộ',
+        conclusionAwardRec: Boolean(values.recommendAward),
         scores: [
-          { criteriaId: 1, score: Number(values.score1 || 19) },
-          { criteriaId: 2, score: Number(values.score2 || 19) },
-          { criteriaId: 3, score: Number(values.score3 || 19) },
-          { criteriaId: 4, score: Number(values.score4 || 14) },
-          { criteriaId: 5, score: Number(values.score5 || 9.5) },
-          { criteriaId: 6, score: Number(values.score6 || 9.5) },
-          { criteriaId: 7, score: Number(values.score7 || 5) },
+          { criteriaId: getCid(0), score: Number(values.score1 ?? 18) },
+          { criteriaId: getCid(1), score: Number(values.score2 ?? 18) },
+          { criteriaId: getCid(2), score: Number(values.score3 ?? 18) },
+          { criteriaId: getCid(3), score: Number(values.score4 ?? 14) },
+          { criteriaId: getCid(4), score: Number(values.score5 ?? 9) },
+          { criteriaId: getCid(5), score: Number(values.score6 ?? 9) },
+          { criteriaId: getCid(6), score: Number(values.score7 ?? 4.5) },
         ],
       });
       message.success('Đã gửi phiếu chấm điểm! Hệ thống tự động tính điểm trung bình Hội đồng và xếp loại.');
       setScoreModalVisible(false);
       fetchProject();
     } catch (err: any) {
-      message.error(err.response?.data?.detail || 'Lỗi gửi phiếu chấm điểm');
+      message.error(err.response?.data?.detail || err.response?.data?.message || 'Lỗi gửi phiếu chấm điểm');
     }
   };
 
   // 6.6 Kê khai quyết toán kinh phí
   const handleSettleSubmit = async (values: any) => {
     try {
-      const budgetId = project?.budgets?.budget_id || 1;
+      const budgetId = project?.budgets?.budget_id;
+      if (!budgetId) {
+        message.error('Đề tài chưa có hồ sơ dự toán ngân sách');
+        return;
+      }
       await api.post(`/budgets/${budgetId}/settlements`, {
         voucherNo: values.voucherNo,
         amount: Number(values.amount || 2500000),
         voucherFileUrl: values.voucherFileUrl || '/storage/vouchers/v1.pdf',
-        facultyConfirmed: true,
+        description: values.description || 'Chứng từ thanh quyết toán chi phí thực hiện đề tài NCKH',
       });
       message.success('Kê khai chứng từ thanh quyết toán thành công!');
       setSettleModalVisible(false);
       fetchProject();
     } catch (err: any) {
-      message.error('Lỗi kê khai chứng từ quyết toán');
+      message.error(err.response?.data?.message || 'Lỗi kê khai chứng từ quyết toán');
+    }
+  };
+
+  const handleRespondMemberInvite = async (memberId: number, decision: 'ACCEPTED' | 'DECLINED') => {
+    try {
+      await api.post(`/projects/${project.project_id}/members/${memberId}/respond`, { decision });
+      message.success(decision === 'ACCEPTED' ? 'Đã xác nhận tham gia nhóm nghiên cứu!' : 'Đã từ chối lời mời tham gia nhóm.');
+      fetchProject();
+    } catch (err: any) {
+      message.error(err.response?.data?.message || 'Không thể phản hồi lời mời nhóm');
+    }
+  };
+
+  const handleRespondAdvisorInvite = async (assignmentId: number, decision: 'ACTIVE' | 'REJECTED') => {
+    try {
+      await api.post(`/projects/${project.project_id}/advisors/${assignmentId}/respond`, { decision });
+      message.success(decision === 'ACTIVE' ? 'Đã nhận hướng dẫn đề tài thành công!' : 'Đã từ chối lời mời hướng dẫn.');
+      fetchProject();
+    } catch (err: any) {
+      message.error(err.response?.data?.message || 'Không thể phản hồi lời mời hướng dẫn');
     }
   };
 
@@ -526,7 +561,7 @@ export const ProjectDetailPage: React.FC = () => {
             backgroundColor:
               project.status === 'ACCEPTED'
                 ? '#52c41a'
-                : project.status === 'REJECTED'
+                : project.status === 'REJECTED' || project.status === 'CANCELLED'
                 ? '#ff4d4f'
                 : project.status === 'PROPOSED' || project.status === 'FACULTY_APPROVED' || project.status === 'SUBMITTED'
                 ? '#fa8c16'
@@ -548,12 +583,34 @@ export const ProjectDetailPage: React.FC = () => {
             ? 'Khoa đã duyệt'
             : project.status === 'APPROVED'
             ? 'Đã giao QĐ'
+            : project.status === 'CANCELLED'
+            ? 'Đã hủy theo QĐ'
             : project.status === 'REJECTED'
             ? 'Từ chối / Không đạt'
             : 'Đang thực hiện'}
         </span>
 
-        {isQLKH && (project.status === 'PROPOSED' || project.status === 'FACULTY_APPROVED') && (
+        {(roleCode === 'FACULTY_LEADER' || roleCode === 'FACULTY_SECRETARY') && project.status === 'PROPOSED' && (
+          <Button
+            type="primary"
+            size="small"
+            style={{ backgroundColor: '#722ED1', borderColor: '#722ED1', fontWeight: 600, borderRadius: 12, marginLeft: 6 }}
+            icon={<CheckCircleOutlined />}
+            onClick={async () => {
+              try {
+                await api.patch(`/projects/${project.project_id}/status`, { status: 'FACULTY_APPROVED' });
+                message.success('Khoa đã sơ tuyển & chuyển hồ sơ (Mẫu 1) lên Phòng QLKHCN!');
+                fetchProject();
+              } catch (err: any) {
+                message.error(err?.response?.data?.message || 'Lỗi khi sơ tuyển đề tài cấp Khoa');
+              }
+            }}
+          >
+            Khoa sơ tuyển đạt (Mẫu 1)
+          </Button>
+        )}
+
+        {isQLKH && (project.status === 'FACULTY_APPROVED' || (roleCode === 'ADMIN' && project.status === 'PROPOSED')) && (
           <Button
             type="primary"
             size="small"
@@ -562,9 +619,11 @@ export const ProjectDetailPage: React.FC = () => {
             onClick={async () => {
               try {
                 await api.patch(`/projects/${project.project_id}/status`, { status: 'ONGOING' });
-              } catch (e) {}
-              setProject((prev: any) => ({ ...prev, status: 'ONGOING' }));
-              message.success('Phòng QLKHCN đã thẩm định & phê duyệt ban hành Quyết định giao đề tài thành công!');
+                message.success('Phòng QLKHCN đã thẩm định & phê duyệt ban hành Quyết định giao đề tài thành công!');
+                fetchProject();
+              } catch (err: any) {
+                message.error(err?.response?.data?.message || 'Lỗi khi phê duyệt giao đề tài');
+              }
             }}
           >
             Phòng QLKHCN Phê duyệt Đề tài
@@ -608,15 +667,56 @@ export const ProjectDetailPage: React.FC = () => {
             </Avatar>
             <div>
               <div style={{ fontSize: 12, color: '#8c8c8c' }}>Giảng viên:</div>
-              <div style={{ fontSize: 15, fontWeight: 700, color: '#262626' }}>
-                {(() => {
-                  const fullName = advisor?.lecturers?.users?.full_name || 'TS. Ngô Quốc Dũng';
-                  const rank = advisor?.lecturers?.academic_rank;
-                  if (rank && !fullName.startsWith(`${rank}.`) && !fullName.startsWith(rank)) {
-                    return `${rank}. ${fullName}`;
-                  }
-                  return fullName;
-                })()}
+              <div style={{ fontSize: 15, fontWeight: 700, color: '#262626', display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                <span>
+                  {(() => {
+                    const fullName = advisor?.lecturers?.users?.full_name || 'Chưa phân công GVHD';
+                    const rank = advisor?.lecturers?.academic_rank;
+                    if (rank && fullName !== 'Chưa phân công GVHD' && !fullName.startsWith(`${rank}.`) && !fullName.startsWith(rank)) {
+                      return `${rank}. ${fullName}`;
+                    }
+                    return fullName;
+                  })()}
+                </span>
+                {advisor?.status === 'INVITED' && <Tag color="gold" style={{ margin: 0 }}>Chờ GVHD xác nhận</Tag>}
+                {advisor?.status === 'ACTIVE' && (
+                  <Tag
+                    color={
+                      project.status === 'ACCEPTED'
+                        ? 'blue'
+                        : ['REJECTED', 'CANCELLED'].includes(project.status)
+                          ? 'default'
+                          : 'green'
+                    }
+                    style={{ margin: 0 }}
+                  >
+                    {project.status === 'ACCEPTED'
+                      ? 'Đã hoàn thành hướng dẫn'
+                      : ['REJECTED', 'CANCELLED'].includes(project.status)
+                        ? 'Đã kết thúc'
+                        : 'Đang hướng dẫn'}
+                  </Tag>
+                )}
+                {advisor?.status === 'INVITED' && isLecturer && (advisor.lecturer_id === (user as any)?.lecturerId || isAdmin) && (
+                  <Space size={4}>
+                    <Button
+                      size="small"
+                      type="primary"
+                      style={{ backgroundColor: '#52C41A', borderColor: '#52C41A', fontSize: 11 }}
+                      onClick={() => handleRespondAdvisorInvite(advisor.advisor_assignment_id, 'ACTIVE')}
+                    >
+                      Nhận hướng dẫn
+                    </Button>
+                    <Button
+                      size="small"
+                      danger
+                      style={{ fontSize: 11 }}
+                      onClick={() => handleRespondAdvisorInvite(advisor.advisor_assignment_id, 'REJECTED')}
+                    >
+                      Từ chối
+                    </Button>
+                  </Space>
+                )}
               </div>
             </div>
           </div>
@@ -665,14 +765,6 @@ export const ProjectDetailPage: React.FC = () => {
                       <div style={{ flex: 1 }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
                           <span style={{ fontWeight: 600, color: '#262626' }}>Học liệu & Tài liệu</span>
-                          <a
-                            href={`/gwdu?doc=doc-m2&projectId=${project.project_id}`}
-                            target="_blank"
-                            rel="noreferrer"
-                            style={{ color: '#C62828', fontSize: 12, cursor: 'pointer' }}
-                          >
-                            Xem chi tiết
-                          </a>
                         </div>
                         {(project.outlines && project.outlines.length > 0) || (project.documents && project.documents.length > 0) ? (
                           <div style={{ display: 'flex', flexDirection: 'column', gap: 8, fontSize: 13, color: '#262626' }}>
@@ -680,23 +772,18 @@ export const ProjectDetailPage: React.FC = () => {
                               <div>
                                 <FileDoneOutlined style={{ color: '#C62828', marginRight: 6 }} />
                                 <a
-                                  href={`/gwdu?doc=doc-m2&projectId=${project.project_id}`}
-                                  target="_blank"
-                                  rel="noreferrer"
-                                  style={{ color: '#262626', fontWeight: 600 }}
+                                  onClick={() => {
+                                    setPreviewZoom(100);
+                                    setDocPreviewModal({
+                                      code: 'm2',
+                                      title: 'Mẫu 2 - Thuyết minh Đề cương Chi tiết',
+                                      gwduDoc: 'doc-m2',
+                                    });
+                                  }}
+                                  style={{ color: '#C62828', fontWeight: 600, cursor: 'pointer' }}
                                 >
-                                  Thuyết minh Đề cương (Mẫu 2) - Phiên bản {project.outlines[0]?.version_no || 1}
+                                  Thuyết minh Đề cương (Mẫu 2) — Phiên bản {project.outlines[0]?.version_no || 1}
                                 </a>
-                                <div style={{ fontSize: 11, color: '#8c8c8c', marginTop: 2 }}>
-                                  <a
-                                    href={`/gwdu?doc=doc-m2&projectId=${project.project_id}`}
-                                    target="_blank"
-                                    rel="noreferrer"
-                                    style={{ color: '#C62828', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: 4 }}
-                                  >
-                                    <EyeOutlined /> Mở xem PDF đề cương trực tuyến
-                                  </a>
-                                </div>
                               </div>
                             )}
                             {project.documents && project.documents.map((doc: any) => {
@@ -968,44 +1055,73 @@ export const ProjectDetailPage: React.FC = () => {
                       Nhãn do giảng viên/chủ nhiệm gán trong đề tài này.
                     </div>
 
-                    {/* Danh sách thành viên avatar hoạt hình chuẩn ảnh */}
+                    {/* Danh sách thành viên */}
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-                      {project.project_members?.map((member: any) => (
-                        <div
-                          key={member.member_id}
-                          style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'space-between',
-                            padding: '8px 4px',
-                            borderBottom: '1px solid #f5f5f5',
-                          }}
-                        >
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                            <Avatar
-                              size={40}
-                              style={{
-                                backgroundColor: member.member_role === 'LEADER' ? '#1890FF' : '#52C41A',
-                                fontWeight: 700,
-                              }}
-                            >
-                              {member.students?.users?.full_name?.charAt(0) || 'S'}
-                            </Avatar>
-                            <div>
-                              <div style={{ fontWeight: 600, fontSize: 13, color: '#262626' }}>
-                                {member.students?.users?.full_name}
-                              </div>
-                              <div style={{ fontSize: 11, color: '#8c8c8c' }}>
-                                {member.student_id} • {member.students?.gender || 'Nam'}
-                              </div>
-                              <div style={{ fontSize: 11, color: '#C62828', marginTop: 2, display: 'flex', alignItems: 'center' }}>
-                                <TagOutlined style={{ marginRight: 4 }} /> Nhãn: {member.member_role === 'LEADER' ? 'Chủ nhiệm đề tài' : 'Thành viên'} ({member.contribution_pct}%)
+                      {project.project_members?.map((member: any) => {
+                        const isMe =
+                          member.student_id === (user as any)?.studentId ||
+                          member.students?.users?.full_name === user?.fullName;
+                        return (
+                          <div
+                            key={member.member_id}
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'space-between',
+                              padding: '8px 4px',
+                              borderBottom: '1px solid #f5f5f5',
+                              gap: 8,
+                            }}
+                          >
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                              <Avatar
+                                size={40}
+                                style={{
+                                  backgroundColor: member.member_role === 'LEADER' ? '#1890FF' : '#52C41A',
+                                  fontWeight: 700,
+                                }}
+                              >
+                                {member.students?.users?.full_name?.charAt(0) || 'S'}
+                              </Avatar>
+                              <div>
+                                <div style={{ fontWeight: 600, fontSize: 13, color: '#262626', display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+                                  <span>{member.students?.users?.full_name}</span>
+                                  {member.confirm_status === 'PENDING' && <Tag color="gold" style={{ fontSize: 10, margin: 0 }}>Chờ xác nhận</Tag>}
+                                  {member.confirm_status === 'DECLINED' && <Tag color="red" style={{ fontSize: 10, margin: 0 }}>Từ chối</Tag>}
+                                </div>
+                                <div style={{ fontSize: 11, color: '#8c8c8c' }}>
+                                  {member.student_id} • {member.students?.gender || 'Nam'}
+                                </div>
+                                <div style={{ fontSize: 11, color: '#C62828', marginTop: 2, display: 'flex', alignItems: 'center' }}>
+                                  <TagOutlined style={{ marginRight: 4 }} /> Nhãn: {member.member_role === 'LEADER' ? 'Chủ nhiệm đề tài' : 'Thành viên'} ({member.contribution_pct}%)
+                                </div>
                               </div>
                             </div>
+                            {member.confirm_status === 'PENDING' && isMe ? (
+                              <Space size={4}>
+                                <Button
+                                  size="small"
+                                  type="primary"
+                                  style={{ backgroundColor: '#52C41A', borderColor: '#52C41A', fontSize: 11 }}
+                                  onClick={() => handleRespondMemberInvite(member.member_id, 'ACCEPTED')}
+                                >
+                                  Tham gia
+                                </Button>
+                                <Button
+                                  size="small"
+                                  danger
+                                  style={{ fontSize: 11 }}
+                                  onClick={() => handleRespondMemberInvite(member.member_id, 'DECLINED')}
+                                >
+                                  Từ chối
+                                </Button>
+                              </Space>
+                            ) : (
+                              <EllipsisOutlined style={{ color: '#8c8c8c', cursor: 'pointer' }} />
+                            )}
                           </div>
-                          <EllipsisOutlined style={{ color: '#8c8c8c', cursor: 'pointer' }} />
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   </Card>
 
@@ -1018,16 +1134,22 @@ export const ProjectDetailPage: React.FC = () => {
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 10, fontSize: 13 }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                         <span style={{ color: '#8c8c8c' }}>Dự toán nhóm đăng ký:</span>
-                        <b>{Number(project.budgets?.requested_amount || 5000000).toLocaleString('vi-VN')} đ</b>
+                        <b>{Number(project.budgets?.requested_amount ?? 0).toLocaleString('vi-VN')} đ</b>
                       </div>
                       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                         <span style={{ color: '#8c8c8c' }}>Hội đồng Khoa đề xuất:</span>
-                        <b>{Number(project.budgets?.faculty_proposed || 5000000).toLocaleString('vi-VN')} đ</b>
+                        <b>
+                          {project.status === 'PROPOSED'
+                            ? 'Chờ Khoa đề xuất'
+                            : `${Number(project.budgets?.faculty_proposed ?? 0).toLocaleString('vi-VN')} đ`}
+                        </b>
                       </div>
                       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                         <span style={{ color: '#8c8c8c' }}>Học viện phê duyệt:</span>
-                        <b style={{ color: '#C62828' }}>
-                          {Number(project.budgets?.approved_amount || 5000000).toLocaleString('vi-VN')} đ
+                        <b style={{ color: project.status === 'REJECTED' ? '#ff4d4f' : '#C62828' }}>
+                          {['PROPOSED', 'FACULTY_APPROVED'].includes(project.status)
+                            ? 'Chờ Học viện duyệt'
+                            : `${Number(project.budgets?.approved_amount ?? 0).toLocaleString('vi-VN')} đ`}
                         </b>
                       </div>
                     </div>
@@ -1039,175 +1161,183 @@ export const ProjectDetailPage: React.FC = () => {
           {
             key: 'outline',
             label: 'Đề cương chi tiết (Mẫu 2)',
-            children: (
-              <Card
-                title="Hồ sơ Thuyết minh Đề cương nghiên cứu (Mẫu 2 - QĐ 521)"
-                extra={
-                  (isStudent || isAdmin) && (
-                    <Button
-                      type="primary"
-                      icon={<UploadOutlined />}
-                      style={{ backgroundColor: '#C62828' }}
-                      onClick={() => setOutlineModalVisible(true)}
-                    >
-                      Nộp phiên bản Đề cương mới
-                    </Button>
-                  )
-                }
-              >
-                {project.outlines && project.outlines.length > 0 ? (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-                    {project.outlines.map((ot: any) => (
-                      <div
-                        key={ot.outline_id}
-                        style={{
-                          padding: 16,
-                          backgroundColor: '#FAFAFA',
-                          borderRadius: 8,
-                          border: '1px solid #EDEDEE',
-                          display: 'flex',
-                          justifyContent: 'space-between',
-                          alignItems: 'center',
-                          flexWrap: 'wrap',
-                          gap: 12,
-                        }}
-                      >
-                        <div>
-                          <Space size={8}>
-                            <FilePdfOutlined style={{ color: '#C62828', fontSize: 20 }} />
-                            <span style={{ fontWeight: 700, fontSize: 15, color: '#262626' }}>
-                              Đề cương nghiên cứu chi tiết - Phiên bản {ot.version_no || 1}
-                            </span>
-                            <Tag color="blue">Mẫu 2 - QĐ 521</Tag>
-                          </Space>
-                          <div style={{ fontSize: 12, color: '#8c8c8c', marginTop: 4 }}>
-                            Thời điểm nộp: {ot.submitted_at ? new Date(ot.submitted_at).toLocaleString('vi-VN') : '07:00:00 10/10/2026'}
+            children: (() => {
+              const latestOutline = project.outlines?.[0];
+              const isOutlineLocked =
+                ['ACCEPTED', 'REJECTED', 'CANCELLED', 'SUBMITTED'].includes(project.status) ||
+                latestOutline?.approval_status === 'FACULTY_APPROVED';
+
+              return (
+                <Card
+                  title="Hồ sơ Thuyết minh Đề cương nghiên cứu (Mẫu 2 - QĐ 521)"
+                  extra={
+                    isOutlineLocked ? (
+                      <Tag color="green" icon={<CheckCircleOutlined />} style={{ margin: 0 }}>
+                        Đã hoàn tất phê duyệt Đề cương
+                      </Tag>
+                    ) : (
+                      (isStudent || isAdmin) && (
+                        <Button
+                          type="primary"
+                          icon={<UploadOutlined />}
+                          style={{ backgroundColor: '#C62828', borderColor: '#C62828' }}
+                          onClick={() => setOutlineModalVisible(true)}
+                        >
+                          {latestOutline ? 'Nộp phiên bản chỉnh sửa' : 'Soạn & Nộp Đề cương'}
+                        </Button>
+                      )
+                    )
+                  }
+                >
+                  {project.outlines && project.outlines.length > 0 ? (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                      {project.outlines.map((ot: any) => (
+                        <div
+                          key={ot.outline_id}
+                          style={{
+                            padding: '12px 16px',
+                            backgroundColor: '#FAFAFA',
+                            borderRadius: 8,
+                            border: '1px solid #EDEDEE',
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                            flexWrap: 'wrap',
+                            gap: 12,
+                          }}
+                        >
+                          <div>
+                            <Space size={8}>
+                              <FilePdfOutlined style={{ color: '#C62828', fontSize: 18 }} />
+                              <span style={{ fontWeight: 700, fontSize: 14, color: '#262626' }}>
+                                Phiên bản {ot.version_no || 1} — Thuyết minh Đề cương (Mẫu 2)
+                              </span>
+                            </Space>
+                            <div style={{ fontSize: 12, color: '#8c8c8c', marginTop: 4 }}>
+                              Thời điểm nộp: {ot.submitted_at ? new Date(ot.submitted_at).toLocaleString('vi-VN') : '07:00:00 10/10/2026'}
+                            </div>
                           </div>
-                          <div style={{ marginTop: 6, display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-                            <span style={{ color: '#595959', fontSize: 12 }}>Tài liệu số GWDU:</span>
-                            <a
-                              href={`/gwdu?doc=doc-m2&projectId=${project.project_id}`}
-                              target="_blank"
-                              rel="noreferrer"
-                              style={{ color: '#C62828', fontWeight: 600, fontSize: 13, textDecoration: 'underline', cursor: 'pointer' }}
-                              title="Bấm để mở xem tab riêng trực tuyến"
-                            >
-                              /gwdu?doc=doc-m2&projectId={project.project_id} (Mẫu 2 số hóa)
-                            </a>
+
+                          <Space size={8} wrap>
+                            {(isLecturer || isAdmin) && ['PENDING', 'REVISION_REQUIRED'].includes(ot.approval_status) && (
+                              <Button
+                                type="primary"
+                                size="small"
+                                style={{ backgroundColor: '#52C41A', borderColor: '#52C41A' }}
+                                onClick={() => handleOutlineApprove(ot.outline_id, 'APPROVED')}
+                              >
+                                GVHD Duyệt (Cấp 1)
+                              </Button>
+                            )}
+                            {(isFacultyLeader || roleCode === 'FACULTY_SECRETARY' || isAdmin) && ot.approval_status === 'ADVISOR_APPROVED' && (
+                              <Button
+                                type="primary"
+                                size="small"
+                                style={{ backgroundColor: '#C62828', borderColor: '#C62828' }}
+                                onClick={() => handleOutlineApprove(ot.outline_id, 'APPROVED')}
+                              >
+                                Trưởng khoa Ký duyệt (Cấp 2)
+                              </Button>
+                            )}
                             <Tag
-                              color="red"
-                              style={{ cursor: 'pointer', margin: 0, fontSize: 11, padding: '1px 8px', borderRadius: 4 }}
-                              onClick={() => window.open(`/gwdu?doc=doc-m2&projectId=${project.project_id}`, '_blank')}
+                              color={
+                                ot.approval_status === 'FACULTY_APPROVED'
+                                  ? 'green'
+                                  : ot.approval_status === 'ADVISOR_APPROVED'
+                                    ? 'blue'
+                                    : ot.approval_status === 'REVISION_REQUIRED'
+                                      ? 'orange'
+                                      : ot.approval_status === 'REJECTED'
+                                        ? 'red'
+                                        : 'gold'
+                              }
                             >
-                              <EyeOutlined /> Mở tab riêng xem PDF
+                              {ot.approval_status === 'FACULTY_APPROVED'
+                                ? 'Đã phê duyệt 2 cấp'
+                                : ot.approval_status === 'ADVISOR_APPROVED'
+                                  ? 'GVHD đã duyệt • Chờ Khoa'
+                                  : ot.approval_status === 'REVISION_REQUIRED'
+                                    ? 'Yêu cầu chỉnh sửa'
+                                    : ot.approval_status === 'REJECTED'
+                                      ? 'Từ chối'
+                                      : 'Chờ GVHD duyệt'}
                             </Tag>
+                          </Space>
+                        </div>
+                      ))}
+
+                      {/* KHUNG XEM TRƯỚC TRỰC TIẾP TRÊN TRANG (1 THANH CÔNG CỤ DUY NHẤT, KHÔNG TRÙNG NÚT) */}
+                      <Divider style={{ margin: '16px 0 12px' }} />
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10, flexWrap: 'wrap', gap: 10 }}>
+                        <div>
+                          <span style={{ fontWeight: 700, fontSize: 15, color: '#262626' }}>
+                            Bản kết xuất Thuyết minh Đề cương (Mẫu 2 - A4)
+                          </span>
+                          <div style={{ fontSize: 12, color: '#8c8c8c' }}>
+                            Tự động đồng bộ từ 12 mục thuyết minh đã kê khai trên hệ thống.
                           </div>
                         </div>
-
-                        <Space size={8} wrap>
+                        <Space>
                           <Button
-                            type="primary"
-                            style={{ backgroundColor: '#C62828', borderColor: '#C62828', fontWeight: 600 }}
+                            icon={<FullscreenOutlined />}
+                            onClick={() => {
+                              setPreviewZoom(100);
+                              setDocPreviewModal({
+                                code: 'm2',
+                                title: 'Mẫu 2 - Thuyết minh Đề cương Chi tiết',
+                                gwduDoc: 'doc-m2',
+                              });
+                            }}
+                          >
+                            Toàn màn hình
+                          </Button>
+                          <Button
                             icon={<EyeOutlined />}
                             onClick={() => window.open(`/gwdu?doc=doc-m2&projectId=${project.project_id}`, '_blank')}
                           >
-                            Mở tab riêng xem tài liệu số (Mẫu 2)
-                          </Button>
-                          <Button
-                            icon={<FullscreenOutlined />}
-                            onClick={() => setOutlinePreviewModalVisible(true)}
-                          >
-                            Xem nhanh
+                            Mở cổng GWDU
                           </Button>
                           <Button
                             icon={<PrinterOutlined />}
+                            type="primary"
+                            style={{ backgroundColor: '#C62828', borderColor: '#C62828', fontWeight: 600 }}
                             onClick={() => printElement('live-outline-a4-sheet', 'Mẫu 2 - Đề cương nghiên cứu chi tiết')}
                           >
-                            In tờ đơn A4
+                            In / Xuất PDF
                           </Button>
-                          {(isLecturer || isAdmin) && (
-                            <Button
-                              type="primary"
-                              style={{ backgroundColor: '#52C41A', borderColor: '#52C41A' }}
-                              onClick={() => handleOutlineApprove(ot.outline_id, 'APPROVED')}
-                            >
-                              GVHD Duyệt
-                            </Button>
-                          )}
-                          {(isFacultyLeader || isAdmin) && (
-                            <Button
-                              type="primary"
-                              style={{ backgroundColor: '#C62828', borderColor: '#C62828' }}
-                              onClick={() => handleOutlineApprove(ot.outline_id, 'APPROVED')}
-                            >
-                              Trưởng khoa Ký duyệt
-                            </Button>
-                          )}
-                          {!isLecturer && !isFacultyLeader && !isAdmin && (
-                            <Tag color="cyan">Đã nộp đề cương</Tag>
-                          )}
                         </Space>
                       </div>
-                    ))}
 
-                    {/* KHUNG XEM TRƯỚC TRỰC TIẾP TRÊN TRANG (LIVE A4 PREVIEW) */}
-                    <Divider style={{ margin: '20px 0 16px' }} />
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12, flexWrap: 'wrap', gap: 10 }}>
-                      <div>
-                        <span style={{ fontWeight: 700, fontSize: 15, color: '#262626' }}>
-                          Bản xem trước trực tiếp Thuyết minh Đề cương (Mẫu 2 - QĐ 521):
-                        </span>
-                        <div style={{ fontSize: 12, color: '#8c8c8c' }}>
-                          Toàn bộ thông tin mô tả 12 mục được tự động trích xuất và điền đầy đủ lên mẫu đơn A4 chuẩn hóa.
-                        </div>
-                      </div>
-                      <Space>
-                        <Button
-                          icon={<FullscreenOutlined />}
-                          onClick={() => setOutlinePreviewModalVisible(true)}
-                        >
-                          Toàn màn hình
-                        </Button>
-                        <Button
-                          icon={<PrinterOutlined />}
-                          type="primary"
-                          style={{ backgroundColor: '#C62828', borderColor: '#C62828', fontWeight: 600 }}
-                          onClick={() => printElement('live-outline-a4-sheet', 'Mẫu 2 - Đề cương nghiên cứu chi tiết')}
-                        >
-                          In tờ đơn A4
-                        </Button>
-                      </Space>
-                    </div>
-
-                    <div
-                      style={{
-                        backgroundColor: '#525659',
-                        padding: '24px 16px',
-                        borderRadius: 8,
-                        maxHeight: 750,
-                        overflowY: 'auto',
-                        boxShadow: 'inset 0 2px 8px rgba(0,0,0,0.3)',
-                      }}
-                    >
                       <div
-                        id="live-outline-a4-sheet"
-                        className="printable-a4-sheet"
                         style={{
-                          boxShadow: '0 4px 20px rgba(0,0,0,0.35)',
-                          margin: '0 auto',
+                          backgroundColor: '#525659',
+                          padding: '24px 16px',
+                          borderRadius: 8,
+                          maxHeight: 750,
+                          overflowY: 'auto',
+                          boxShadow: 'inset 0 2px 8px rgba(0,0,0,0.3)',
                         }}
                       >
-                        <Mau2DeCuongChiTiet project={project} />
+                        <div
+                          id="live-outline-a4-sheet"
+                          className="printable-a4-sheet"
+                          style={{
+                            boxShadow: '0 4px 20px rgba(0,0,0,0.35)',
+                            margin: '0 auto',
+                          }}
+                        >
+                          <Mau2DeCuongChiTiet project={project} />
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ) : (
-                  <div style={{ textAlign: 'center', padding: '32px 0', color: '#8c8c8c' }}>
-                    Chưa có đề cương nào được nộp. Bấm "Nộp phiên bản Đề cương mới" để tải lên.
-                  </div>
-                )}
-              </Card>
-            ),
+                  ) : (
+                    <div style={{ textAlign: 'center', padding: '32px 0', color: '#8c8c8c' }}>
+                      Chưa có đề cương nào được nộp. Bấm "Soạn & Nộp Đề cương" để kê khai 12 mục trực tuyến.
+                    </div>
+                  )}
+                </Card>
+              );
+            })(),
           },
           {
             key: 'acceptance',
@@ -1217,22 +1347,37 @@ export const ProjectDetailPage: React.FC = () => {
                 title="Hội đồng Nghiệm thu & Phiếu chấm điểm Mẫu 4.1"
                 extra={
                   <Space>
-                    {(isQLKH || isFacultyLeader || isAdmin) && (
+                    {(isQLKH || isFacultyLeader || isAdmin) && !project.acceptances && project.status === 'SUBMITTED' && (
                       <Button
                         type="primary"
-                        style={{ backgroundColor: '#C62828' }}
+                        style={{ backgroundColor: '#C62828', borderColor: '#C62828' }}
                         onClick={() => setCouncilModalVisible(true)}
                       >
-                        5.2 Thành lập Hội đồng
+                        Thành lập Hội đồng
                       </Button>
                     )}
-                    {(isLecturer || isFacultyLeader || isAdmin) && (
+                    {(isLecturer || isFacultyLeader || isAdmin) && project.acceptances && project.status !== 'ACCEPTED' && (
                       <Button
                         type="primary"
                         style={{ backgroundColor: '#1890FF' }}
                         onClick={() => setScoreModalVisible(true)}
                       >
-                        5.3 Chấm điểm Mẫu 4.1
+                        Chấm điểm Mẫu 4.1
+                      </Button>
+                    )}
+                    {project.acceptances && (
+                      <Button
+                        icon={<PrinterOutlined />}
+                        onClick={() => {
+                          setPreviewZoom(100);
+                          setDocPreviewModal({
+                            code: 'm42',
+                            title: 'Mẫu 4.2 - Biên bản Họp Hội đồng Nghiệm thu',
+                            gwduDoc: 'doc-m42',
+                          });
+                        }}
+                      >
+                        Xem & In Biên bản (Mẫu 4.2)
                       </Button>
                     )}
                   </Space>
@@ -1243,15 +1388,28 @@ export const ProjectDetailPage: React.FC = () => {
                     {/* BẢNG TỔNG HỢP KẾT QUẢ ĐIỂM SỐ */}
                     <Alert
                       message={
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
                           <div>
                             <div style={{ fontSize: 13, color: '#389e0d' }}>Kết quả nghiệm thu Hội đồng:</div>
                             <div style={{ fontSize: 24, fontWeight: 700, color: '#274916' }}>
-                              Điểm trung bình: {Number(project.acceptances.avg_score || 88.5).toFixed(1)} / 100
+                              {project.acceptances.avg_score != null
+                                ? `Điểm trung bình: ${Number(project.acceptances.avg_score).toFixed(1)} / 100`
+                                : 'Đang chờ Hội đồng chấm điểm'}
                             </div>
                           </div>
                           <Tag color="green" style={{ fontSize: 16, padding: '6px 16px', borderRadius: 8 }}>
-                            Xếp loại: {project.acceptances.grade || 'XUẤT SẮC'}
+                            Xếp loại:{' '}
+                            {project.acceptances.grade === 'XUAT_SAC'
+                              ? 'Xuất sắc'
+                              : project.acceptances.grade === 'TOT'
+                                ? 'Tốt'
+                                : project.acceptances.grade === 'KHA'
+                                  ? 'Khá'
+                                  : project.acceptances.grade === 'DAT'
+                                    ? 'Đạt'
+                                    : project.acceptances.grade === 'KHONG_DAT'
+                                      ? 'Không đạt'
+                                      : 'Chờ chấm điểm'}
                           </Tag>
                         </div>
                       }
@@ -1269,7 +1427,11 @@ export const ProjectDetailPage: React.FC = () => {
                               ? 'Chủ tịch Hội đồng'
                               : cm.council_role === 'SECRETARY'
                                 ? 'Thư ký Hội đồng'
-                                : 'Ủy viên phản biện'}
+                                : cm.council_role === 'REVIEWER' || cm.council_role === 'REVIEWER_1'
+                                  ? 'Ủy viên Phản biện 1'
+                                  : cm.council_role === 'REVIEWER_2'
+                                    ? 'Ủy viên Phản biện 2'
+                                    : 'Ủy viên Hội đồng'}
                           </div>
                         </Card>
                       ))}
@@ -1277,7 +1439,9 @@ export const ProjectDetailPage: React.FC = () => {
                   </div>
                 ) : (
                   <div style={{ textAlign: 'center', padding: '36px 0', color: '#8c8c8c' }}>
-                    Chưa thiết lập Hội đồng nghiệm thu. Bấm nút "5.2 Thành lập Hội đồng" để tạo Hội đồng bảo vệ.
+                    {project.status === 'SUBMITTED'
+                      ? 'Đề tài đã nộp hồ sơ tổng kết, đang chờ Khoa / P.QLKHCN thành lập Hội đồng nghiệm thu.'
+                      : 'Chưa đến giai đoạn nghiệm thu (đề tài cần nộp hồ sơ tổng kết trước khi lập Hội đồng).'}
                   </div>
                 )}
               </Card>
@@ -1285,205 +1449,188 @@ export const ProjectDetailPage: React.FC = () => {
           },
           {
             key: 'templates',
-            label: 'Biểu mẫu chuẩn QĐ 521 (In & Xuất file)',
-            children: (
-              <Card title="Hồ sơ Biểu mẫu chuẩn theo Quyết định 521/QĐ-HV" bodyStyle={{ padding: 20 }}>
-                <Tabs
-                  type="card"
-                  items={[
-                    {
-                      key: 'm1',
-                      label: 'Mẫu 1 - Đề xuất Khoa',
-                      children: (
-                        <div>
-                          <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 12 }}>
-                            <Button
-                              icon={<PrinterOutlined />}
-                              type="primary"
-                              style={{ backgroundColor: '#C62828' }}
-                              onClick={() => printElement('project-form-sheet-m1', 'Mẫu 1 - Công văn Đăng ký Đề tài')}
-                            >
-                              In / Xuất Mẫu 1 (PDF)
-                            </Button>
+            label: 'Hồ sơ pháp lý đề tài',
+            children: (() => {
+              const hasOutline =
+                (project.outlines && project.outlines.length > 0) ||
+                ['ONGOING', 'APPROVED', 'OUTLINE_SUBMITTED', 'SUBMITTED', 'ACCEPTED'].includes(project.status);
+              const hasSeminar =
+                (project.seminars && project.seminars.length > 0) ||
+                ['SUBMITTED', 'ACCEPTED'].includes(project.status);
+              const hasSubmittedReport = ['SUBMITTED', 'ACCEPTED'].includes(project.status);
+              const hasAcceptance = Boolean(project.acceptances);
+              const canReward =
+                (project.award_nominations && project.award_nominations.length > 0) ||
+                ['XUAT_SAC', 'TOT', 'KHA'].includes(project.acceptances?.grade);
+
+              const dossierRows = [
+                {
+                  key: 'm1',
+                  stage: '1. Đăng ký & Sơ tuyển',
+                  docName: 'Mẫu 1 — Công văn đăng ký đề tài NCKH cấp Khoa',
+                  owner: 'Khoa & P.QLKHCN',
+                  ready: true,
+                  statusText: 'Đã ghi nhận khi đăng ký đề tài',
+                  gwduDoc: 'doc-m1',
+                },
+                {
+                  key: 'm2',
+                  stage: '2. Thuyết minh Đề cương',
+                  docName: 'Mẫu 2 — Thuyết minh Đề cương chi tiết (12 mục)',
+                  owner: 'Chủ nhiệm, GVHD & Trưởng khoa',
+                  ready: hasOutline,
+                  statusText: hasOutline ? 'Đã đồng bộ từ Tab Đề cương' : 'Chưa nộp đề cương Mẫu 2',
+                  gwduDoc: 'doc-m2',
+                },
+                {
+                  key: 'm35',
+                  stage: '3. Tiến độ & SHKH',
+                  docName: 'Mẫu 3.5 — Biên bản Sinh hoạt Khoa học cấp Khoa',
+                  owner: 'Khoa chủ trì & Thư ký Khoa',
+                  ready: hasSeminar,
+                  statusText: hasSeminar ? 'Đã phát sinh từ phân hệ Tiến độ & SHKH' : 'Chưa tổ chức phiên SHKH',
+                  gwduDoc: 'doc-m35',
+                },
+                {
+                  key: 'm3',
+                  stage: '4. Nộp hồ sơ Tổng kết',
+                  docName: 'Mẫu 3.2 & 3.3 — Bìa chính & Bìa phụ Báo cáo tổng kết',
+                  owner: 'Nhóm sinh viên',
+                  ready: hasSubmittedReport,
+                  statusText: hasSubmittedReport ? 'Đã kết xuất cùng hồ sơ tổng kết' : 'Mở khi nộp tổng kết (SUBMITTED)',
+                  gwduDoc: 'doc-m3',
+                },
+                {
+                  key: 'm34',
+                  stage: '4. Nộp hồ sơ Tổng kết',
+                  docName: 'Mẫu 3.4 — Báo cáo tóm tắt công trình nghiên cứu',
+                  owner: 'Nhóm sinh viên',
+                  ready: hasSubmittedReport,
+                  statusText: hasSubmittedReport ? 'Đã kết xuất cùng hồ sơ tổng kết' : 'Mở khi nộp tổng kết (SUBMITTED)',
+                },
+                {
+                  key: 'm41',
+                  stage: '5. Hội đồng Nghiệm thu',
+                  docName: 'Mẫu 4.1 — Phiếu đánh giá đề tài NCKH (7 tiêu chí / 100đ)',
+                  owner: 'Thành viên Hội đồng',
+                  ready: hasAcceptance,
+                  statusText: hasAcceptance ? 'Đã có dữ liệu Hội đồng nghiệm thu' : 'Chưa thành lập Hội đồng',
+                  gwduDoc: 'doc-m41',
+                },
+                {
+                  key: 'm42',
+                  stage: '5. Hội đồng Nghiệm thu',
+                  docName: 'Mẫu 4.2 — Biên bản họp Hội đồng đánh giá nghiệm thu',
+                  owner: 'Chủ tịch & Thư ký Hội đồng',
+                  ready: hasAcceptance,
+                  statusText: hasAcceptance ? 'Đã kết xuất từ điểm tổng hợp Hội đồng' : 'Chưa thành lập Hội đồng',
+                  gwduDoc: 'doc-m42',
+                },
+                {
+                  key: 'm43',
+                  stage: '5. Hội đồng Nghiệm thu',
+                  docName: 'Mẫu 4.3 — Bản nhận xét đánh giá của Ủy viên phản biện',
+                  owner: 'Ủy viên Phản biện',
+                  ready: hasAcceptance,
+                  statusText: hasAcceptance ? 'Đã kết xuất từ nhận xét phản biện' : 'Chưa thành lập Hội đồng',
+                },
+                {
+                  key: 'm5',
+                  stage: '6. Khen thưởng (≥ Khá)',
+                  docName: 'Mẫu 5 — Công văn đề nghị khen thưởng công trình NCKH',
+                  owner: 'Hội đồng Khoa & P.QLKHCN',
+                  ready: canReward,
+                  statusText: canReward
+                    ? 'Đủ điều kiện / Đã lập hồ sơ Mẫu 5'
+                    : 'Chỉ mở khi nghiệm thu đạt từ Khá trở lên',
+                  gwduDoc: 'doc-m5',
+                },
+              ];
+
+              return (
+                <Card
+                  title="Hồ sơ văn bản số hóa theo vòng đời Đề tài (QĐ 521/QĐ-HV)"
+                  extra={
+                    <Button icon={<FileTextOutlined />} onClick={() => navigate('/forms')}>
+                      Mở Kho Biểu mẫu chuẩn QĐ 521
+                    </Button>
+                  }
+                >
+                  <Alert
+                    type="info"
+                    showIcon
+                    style={{ marginBottom: 16 }}
+                    message="Mỗi biểu mẫu được hệ thống tự động kết xuất từ dữ liệu nghiệp vụ của giai đoạn tương ứng (không cần nhập lại). Chỉ những giai đoạn đề tài đã đi qua mới mở khóa xem và in."
+                  />
+                  <Table
+                    rowKey="key"
+                    pagination={false}
+                    size="middle"
+                    dataSource={dossierRows}
+                    columns={[
+                      {
+                        title: 'Giai đoạn',
+                        dataIndex: 'stage',
+                        key: 'stage',
+                        width: 190,
+                        render: (val: string) => <Text strong>{val}</Text>,
+                      },
+                      {
+                        title: 'Biểu mẫu số hóa',
+                        dataIndex: 'docName',
+                        key: 'docName',
+                        render: (val: string, r: any) => (
+                          <div>
+                            <div style={{ fontWeight: 600, color: r.ready ? '#262626' : '#8c8c8c' }}>{val}</div>
+                            <div style={{ fontSize: 12, color: '#8c8c8c' }}>Đơn vị thực hiện: {r.owner}</div>
                           </div>
-                          <div id="project-form-sheet-m1" className="printable-a4-sheet">
-                            <Mau1CongVanKhoa project={project} />
-                          </div>
-                        </div>
-                      ),
-                    },
-                    {
-                      key: 'm2',
-                      label: 'Mẫu 2 - Đề cương chi tiết',
-                      children: (
-                        <div>
-                          <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 12 }}>
-                            <Button
-                              icon={<PrinterOutlined />}
-                              type="primary"
-                              style={{ backgroundColor: '#C62828' }}
-                              onClick={() => printElement('project-form-sheet-m2', 'Mẫu 2 - Thuyết minh Đề cương Chi tiết')}
-                            >
-                              In / Xuất Mẫu 2 (PDF)
-                            </Button>
-                          </div>
-                          <div id="project-form-sheet-m2" className="printable-a4-sheet">
-                            <Mau2DeCuongChiTiet project={project} />
-                          </div>
-                        </div>
-                      ),
-                    },
-                    {
-                      key: 'm3',
-                      label: 'Mẫu 3.2 & 3.3 - Bìa báo cáo tổng kết',
-                      children: (
-                        <div>
-                          <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 12 }}>
-                            <Button
-                              icon={<PrinterOutlined />}
-                              type="primary"
-                              style={{ backgroundColor: '#C62828' }}
-                              onClick={() => printElement('project-form-sheet-m3', 'Mẫu 3 - Bìa Báo cáo Tổng kết')}
-                            >
-                              In / Xuất Bìa báo cáo A4
-                            </Button>
-                          </div>
-                          <div id="project-form-sheet-m3" className="printable-a4-sheet">
-                            <Mau3BiaBaoCao project={project} />
-                          </div>
-                        </div>
-                      ),
-                    },
-                    {
-                      key: 'm34',
-                      label: 'Mẫu 3.4 - Báo cáo tóm tắt',
-                      children: (
-                        <div>
-                          <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 12 }}>
-                            <Button
-                              icon={<PrinterOutlined />}
-                              type="primary"
-                              style={{ backgroundColor: '#C62828' }}
-                              onClick={() => printElement('project-form-sheet-m34', 'Mẫu 3.4 - Báo cáo Tóm tắt')}
-                            >
-                              In Báo cáo tóm tắt (PDF)
-                            </Button>
-                          </div>
-                          <div id="project-form-sheet-m34" className="printable-a4-sheet">
-                            <Mau34BaoCaoTomTat project={project} />
-                          </div>
-                        </div>
-                      ),
-                    },
-                    {
-                      key: 'm35',
-                      label: 'Mẫu 3.5 - Biên bản SHKH (Hội thảo)',
-                      children: (
-                        <div>
-                          <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 12 }}>
-                            <Button
-                              icon={<PrinterOutlined />}
-                              type="primary"
-                              style={{ backgroundColor: '#C62828' }}
-                              onClick={() => printElement('project-form-sheet-m35', 'Mẫu 3.5 - Biên bản Sinh hoạt Khoa học')}
-                            >
-                              In Biên bản Mẫu 3.5 (PDF)
-                            </Button>
-                          </div>
-                          <div id="project-form-sheet-m35" className="printable-a4-sheet">
-                            <Mau35BienBanSinhHoat project={project} />
-                          </div>
-                        </div>
-                      ),
-                    },
-                    {
-                      key: 'm41',
-                      label: 'Mẫu 4.1 - Phiếu đánh giá (Thang 100)',
-                      children: (
-                        <div>
-                          <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 12 }}>
-                            <Button
-                              icon={<PrinterOutlined />}
-                              type="primary"
-                              style={{ backgroundColor: '#C62828' }}
-                              onClick={() => printElement('project-form-sheet-m41', 'Mẫu 4.1 - Phiếu Đánh giá Đề tài')}
-                            >
-                              In Phiếu đánh giá Mẫu 4.1
-                            </Button>
-                          </div>
-                          <div id="project-form-sheet-m41" className="printable-a4-sheet">
-                            <Mau41PhieuDanhGia project={project} />
-                          </div>
-                        </div>
-                      ),
-                    },
-                    {
-                      key: 'm42',
-                      label: 'Mẫu 4.2 - Biên bản Hội đồng nghiệm thu',
-                      children: (
-                        <div>
-                          <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 12 }}>
-                            <Button
-                              icon={<PrinterOutlined />}
-                              type="primary"
-                              style={{ backgroundColor: '#C62828' }}
-                              onClick={() => printElement('project-form-sheet-m42', 'Mẫu 4.2 - Biên bản Hội đồng Nghiệm thu')}
-                            >
-                              In Biên bản nghiệm thu Mẫu 4.2
-                            </Button>
-                          </div>
-                          <div id="project-form-sheet-m42" className="printable-a4-sheet">
-                            <Mau42BienBanHoiDong project={project} />
-                          </div>
-                        </div>
-                      ),
-                    },
-                    {
-                      key: 'm43',
-                      label: 'Mẫu 4.3 - Bản nhận xét phản biện',
-                      children: (
-                        <div>
-                          <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 12 }}>
-                            <Button
-                              icon={<PrinterOutlined />}
-                              type="primary"
-                              style={{ backgroundColor: '#C62828' }}
-                              onClick={() => printElement('project-form-sheet-m43', 'Mẫu 4.3 - Bản Nhận xét Đánh giá')}
-                            >
-                              In Nhận xét phản biện Mẫu 4.3
-                            </Button>
-                          </div>
-                          <div id="project-form-sheet-m43" className="printable-a4-sheet">
-                            <Mau43BanNhanXet project={project} />
-                          </div>
-                        </div>
-                      ),
-                    },
-                    {
-                      key: 'm5',
-                      label: 'Mẫu 5 - Đề nghị khen thưởng',
-                      children: (
-                        <div>
-                          <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 12 }}>
-                            <Button
-                              icon={<PrinterOutlined />}
-                              type="primary"
-                              style={{ backgroundColor: '#C62828' }}
-                              onClick={() => printElement('project-form-sheet-m5', 'Mẫu 5 - Công văn Đề nghị Khen thưởng')}
-                            >
-                              In Công văn khen thưởng Mẫu 5
-                            </Button>
-                          </div>
-                          <div id="project-form-sheet-m5" className="printable-a4-sheet">
-                            <Mau5DeNghiKhenThuong project={project} />
-                          </div>
-                        </div>
-                      ),
-                    },
-                  ]}
-                />
-              </Card>
-            ),
+                        ),
+                      },
+                      {
+                        title: 'Trạng thái hồ sơ',
+                        key: 'status',
+                        width: 260,
+                        render: (_: any, r: any) =>
+                          r.ready ? (
+                            <Tag color="green" icon={<CheckCircleOutlined />}>
+                              {r.statusText}
+                            </Tag>
+                          ) : (
+                            <Tag color="default" icon={<LockOutlined />}>
+                              {r.statusText}
+                            </Tag>
+                          ),
+                      },
+                      {
+                        title: 'Thao tác',
+                        key: 'action',
+                        width: 150,
+                        align: 'right' as const,
+                        render: (_: any, r: any) => (
+                          <Button
+                            size="small"
+                            type={r.ready ? 'primary' : 'default'}
+                            disabled={!r.ready}
+                            style={r.ready ? { backgroundColor: '#C62828', borderColor: '#C62828' } : {}}
+                            icon={<EyeOutlined />}
+                            onClick={() => {
+                              setPreviewZoom(100);
+                              setDocPreviewModal({
+                                code: r.key,
+                                title: r.docName,
+                                gwduDoc: r.gwduDoc,
+                              });
+                            }}
+                          >
+                            Xem & In A4
+                          </Button>
+                        ),
+                      },
+                    ]}
+                  />
+                </Card>
+              );
+            })(),
           },
         ]}
       />
@@ -1872,28 +2019,28 @@ export const ProjectDetailPage: React.FC = () => {
         <Form form={scoreForm} layout="vertical" onFinish={handleScoreSubmit}>
           <div style={{ maxHeight: '60vh', overflowY: 'auto', paddingRight: 8 }}>
             <div style={{ fontWeight: 600, color: '#C62828', marginBottom: 12 }}>
-              Đánh giá theo 7 tiêu chí quy định tại Mẫu 4.1 (Thang điểm 100):
+              Đánh giá theo 7 tiêu chí quy định tại Mẫu 4.1 QĐ 521/QĐ-HV (Thang điểm 100):
             </div>
-            <Form.Item name="score1" label="1. Tổng quan tình hình nghiên cứu (Tối đa 20đ)" initialValue={19}>
-              <Input type="number" max={20} min={0} />
+            <Form.Item name="score1" label="1. Tổng quan tình hình nghiên cứu thuộc lĩnh vực đề tài (Tối đa 20đ)" initialValue={18}>
+              <Input type="number" max={20} min={0} step={0.5} />
             </Form.Item>
-            <Form.Item name="score2" label="2. Tính cấp thiết & Mục tiêu đề tài (Tối đa 20đ)" initialValue={19}>
-              <Input type="number" max={20} min={0} />
+            <Form.Item name="score2" label="2. Mục tiêu đề tài (Tối đa 20đ)" initialValue={18}>
+              <Input type="number" max={20} min={0} step={0.5} />
             </Form.Item>
-            <Form.Item name="score3" label="3. Phương pháp nghiên cứu & Kỹ thuật triển khai (Tối đa 20đ)" initialValue={19}>
-              <Input type="number" max={20} min={0} />
+            <Form.Item name="score3" label="3. Phương pháp nghiên cứu (Tối đa 20đ)" initialValue={18}>
+              <Input type="number" max={20} min={0} step={0.5} />
             </Form.Item>
-            <Form.Item name="score4" label="4. Kết quả & Sản phẩm đạt được (Tối đa 15đ)" initialValue={14}>
-              <Input type="number" max={15} min={0} />
+            <Form.Item name="score4" label="4. Nội dung khoa học (Tối đa 15đ)" initialValue={14}>
+              <Input type="number" max={15} min={0} step={0.5} />
             </Form.Item>
-            <Form.Item name="score5" label="5. Khả năng ứng dụng thực tiễn / Công bố khoa học (Tối đa 10đ)" initialValue={9.5}>
+            <Form.Item name="score5" label="5. Đóng góp về mặt kinh tế - xã hội, giáo dục và đào tạo, an ninh, quốc phòng (Tối đa 10đ)" initialValue={9}>
               <Input type="number" max={10} min={0} step={0.5} />
             </Form.Item>
-            <Form.Item name="score6" label="6. Bố cục và hình thức trình bày báo cáo (Tối đa 10đ)" initialValue={9.5}>
+            <Form.Item name="score6" label="6. Hình thức trình bày báo cáo tổng kết đề tài (Tối đa 10đ)" initialValue={9}>
               <Input type="number" max={10} min={0} step={0.5} />
             </Form.Item>
-            <Form.Item name="score7" label="7. Trình bày thuyết trình & Trả lời chất vấn (Tối đa 5đ)" initialValue={5}>
-              <Input type="number" max={5} min={0} />
+            <Form.Item name="score7" label="7. Điểm thưởng (có công bố khoa học hoặc sản phẩm ứng dụng thực tiễn cao) (Tối đa 5đ)" initialValue={4.5}>
+              <Input type="number" max={5} min={0} step={0.5} />
             </Form.Item>
 
             <Divider />
@@ -1903,8 +2050,13 @@ export const ProjectDetailPage: React.FC = () => {
             <Form.Item name="limitations" label="Hạn chế cần hoàn thiện (Khung 2)" initialValue="Cần viết thêm tài liệu hướng dẫn sử dụng chi tiết">
               <Input.TextArea rows={2} />
             </Form.Item>
-            <Form.Item name="awardRec" label="Đề xuất khen thưởng (Khung 4)" initialValue="Đề xuất Học viện trao giải Nhất">
-              <Input />
+            <Form.Item name="recommendAward" label="Đề xuất khen thưởng (Khung 4)" initialValue={true}>
+              <Select
+                options={[
+                  { value: true, label: 'Đề nghị xét Khen thưởng NCKH sinh viên (Mẫu 5)' },
+                  { value: false, label: 'Không đề xuất khen thưởng' },
+                ]}
+              />
             </Form.Item>
           </div>
         </Form>
@@ -1931,10 +2083,10 @@ export const ProjectDetailPage: React.FC = () => {
         </Form>
       </Modal>
 
-      {/* MODAL XEM TRƯỚC TẬP TIN - CỔNG SỐ GWDU PTIT */}
+      {/* MODAL XEM TRƯỚC & IN VĂN BẢN A4 THỐNG NHẤT */}
       <Modal
-        open={outlinePreviewModalVisible}
-        onCancel={() => setOutlinePreviewModalVisible(false)}
+        open={Boolean(docPreviewModal)}
+        onCancel={() => setDocPreviewModal(null)}
         footer={null}
         width={1050}
         style={{ top: 20 }}
@@ -1943,13 +2095,12 @@ export const ProjectDetailPage: React.FC = () => {
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <FilePdfOutlined style={{ color: '#C62828', fontSize: 18 }} />
             <span style={{ fontWeight: 700, fontSize: 15 }}>
-              Xem trước tập tin - Cổng Tài liệu số GWDU PTIT
+              {docPreviewModal?.title || 'Xem trước biểu mẫu A4'}
             </span>
-            <Tag color="red" style={{ marginLeft: 8 }}>Mẫu 2 - QĐ 521/QĐ-HV</Tag>
+            <Tag color="red" style={{ marginLeft: 4 }}>QĐ 521/QĐ-HV</Tag>
           </div>
         }
       >
-        {/* TOOLBAR CHUẨN XÁC THEO ẢNH S-LINK GWDU */}
         <div
           style={{
             display: 'flex',
@@ -1963,18 +2114,10 @@ export const ProjectDetailPage: React.FC = () => {
           }}
         >
           <div style={{ fontWeight: 600, color: '#262626', fontSize: 13 }}>
-            {project?.project_id || 'SV-2026-CNTT1-001'}_De_cuong_chi_tiet_M2.pdf
+            {project?.project_id || 'SV-2026-CNTT1-001'} • {docPreviewModal?.code?.toUpperCase()}
           </div>
 
           <Space size={10} align="center">
-            <Space size={4}>
-              <span style={{ fontSize: 12, padding: '0 6px', fontWeight: 500, color: '#595959' }}>
-                Trang 1 / 6
-              </span>
-            </Space>
-
-            <span style={{ borderLeft: '1px solid #D9D9D9', height: 16, margin: '0 4px' }} />
-
             <Space size={4}>
               <Tooltip title="Thu nhỏ">
                 <Button
@@ -1997,46 +2140,30 @@ export const ProjectDetailPage: React.FC = () => {
 
             <span style={{ borderLeft: '1px solid #D9D9D9', height: 16, margin: '0 4px' }} />
 
-            <Tooltip title="In tài liệu này">
+            {docPreviewModal?.gwduDoc && (
               <Button
                 size="small"
-                icon={<PrinterOutlined />}
-                onClick={() => printElement('modal-outline-a4-sheet', 'Mẫu 2 - Đề cương nghiên cứu chi tiết')}
+                icon={<EyeOutlined />}
+                onClick={() =>
+                  window.open(`/gwdu?doc=${docPreviewModal.gwduDoc}&projectId=${project.project_id}`, '_blank')
+                }
               >
-                In văn bản A4
+                Mở cổng GWDU
               </Button>
-            </Tooltip>
+            )}
 
-            <Tooltip title="Tải về máy tính">
-              <Button
-                size="small"
-                type="primary"
-                style={{ backgroundColor: '#C62828', borderColor: '#C62828' }}
-                icon={<DownloadOutlined />}
-                onClick={() => {
-                  message.success('Đang tạo và tải xuống bản PDF Mẫu 2 Đề cương chi tiết...');
-                  setTimeout(() => {
-                    printElement('modal-outline-a4-sheet', 'Mẫu 2 - Đề cương nghiên cứu chi tiết');
-                  }, 400);
-                }}
-              >
-                Tải về
-              </Button>
-            </Tooltip>
-
-            <Tooltip title="Mở trong Cổng Tài liệu số GWDU">
-              <Button
-                size="small"
-                icon={<FullscreenOutlined />}
-                onClick={() => navigate('/gwdu')}
-              >
-                Cổng số GWDU
-              </Button>
-            </Tooltip>
+            <Button
+              size="small"
+              type="primary"
+              style={{ backgroundColor: '#C62828', borderColor: '#C62828' }}
+              icon={<PrinterOutlined />}
+              onClick={() => printElement('modal-unified-a4-sheet', docPreviewModal?.title || 'Bieu_mau_QD521')}
+            >
+              In / Lưu PDF A4
+            </Button>
           </Space>
         </div>
 
-        {/* NỘI DUNG VĂN BẢN A4 TRÊN NỀN XÁM */}
         <div
           style={{
             height: '75vh',
@@ -2049,7 +2176,7 @@ export const ProjectDetailPage: React.FC = () => {
           }}
         >
           <div
-            id="modal-outline-a4-sheet"
+            id="modal-unified-a4-sheet"
             className="printable-a4-sheet"
             style={{
               transform: `scale(${previewZoom / 100})`,
@@ -2058,7 +2185,15 @@ export const ProjectDetailPage: React.FC = () => {
               boxShadow: '0 4px 24px rgba(0,0,0,0.4)',
             }}
           >
-            <Mau2DeCuongChiTiet project={project} />
+            {docPreviewModal?.code === 'm1' && <Mau1CongVanKhoa project={project} />}
+            {docPreviewModal?.code === 'm2' && <Mau2DeCuongChiTiet project={project} />}
+            {docPreviewModal?.code === 'm3' && <Mau3BiaBaoCao project={project} />}
+            {docPreviewModal?.code === 'm34' && <Mau34BaoCaoTomTat project={project} />}
+            {docPreviewModal?.code === 'm35' && <Mau35BienBanSinhHoat project={project} />}
+            {docPreviewModal?.code === 'm41' && <Mau41PhieuDanhGia project={project} />}
+            {docPreviewModal?.code === 'm42' && <Mau42BienBanHoiDong project={project} />}
+            {docPreviewModal?.code === 'm43' && <Mau43BanNhanXet project={project} />}
+            {docPreviewModal?.code === 'm5' && <Mau5DeNghiKhenThuong project={project} />}
           </div>
         </div>
       </Modal>

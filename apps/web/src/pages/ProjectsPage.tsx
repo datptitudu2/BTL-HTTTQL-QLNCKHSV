@@ -114,7 +114,7 @@ export const defaultProjectsList: any[] = [
     departments: { dept_name: 'Khoa Quản trị kinh doanh' },
     project_members: [
       { member_role: 'LEADER', contribution_pct: 40, assigned_task: 'Chủ nhiệm, thiết kế kịch bản thử nghiệm VR', students: { student_id: 'B23DCQT009', class_name: 'D23CQQT01-B', users: { full_name: 'Phạm Đức Thịnh' } } },
-      { member_role: 'MEMBER', contribution_pct: 30, assigned_task: 'Phát triển ứng dụng VR demo', students: { student_id: 'B23DCCN001', class_name: 'D23CQCN01-B', users: { full_name: 'Nguyễn Văn An', email: 'an.nv@stu.ptit.edu.vn' } } },
+      { member_role: 'MEMBER', contribution_pct: 30, assigned_task: 'Phát triển ứng dụng VR demo', students: { student_id: 'B23DCQT010', class_name: 'D23CQQT01-B', users: { full_name: 'Lê Thị Mai', email: 'mai.lt@stu.ptit.edu.vn' } } },
       { member_role: 'MEMBER', contribution_pct: 30, assigned_task: 'Đo lường phản ứng người dùng và thống kê', students: { student_id: 'B23DCQT011', class_name: 'D23CQQT01-B', users: { full_name: 'Bùi Đức Trọng' } } },
     ],
     project_advisors: [
@@ -336,6 +336,8 @@ export const ProjectsPage: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState<number>(3); // 3: Đề tài/Nhiệm vụ KHCN
   const [selectedDept, setSelectedDept] = useState<any>(undefined);
   const [selectedStatus, setSelectedStatus] = useState<string>('ALL');
+  const [dateRange, setDateRange] = useState<[any, any] | null>(null);
+  const [departments, setDepartments] = useState<any[]>([]);
   const [membersModalVisible, setMembersModalVisible] = useState<boolean>(false);
   const [currentMembers, setCurrentMembers] = useState<any[]>([]);
   const [selectedProjectForModal, setSelectedProjectForModal] = useState<any>(null);
@@ -385,6 +387,15 @@ export const ProjectsPage: React.FC = () => {
   };
 
   useEffect(() => {
+    api
+      .get('/users/departments')
+      .then((res) => {
+        if (Array.isArray(res.data)) setDepartments(res.data);
+      })
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => {
     fetchProjects();
   }, [selectedDept, selectedStatus]);
 
@@ -401,6 +412,8 @@ export const ProjectsPage: React.FC = () => {
       await api.patch(`/projects/${selectedProjectForAction.project_id}/status`, {
         status: nextStatus,
         reason: approvalNote,
+        decisionNo: isFacultyScreening ? undefined : decisionNo,
+        approvedBudget: isFacultyScreening ? undefined : approvedBudget,
       });
 
       message.success(
@@ -462,11 +475,45 @@ export const ProjectsPage: React.FC = () => {
     }
   };
 
+  const PROJECT_STATUS_MAP: Record<string, { bg: string; label: string }> = {
+    PROPOSED: { bg: '#1890FF', label: 'Chờ thẩm định' },
+    FACULTY_APPROVED: { bg: '#722ED1', label: 'Khoa đã duyệt' },
+    APPROVED: { bg: '#52C41A', label: 'Đã phê duyệt' },
+    ONGOING: { bg: '#52C41A', label: 'Đã phê duyệt' },
+    OUTLINE_SUBMITTED: { bg: '#FA8C16', label: 'Đã nộp đề cương' },
+    SUBMITTED: { bg: '#FA8C16', label: 'Chờ nghiệm thu' },
+    ACCEPTED: { bg: '#52C41A', label: 'Đã nghiệm thu' },
+    COMPLETED: { bg: '#52C41A', label: 'Đã nghiệm thu' },
+    REJECTED: { bg: '#F5222D', label: 'Từ chối / Không đạt' },
+    CANCELLED: { bg: '#F5222D', label: 'Đã hủy theo QĐ' },
+  };
+
   const handleExport = () => {
-    message.loading('Đang chuẩn bị file kết xuất danh mục đề tài NCKH sinh viên PTIT...');
-    setTimeout(() => {
-      message.success('Xuất dữ liệu thành công! Tệp srms_ptit_export_2026.xlsx đã sẵn sàng.');
-    }, 800);
+    if (displayedProjects.length === 0) {
+      message.warning('Không có dữ liệu đề tài để xuất.');
+      return;
+    }
+    const headers = ['Mã đề tài', 'Tên đề tài', 'Đơn vị', 'Lĩnh vực', 'Trạng thái', 'Ngày đăng ký', 'Kinh phí duyệt'];
+    const rows = displayedProjects.map((p: any) => [
+      p.project_id,
+      `"${String(p.title_vi || '').replace(/"/g, '""')}"`,
+      `"${String(p.departments?.dept_name || '').replace(/"/g, '""')}"`,
+      `"${String(p.research_field || '').replace(/"/g, '""')}"`,
+      (PROJECT_STATUS_MAP[p.status]?.label || p.status),
+      p.registered_at ? new Date(p.registered_at).toLocaleDateString('vi-VN') : '',
+      p.budgets?.approved_amount ?? p.budgets?.requested_amount ?? 0,
+    ]);
+    const csv = '\uFEFF' + [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `srms_ptit_projects_${new Date().toISOString().slice(0, 10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    message.success(`Đã xuất ${displayedProjects.length} đề tài NCKH ra tệp CSV!`);
   };
 
   // LOGIC ĐỒNG BỘ MỐI QUAN HỆ & PHÂN QUYỀN VAI TRÒ CHUẨN XÁC CHO MỌI ROLE
@@ -566,8 +613,12 @@ export const ProjectsPage: React.FC = () => {
 
     // 3. Ban Chủ nhiệm Khoa & Thư ký Khoa
     if (roleCode === 'FACULTY_LEADER' || roleCode === 'FACULTY_SECRETARY') {
-      const deptName = p.departments?.dept_name || '';
-      if (deptName.includes('CNTT') || deptName.includes('Công nghệ thông tin') || p.dept_id === 1 || p.project_id?.includes('CNTT1')) {
+      const userDeptId = (user as any)?.deptId;
+      const matchesDept = userDeptId
+        ? Number(p.dept_id) === Number(userDeptId)
+        : p.dept_id === 1 || p.project_id?.includes('CNTT1');
+      if (matchesDept) {
+        const deptLabel = p.departments?.dept_name || 'Khoa chuyên môn';
         return {
           isAdvisor: false,
           isLeader: false,
@@ -576,10 +627,10 @@ export const ProjectsPage: React.FC = () => {
           isUniversityAdmin: false,
           tag: (
             <Tag color="purple" style={{ fontSize: 10, marginTop: 3, padding: '0 6px', lineHeight: '18px', fontWeight: 500 }}>
-              Khoa CNTT 1 quản lý
+              {deptLabel} quản lý
             </Tag>
           ),
-          relationText: 'Khoa CNTT 1 quản lý',
+          relationText: `${deptLabel} quản lý`,
         };
       }
     }
@@ -627,32 +678,39 @@ export const ProjectsPage: React.FC = () => {
     return rel.isLeader || rel.isMember || rel.isAdvisor;
   };
 
+  const isOngoingStatus = (s: string) =>
+    s === 'ONGOING' || s === 'APPROVED' || s === 'OUTLINE_SUBMITTED' || s === 'SUBMITTED';
+
   const myProjects = projects.filter(isUserProject);
   const pendingProjects = projects.filter((p) => p.status === 'PROPOSED' || p.status === 'FACULTY_APPROVED');
-  const ongoingProjects = projects.filter((p) => p.status === 'ONGOING' || p.status === 'APPROVED');
+  const ongoingProjects = projects.filter((p) => isOngoingStatus(p.status));
   const completedProjects = projects.filter((p) => p.status === 'COMPLETED' || p.status === 'ACCEPTED');
 
   const displayedProjects = projects.filter((p) => {
+    if (selectedCategory === 1) {
+      const hasSeminarDoc = p.documents?.some((d: any) => d.docType === 'SEMINAR' || d.docType === 'MINUTES') || isOngoingStatus(p.status) || p.status === 'ACCEPTED';
+      if (!hasSeminarDoc) return false;
+    } else if (selectedCategory === 2) {
+      const hasPaperDoc = p.documents?.some((d: any) => d.docType === 'PAPER' || d.docType === 'PUBLICATION');
+      if (!hasPaperDoc) return false;
+    }
+
+    if (dateRange && dateRange[0] && dateRange[1] && p.registered_at) {
+      const reg = new Date(p.registered_at).getTime();
+      const start = dateRange[0].startOf('day').valueOf();
+      const end = dateRange[1].endOf('day').valueOf();
+      if (reg < start || reg > end) return false;
+    }
+
     if (activeTab === 'my') return isUserProject(p);
     if (activeTab === 'pending') return p.status === 'PROPOSED' || p.status === 'FACULTY_APPROVED';
-    if (activeTab === 'ongoing') return p.status === 'ONGOING' || p.status === 'APPROVED';
+    if (activeTab === 'ongoing') return isOngoingStatus(p.status);
     if (activeTab === 'completed') return p.status === 'COMPLETED' || p.status === 'ACCEPTED';
     return true; // 'all'
   });
 
   const getStatusPill = (status: string) => {
-    const map: Record<string, { bg: string; label: string }> = {
-      PROPOSED: { bg: '#1890FF', label: 'Chờ thẩm định' },
-      FACULTY_APPROVED: { bg: '#722ED1', label: 'Khoa đã duyệt' },
-      APPROVED: { bg: '#52C41A', label: 'Đã phê duyệt' },
-      ONGOING: { bg: '#52C41A', label: 'Đã phê duyệt' }, // Đề tài đã được Phòng QLKHCN thẩm định & ban hành QĐ phê duyệt
-      OUTLINE_SUBMITTED: { bg: '#FA8C16', label: 'Đã nộp đề cương' },
-      SUBMITTED: { bg: '#FA8C16', label: 'Chờ nghiệm thu' },
-      ACCEPTED: { bg: '#52C41A', label: 'Đã nghiệm thu' },
-      COMPLETED: { bg: '#52C41A', label: 'Đã nghiệm thu' },
-      REJECTED: { bg: '#F5222D', label: 'Từ chối / Hủy' },
-    };
-    const s = map[status] || { bg: '#52C41A', label: 'Đã phê duyệt' };
+    const s = PROJECT_STATUS_MAP[status] || { bg: '#52C41A', label: 'Đã phê duyệt' };
     return (
       <span
         style={{
@@ -814,7 +872,7 @@ export const ProjectsPage: React.FC = () => {
           </Tooltip>
 
           {((isFacultyLeader && record.status === 'PROPOSED') ||
-            (isQLKH && (record.status === 'FACULTY_APPROVED' || record.status === 'PROPOSED' || record.status === 'Draft'))) && (
+            (isQLKH && (record.status === 'FACULTY_APPROVED' || (roleCode === 'ADMIN' && record.status === 'PROPOSED')))) && (
             <>
               <Tooltip
                 title={
@@ -927,22 +985,24 @@ export const ProjectsPage: React.FC = () => {
             </div>
           </div>
 
-          <Button
-            type="primary"
-            icon={<PlusOutlined />}
-            block
-            style={{
-              marginTop: 14,
-              height: 38,
-              backgroundColor: '#C62828',
-              borderColor: '#C62828',
-              fontWeight: 600,
-              borderRadius: 4,
-            }}
-            onClick={() => navigate('/projects/new')}
-          >
-            Đăng ký đề tài mới
-          </Button>
+          {(roleCode === 'STUDENT' || roleCode === 'ADMIN') && (
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
+              block
+              style={{
+                marginTop: 14,
+                height: 38,
+                backgroundColor: '#C62828',
+                borderColor: '#C62828',
+                fontWeight: 600,
+                borderRadius: 4,
+              }}
+              onClick={() => navigate('/projects/new')}
+            >
+              Đăng ký đề tài mới
+            </Button>
+          )}
         </div>
 
         {/* KHU VỰC BẢNG DỮ LIỆU & BỘ LỌC CHUẨN S-LINK */}
@@ -1024,8 +1084,8 @@ export const ProjectsPage: React.FC = () => {
               ]}
             />
 
-            {/* THANH THAO TÁC HÀNG LOẠT DÀNH CHO PHÒNG QLKHCN */}
-            {isQLKH && selectedRowKeys.length > 0 && (
+            {/* THANH THAO TÁC HÀNG LOẠT DÀNH CHO PHÒNG QLKHCN / KHOA */}
+            {canApprove && selectedRowKeys.length > 0 && (
               <div
                 style={{
                   backgroundColor: '#E6F7FF',
@@ -1051,7 +1111,7 @@ export const ProjectsPage: React.FC = () => {
                     loading={submittingAction}
                     onClick={handleBatchApprove}
                   >
-                    Phòng QLKHCN Phê duyệt hàng loạt ({selectedRowKeys.length})
+                    {isFacultyLeader ? `Khoa Sơ tuyển hàng loạt (${selectedRowKeys.length})` : `Phòng QLKHCN Phê duyệt hàng loạt (${selectedRowKeys.length})`}
                   </Button>
                   <Button onClick={() => setSelectedRowKeys([])}>Bỏ chọn</Button>
                 </Space>
@@ -1069,13 +1129,20 @@ export const ProjectsPage: React.FC = () => {
               }}
             >
               <Select
-                defaultValue="ALL"
-                style={{ width: 170 }}
+                value={selectedDept ? String(selectedDept) : 'ALL'}
+                onChange={(val) => setSelectedDept(val === 'ALL' ? undefined : Number(val))}
+                style={{ width: 185 }}
                 options={[
                   { value: 'ALL', label: 'Dữ liệu toàn Học viện' },
-                  { value: '1', label: 'Khoa Công nghệ thông tin 1' },
-                  { value: '2', label: 'Khoa Điện tử viễn thông 1' },
-                  { value: '3', label: 'Khoa An toàn thông tin' },
+                  ...(departments.length > 0
+                    ? departments.map((d: any) => ({ value: String(d.deptId), label: d.deptName }))
+                    : [
+                        { value: '1', label: 'Khoa Công nghệ thông tin 1' },
+                        { value: '2', label: 'Khoa An toàn thông tin' },
+                        { value: '3', label: 'Khoa Kỹ thuật Điện tử 1' },
+                        { value: '4', label: 'Khoa Đa phương tiện' },
+                        { value: '5', label: 'Khoa Quản trị kinh doanh 1' },
+                      ]),
                 ]}
               />
 
@@ -1100,13 +1167,18 @@ export const ProjectsPage: React.FC = () => {
                 allowClear
                 value={selectedDept}
                 onChange={(val) => setSelectedDept(val)}
-                style={{ width: 170 }}
-                options={[
-                  { value: 1, label: 'Khoa Công nghệ thông tin 1' },
-                  { value: 2, label: 'Khoa Điện tử viễn thông 1' },
-                  { value: 3, label: 'Khoa An toàn thông tin' },
-                  { value: 4, label: 'Khoa Đa phương tiện' },
-                ]}
+                style={{ width: 185 }}
+                options={
+                  departments.length > 0
+                    ? departments.map((d: any) => ({ value: d.deptId, label: d.deptName }))
+                    : [
+                        { value: 1, label: 'Khoa Công nghệ thông tin 1' },
+                        { value: 2, label: 'Khoa An toàn thông tin' },
+                        { value: 3, label: 'Khoa Kỹ thuật Điện tử 1' },
+                        { value: 4, label: 'Khoa Đa phương tiện' },
+                        { value: 5, label: 'Khoa Quản trị kinh doanh 1' },
+                      ]
+                }
               />
 
               {/* BỘ LỌC TRẠNG THÁI PHÊ DUYỆT (CHUYÊN BIỆT CHO QUY TRÌNH THẨM ĐỊNH) */}
@@ -1114,19 +1186,24 @@ export const ProjectsPage: React.FC = () => {
                 placeholder="Trạng thái phê duyệt"
                 value={selectedStatus}
                 onChange={(val) => setSelectedStatus(val)}
-                style={{ width: 195 }}
+                style={{ width: 215 }}
                 options={[
                   { value: 'ALL', label: 'Tất cả trạng thái' },
-                  { value: 'PROPOSED', label: 'Chờ xử lý / Đề xuất mới' },
-                  { value: 'FACULTY_APPROVED', label: 'Khoa đã duyệt (Chờ QLKHCN duyệt)' },
+                  { value: 'PROPOSED', label: 'Chờ Khoa thẩm định' },
+                  { value: 'FACULTY_APPROVED', label: 'Khoa đã duyệt (Chờ QĐ)' },
                   { value: 'ONGOING', label: 'Đã phê duyệt / Đang thực hiện' },
+                  { value: 'OUTLINE_SUBMITTED', label: 'Đã nộp Đề cương' },
+                  { value: 'SUBMITTED', label: 'Chờ nghiệm thu' },
                   { value: 'ACCEPTED', label: 'Đã nghiệm thu' },
                   { value: 'REJECTED', label: 'Từ chối / Yêu cầu sửa' },
+                  { value: 'CANCELLED', label: 'Đã hủy theo QĐ' },
                 ]}
               />
 
               <RangePicker
                 placeholder={['Ngày bắt đầu', 'Ngày kết thúc']}
+                value={dateRange as any}
+                onChange={(vals) => setDateRange(vals as any)}
                 style={{ width: 230 }}
               />
 
@@ -1178,10 +1255,17 @@ export const ProjectsPage: React.FC = () => {
               dataSource={displayedProjects}
               rowKey="project_id"
               rowSelection={
-                isQLKH
+                canApprove
                   ? {
                       selectedRowKeys,
                       onChange: (keys: React.Key[]) => setSelectedRowKeys(keys),
+                      getCheckboxProps: (record: any) => ({
+                        disabled: isFacultyLeader
+                          ? record.status !== 'PROPOSED'
+                          : roleCode === 'ADMIN'
+                            ? !['PROPOSED', 'FACULTY_APPROVED'].includes(record.status)
+                            : record.status !== 'FACULTY_APPROVED',
+                      }),
                     }
                   : undefined
               }

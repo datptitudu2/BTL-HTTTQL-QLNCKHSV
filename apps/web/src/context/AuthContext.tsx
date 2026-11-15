@@ -82,6 +82,17 @@ export const roleProfiles: Record<string, UserProfile> = {
     lecturerId: 'GV004',
     deptId: 4,
   },
+  LECTURER_HUNG: {
+    userId: 28,
+    username: 'hungnq',
+    fullName: 'TS. Nguyễn Quang Hưng',
+    email: 'hungnq@ptit.edu.vn',
+    phone: '0912345888',
+    roleCode: 'LECTURER',
+    roleName: 'Giảng viên Hội đồng',
+    lecturerId: 'GV007',
+    deptId: 1,
+  },
   FACULTY_SECRETARY: {
     userId: 3,
     username: 'thukycntt1',
@@ -242,6 +253,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (u.includes('tritd') || u.includes('gv002')) matched = roleProfiles.LECTURER_TRI;
       else if (u.includes('huydq') || u.includes('gv003')) matched = roleProfiles.LECTURER_HUY;
       else if (u.includes('tuannv') || u.includes('gv004')) matched = roleProfiles.LECTURER_TUAN;
+      else if (u.includes('hungnq') || u.includes('gv007')) matched = roleProfiles.LECTURER_HUNG;
       else if (u.includes('dung') || u.includes('gv001')) matched = roleProfiles.LECTURER;
       else if (u.includes('thuky') || u.includes('tk001')) matched = roleProfiles.FACULTY_SECRETARY;
       else if (u.includes('khoa') || u.includes('lead001')) matched = roleProfiles.FACULTY_LEADER;

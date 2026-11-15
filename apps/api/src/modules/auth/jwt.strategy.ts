@@ -30,6 +30,9 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         role: true,
         student: true,
         lecturer: true,
+        positions: {
+          where: { isActive: true },
+        },
       },
     });
 
@@ -46,7 +49,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       roleCode: user.role.roleCode,
       studentId: user.student?.studentId,
       lecturerId: user.lecturer?.lecturerId,
-      deptId: user.student?.deptId || user.lecturer?.deptId,
+      deptId: user.student?.deptId || user.lecturer?.deptId || user.positions?.[0]?.deptId,
     };
   }
 }

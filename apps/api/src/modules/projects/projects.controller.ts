@@ -57,6 +57,7 @@ export class ProjectsController {
   @Post(':id/members')
   @ApiOperation({ summary: '2.2.1 Mời thành viên sinh viên vào nhóm nghiên cứu' })
   async inviteMember(
+    @CurrentUser() user: any,
     @Param('id') projectId: string,
     @Body() body: { studentId: string; role?: string; pct?: number },
   ) {
@@ -65,7 +66,21 @@ export class ProjectsController {
       body.studentId,
       body.role,
       body.pct,
+      user,
     );
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @Post(':id/members/:memberId/respond')
+  @ApiOperation({ summary: '2.2.2 Sinh viên được mời xác nhận hoặc từ chối tham gia nhóm đề tài' })
+  async respondMemberInvite(
+    @CurrentUser() user: any,
+    @Param('id') projectId: string,
+    @Param('memberId') memberId: string,
+    @Body() body: { decision: 'ACCEPTED' | 'DECLINED' },
+  ) {
+    return this.projectsService.respondMemberInvite(projectId, Number(memberId), body.decision, user);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -73,6 +88,7 @@ export class ProjectsController {
   @Post(':id/advisors')
   @ApiOperation({ summary: '2.3.1 Mời hoặc phân công giảng viên hướng dẫn' })
   async assignAdvisor(
+    @CurrentUser() user: any,
     @Param('id') projectId: string,
     @Body() body: { lecturerId: string; assignType?: string },
   ) {
@@ -80,6 +96,26 @@ export class ProjectsController {
       projectId,
       body.lecturerId,
       body.assignType,
+      user,
+    );
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @Post(':id/advisors/:assignmentId/respond')
+  @ApiOperation({ summary: '2.3.2 Giảng viên xác nhận hoặc từ chối lời mời hướng dẫn đề tài' })
+  async respondAdvisorInvite(
+    @CurrentUser() user: any,
+    @Param('id') projectId: string,
+    @Param('assignmentId') assignmentId: string,
+    @Body() body: { decision: 'ACTIVE' | 'REJECTED'; reason?: string },
+  ) {
+    return this.projectsService.respondAdvisorInvite(
+      projectId,
+      Number(assignmentId),
+      body.decision,
+      body.reason,
+      user,
     );
   }
 
@@ -90,9 +126,16 @@ export class ProjectsController {
   async updateStatus(
     @CurrentUser() user: any,
     @Param('id') projectId: string,
-    @Body() body: { status: string; reason?: string },
+    @Body()
+    body: {
+      status: string;
+      reason?: string;
+      decisionNo?: string;
+      approvedBudget?: number;
+      officialLetterNo?: string;
+    },
   ) {
-    return this.projectsService.updateStatus(projectId, body.status, body.reason, user);
+    return this.projectsService.updateStatus(projectId, body.status, body.reason, user, body);
   }
 }
 

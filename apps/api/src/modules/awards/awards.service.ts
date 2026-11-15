@@ -77,7 +77,9 @@ export class AwardsService {
         orderBy: { nominationId: 'desc' },
       }),
       this.prisma.certificate.findMany({
-        where: certificateWhere,
+        where: {
+          AND: [certificateWhere, { recipientType: 'STUDENT' }],
+        },
         include: {
           recipient: true,
           project: {
@@ -128,6 +130,8 @@ export class AwardsService {
           include: {
             department: true,
             acceptance: true,
+            period: true,
+            members: { include: { student: true } },
           },
         },
       },
@@ -156,19 +160,44 @@ export class AwardsService {
     });
     if (!project) throw new NotFoundException(`Không tìm thấy đề tài ${dto.projectId}`);
 
+    if (user.roleCode === 'FACULTY_SECRETARY' || user.roleCode === 'FACULTY_LEADER') {
+      const deptPositions = await this.prisma.deptPosition.findMany({
+        where: { userId: user.userId, isActive: true },
+        select: { deptId: true },
+      });
+      const deptIds = deptPositions.map((d) => d.deptId);
+      if (!deptIds.includes(project.deptId)) {
+        throw new ForbiddenException('Chỉ được lập hồ sơ đề cử khen thưởng cho đề tài thuộc Khoa mình quản lý');
+      }
+    }
+
     if (!project.acceptance || !['XUAT_SAC', 'TOT', 'KHA'].includes(project.acceptance.grade || '')) {
       throw new BadRequestException(
         'Theo QĐ 521, đề tài đề cử khen thưởng phải có kết quả nghiệm thu đạt loại Khá trở lên.',
       );
     }
 
+    const existingNom = await this.prisma.awardNomination.findFirst({
+      where: {
+        projectId: dto.projectId,
+        awardLevel: dto.awardLevel || 'INSTITUTE',
+      },
+    });
+    if (existingNom) {
+      throw new BadRequestException('Đề tài này đã có hồ sơ đề cử ở cấp giải thưởng đã chọn');
+    }
+
+    const supportVal = dto.awardLevel === 'MINISTRY' ? dto.supportFund || 1000000 : dto.supportFund || 0;
     return this.prisma.awardNomination.create({
       data: {
         projectId: dto.projectId,
         awardLevel: dto.awardLevel || 'INSTITUTE',
-        prizeGrade: dto.prizeGrade || 'Đề xuất Giải Nhì',
+        prizeGrade: dto.prizeGrade || 'SECOND',
         rewardAmount: dto.rewardAmount || 3000000,
-        supportFund: dto.awardLevel === 'MINISTRY' ? dto.supportFund || 5000000 : dto.supportFund || 0,
+        supportFund: supportVal,
+        supportAmount: supportVal,
+        qlkhReviewStatus: 'PENDING',
+        approvalStatus: 'PENDING',
         status: 'PENDING',
       },
     });
@@ -189,10 +218,12 @@ export class AwardsService {
     });
     if (!nom) throw new NotFoundException('Không tìm thấy hồ sơ đề cử khen thưởng');
 
-    const prizeGrade = dto?.prizeGrade || nom.prizeGrade || 'Giải Ba';
+    const prizeGrade = dto?.prizeGrade || nom.prizeGrade || 'THIRD';
     const updated = await this.prisma.awardNomination.update({
       where: { nominationId },
       data: {
+        qlkhReviewStatus: 'APPROVED',
+        approvalStatus: 'APPROVED',
         status: 'APPROVED',
         prizeGrade,
         rewardDecisionNo: dto?.rewardDecisionNo || `QĐ-KT-${nominationId}/${new Date().getFullYear()}`,
@@ -200,12 +231,13 @@ export class AwardsService {
       },
     });
 
-    // Áp dụng cộng điểm học tập theo Điều 15.2.h QĐ 521 (Trong nước: Nhất +0.4, Nhì +0.3, Ba +0.2, KK +0.1)
-    let bonusPts = 0.1;
-    const normalized = prizeGrade.toLowerCase();
-    if (normalized.includes('nhất')) bonusPts = 0.4;
-    else if (normalized.includes('nhì')) bonusPts = 0.3;
-    else if (normalized.includes('ba')) bonusPts = 0.2;
+    // Áp dụng cộng điểm học tập theo Điều 15.2.h QĐ 521 (Quốc tế: 3.0, 2.5, 2.0, 1.5; Trong nước: 0.4, 0.3, 0.2, 0.1)
+    const isInternational = nom.awardLevel === 'INTERNATIONAL';
+    let bonusPts = isInternational ? 1.5 : 0.1;
+    const normalized = prizeGrade.trim().toUpperCase();
+    if (normalized === 'FIRST' || normalized.includes('NHẤT')) bonusPts = isInternational ? 3.0 : 0.4;
+    else if (normalized === 'SECOND' || normalized.includes('NHÌ')) bonusPts = isInternational ? 2.5 : 0.3;
+    else if (normalized === 'THIRD' || normalized.includes('BA')) bonusPts = isInternational ? 2.0 : 0.2;
 
     for (const m of nom.project.members) {
       const existing = await this.prisma.studentBonus.findFirst({
@@ -231,7 +263,10 @@ export class AwardsService {
       where: { projectId },
       include: {
         acceptance: true,
-        members: { include: { student: { include: { user: true } } } },
+        members: {
+          where: { confirmStatus: { not: 'DECLINED' } },
+          include: { student: { include: { user: true } } },
+        },
         advisors: { where: { status: 'ACTIVE' }, include: { lecturer: { include: { user: true } } } },
       },
     });
@@ -258,24 +293,6 @@ export class AwardsService {
             recipientUserId: m.student.userId,
             recipientType: 'STUDENT',
             certCode: `CN-${projectId}-SV${String(seq++).padStart(2, '0')}`,
-            grade,
-          },
-        });
-        created.push(cert);
-      }
-    }
-
-    for (const adv of project.advisors) {
-      const exists = await this.prisma.certificate.findFirst({
-        where: { projectId, recipientUserId: adv.lecturer.userId },
-      });
-      if (!exists) {
-        const cert = await this.prisma.certificate.create({
-          data: {
-            projectId,
-            recipientUserId: adv.lecturer.userId,
-            recipientType: 'ADVISOR',
-            certCode: `CN-${projectId}-GV01`,
             grade,
           },
         });

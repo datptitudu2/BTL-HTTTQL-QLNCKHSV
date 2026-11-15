@@ -36,6 +36,7 @@ export class AuthService {
       'tuannv': 'gv004',
       'minhh': 'gv005',
       'hungvt': 'gv006',
+      'hungnq': 'gv007',
       'thukycntt1': 'tk001',
       'khoacntt1': 'lead001',
       'qlkhcn': 'qlkh001',
@@ -58,6 +59,9 @@ export class AuthService {
         credentials: true,
         student: true,
         lecturer: true,
+        positions: {
+          where: { isActive: true },
+        },
       },
     });
 
@@ -111,6 +115,34 @@ export class AuthService {
 
     const accessToken = this.jwtService.sign(payload);
 
+    const tokenHash = crypto
+      .createHash('sha256')
+      .update(`${accessToken}_${Date.now()}_${Math.random()}`)
+      .digest('hex');
+
+    await this.prisma.refreshToken
+      .create({
+        data: {
+          userId: user.userId,
+          tokenHash,
+          expiresAt: new Date(Date.now() + 7 * 86400 * 1000),
+          revoked: false,
+        },
+      })
+      .catch(() => {});
+
+    await this.prisma.auditLog
+      .create({
+        data: {
+          userId: user.userId,
+          action: 'USER_LOGIN',
+          entity: 'users',
+          entityId: String(user.userId),
+          newValue: JSON.stringify({ username: user.ssoUsername, roleCode: user.role?.roleCode }),
+        },
+      })
+      .catch(() => {});
+
     return {
       access_token: accessToken,
       token_type: 'Bearer',
@@ -125,7 +157,7 @@ export class AuthService {
         roleName: user.role?.roleName,
         studentId: user.student?.studentId,
         lecturerId: user.lecturer?.lecturerId,
-        deptId: user.student?.deptId || user.lecturer?.deptId,
+        deptId: user.student?.deptId || user.lecturer?.deptId || user.positions?.[0]?.deptId,
       },
     };
   }
@@ -140,6 +172,9 @@ export class AuthService {
         role: true,
         student: true,
         lecturer: true,
+        positions: {
+          where: { isActive: true },
+        },
       },
     });
 
@@ -160,6 +195,9 @@ export class AuthService {
         role: true,
         student: true,
         lecturer: true,
+        positions: {
+          where: { isActive: true },
+        },
       },
     });
 

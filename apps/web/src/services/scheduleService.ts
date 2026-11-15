@@ -341,7 +341,9 @@ export const scheduleService = {
       const res = await api.get('/schedule', { params: { role: roleCode, scope } });
       if (res.data && Array.isArray(res.data) && res.data.length > 0) {
         allEvents = res.data;
-        saveStoredEvents(allEvents);
+        if (scope === 'all') {
+          saveStoredEvents(allEvents);
+        }
       }
     } catch (e) {
       // Backend offline: sử dụng dữ liệu từ store local

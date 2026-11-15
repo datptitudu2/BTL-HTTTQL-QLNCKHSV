@@ -13,20 +13,23 @@ import {
   Select,
   Row,
   Col,
-  Statistic,
   Progress,
   message,
   Tooltip,
-  Collapse,
+  Segmented,
+  Drawer,
 } from 'antd';
 import {
   DollarOutlined,
   PlusOutlined,
   CheckCircleOutlined,
-  FileDoneOutlined,
+  FileTextOutlined,
   ReloadOutlined,
   BankOutlined,
   WarningOutlined,
+  ExclamationCircleOutlined,
+  SearchOutlined,
+  WalletOutlined,
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
@@ -42,8 +45,11 @@ export const BudgetsPage: React.FC = () => {
   const [budgets, setBudgets] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [modalVisible, setModalVisible] = useState(false);
+  const [quotaDrawerOpen, setQuotaDrawerOpen] = useState(false);
   const [selectedBudgetId, setSelectedBudgetId] = useState<number | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [statusFilter, setStatusFilter] = useState<'ALL' | 'WAIT_FACULTY' | 'WAIT_FINANCE' | 'SETTLED'>('ALL');
+  const [searchText, setSearchText] = useState('');
   const [form] = Form.useForm();
 
   const isFacultyStaff = ['FACULTY_SECRETARY', 'FACULTY_LEADER', 'ADMIN'].includes(roleCode);
@@ -140,12 +146,29 @@ export const BudgetsPage: React.FC = () => {
       budgetApproved: Number(b.approvedAmount || 0),
     })),
   );
-  const totalSettled = allSettlements
-    .filter((s) => Boolean(s.settledAt))
-    .reduce((s, x) => s + Number(x.amount || 0), 0);
-  const pendingCount = allSettlements.filter((s) => !s.settledAt).length;
+  const settledSettlements = allSettlements.filter((s) => Boolean(s.settledAt));
+  const totalSettled = settledSettlements.reduce((s, x) => s + Number(x.amount || 0), 0);
+  const remainingAmount = Math.max(0, totalApproved - totalSettled);
+  const settledCount = settledSettlements.length;
+  const pendingCount = allSettlements.length - settledCount;
 
-  const eligibleBudgets = budgets.filter((b) => Number(b.approvedAmount || 0) > 0 && b.project?.status !== 'REJECTED');
+  const filteredSettlements = allSettlements.filter((item) => {
+    if (statusFilter === 'WAIT_FACULTY' && (item.facultyConfirmed || item.settledAt)) return false;
+    if (statusFilter === 'WAIT_FINANCE' && (!item.facultyConfirmed || item.settledAt)) return false;
+    if (statusFilter === 'SETTLED' && !item.settledAt) return false;
+    if (searchText.trim()) {
+      const kw = searchText.trim().toLowerCase();
+      const target = `${item.project?.projectId || ''} ${item.voucherNo || ''} ${item.invoiceNo || ''} ${item.description || ''} ${item.supplier || ''}`.toLowerCase();
+      if (!target.includes(kw)) return false;
+    }
+    return true;
+  });
+
+  const eligibleBudgets = budgets.filter((b) => {
+    const approved = Number(b.approvedAmount || 0);
+    const claimed = (b.settlements || []).reduce((sum: number, s: any) => sum + Number(s.amount || 0), 0);
+    return approved > 0 && b.project?.status !== 'REJECTED' && b.status !== 'SETTLED' && claimed < approved;
+  });
 
   const settlementColumns = [
     {
@@ -272,18 +295,14 @@ export const BudgetsPage: React.FC = () => {
 
   return (
     <div style={{ maxWidth: 1600, margin: '0 auto' }}>
+      {/* HEADER TRANG KINH PHÍ CHUẨN S-LINK */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, flexWrap: 'wrap', gap: 12 }}>
-        <div>
-          <Title level={4} style={{ margin: 0, color: '#262626', fontWeight: 700 }}>
-            Quản lý Kinh phí & Thanh quyết toán Đề tài (Điều 5 QĐ 521)
-          </Title>
-          <Text type="secondary" style={{ fontSize: 13 }}>
-            Quy trình DFD 6.6: (1) Chủ nhiệm kê khai hóa đơn → (2) Thư ký/Trưởng Khoa xác nhận hoàn thành sản phẩm → (3) P.TCKT phê duyệt giải ngân sau Nghiệm thu.
-          </Text>
-        </div>
+        <Title level={4} style={{ margin: 0, color: '#262626', fontWeight: 700 }}>
+          Kinh phí & Thanh quyết toán Đề tài
+        </Title>
         <Space>
-          <Button icon={<ReloadOutlined />} onClick={fetchBudgets} loading={loading}>
-            Làm mới
+          <Button icon={<WalletOutlined />} onClick={() => setQuotaDrawerOpen(true)}>
+            Hạn mức từng Đề tài ({budgets.length})
           </Button>
           {canSubmitVoucher && (
             <Button
@@ -303,103 +322,266 @@ export const BudgetsPage: React.FC = () => {
         </Space>
       </div>
 
-      <Card bordered={false} size="small" style={{ marginBottom: 16, borderRadius: 8 }} bodyStyle={{ padding: '14px 20px' }}>
-        <Row gutter={[24, 12]}>
-          <Col xs={24} sm={8}>
-            <Statistic
-              title={isStudent ? 'Dự toán đề tài của bạn (VNĐ)' : 'Tổng dự toán được cấp (VNĐ)'}
-              value={totalApproved}
-              formatter={(value) => Number(value || 0).toLocaleString('vi-VN')}
-              suffix="đ"
-              prefix={<DollarOutlined />}
-              valueStyle={{ color: '#262626' }}
-            />
-          </Col>
-          <Col xs={24} sm={8}>
-            <Statistic
-              title="Đã giải ngân thực tế (VNĐ)"
-              value={totalSettled}
-              formatter={(value) => Number(value || 0).toLocaleString('vi-VN')}
-              suffix="đ"
-              prefix={<CheckCircleOutlined />}
-              valueStyle={{ color: '#389E0D' }}
-            />
-          </Col>
-          <Col xs={24} sm={8}>
-            <Statistic
-              title="Chứng từ chờ xử lý"
-              value={pendingCount}
-              prefix={<FileDoneOutlined />}
-              valueStyle={{ color: '#D48806' }}
-            />
-          </Col>
-        </Row>
-      </Card>
+      {/* KHỐI THỐNG KÊ PASTEL 2 NHÓM CHUẨN S-LINK PTIT */}
+      <Row gutter={[16, 16]} style={{ marginBottom: 14 }}>
+        <Col xs={24} lg={13}>
+          <Card
+            bordered={false}
+            style={{ borderRadius: 10, border: '1px solid #F0F0F0' }}
+            bodyStyle={{ padding: '14px 16px' }}
+          >
+            <div style={{ fontWeight: 700, fontSize: 13, color: '#262626', marginBottom: 10 }}>
+              Thống kê chứng từ quyết toán
+            </div>
+            <Row gutter={[10, 10]}>
+              <Col xs={24} sm={8}>
+                <div
+                  style={{
+                    backgroundColor: '#FFFBEB',
+                    borderRadius: 8,
+                    padding: '12px 14px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'space-between',
+                    minHeight: 74,
+                  }}
+                >
+                  <FileTextOutlined style={{ color: '#D48806', fontSize: 16 }} />
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginTop: 8 }}>
+                    <span style={{ fontSize: 12, color: '#595959', fontWeight: 500 }}>Tổng chứng từ</span>
+                    <span style={{ fontSize: 22, fontWeight: 800, color: '#262626', lineHeight: 1 }}>
+                      {allSettlements.length}
+                    </span>
+                  </div>
+                </div>
+              </Col>
+              <Col xs={24} sm={8}>
+                <div
+                  style={{
+                    backgroundColor: '#F1FAEE',
+                    borderRadius: 8,
+                    padding: '12px 14px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'space-between',
+                    minHeight: 74,
+                  }}
+                >
+                  <CheckCircleOutlined style={{ color: '#389E0D', fontSize: 16 }} />
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginTop: 8 }}>
+                    <span style={{ fontSize: 12, color: '#595959', fontWeight: 500 }}>Đã giải ngân</span>
+                    <span style={{ fontSize: 22, fontWeight: 800, color: '#389E0D', lineHeight: 1 }}>
+                      {settledCount}
+                    </span>
+                  </div>
+                </div>
+              </Col>
+              <Col xs={24} sm={8}>
+                <div
+                  style={{
+                    backgroundColor: '#FFF1F0',
+                    borderRadius: 8,
+                    padding: '12px 14px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'space-between',
+                    minHeight: 74,
+                  }}
+                >
+                  <ExclamationCircleOutlined style={{ color: '#C62828', fontSize: 16 }} />
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginTop: 8 }}>
+                    <span style={{ fontSize: 12, color: '#595959', fontWeight: 500 }}>Chờ duyệt chi</span>
+                    <span style={{ fontSize: 22, fontWeight: 800, color: '#C62828', lineHeight: 1 }}>
+                      {pendingCount}
+                    </span>
+                  </div>
+                </div>
+              </Col>
+            </Row>
+          </Card>
+        </Col>
 
-      <Card bordered={false} style={{ marginBottom: 16, borderRadius: 8 }}>
-        <Collapse
-          ghost
-          defaultActiveKey={isStudent ? ['budgets-summary'] : undefined}
-          items={[
-            {
-              key: 'budgets-summary',
-              label: (
-                <Text strong>
-                  {isStudent
-                    ? `Theo dõi Hạn mức Dự toán & Tỷ lệ giải ngân đề tài của bạn (${budgets.length} đề tài)`
-                    : `Theo dõi Hạn mức Dự toán & Tỷ lệ giải ngân từng Đề tài (${budgets.length} đề tài)`}
-                </Text>
-              ),
-              children: (
-                <Row gutter={[12, 12]}>
-                  {budgets.map((b) => {
-                    const approved = Number(b.approvedAmount || 0);
-                    const settled = (b.settlements || [])
-                      .filter((s: any) => Boolean(s.settledAt))
-                      .reduce((sum: number, s: any) => sum + Number(s.amount || 0), 0);
-                    const pct = approved > 0 ? Math.min(100, Math.round((settled / approved) * 100)) : 0;
-                    const statusInfo = BUDGET_STATUS_MAP[b.status] || { label: b.status, color: 'default' };
-                    return (
-                      <Col xs={24} md={12} key={b.budgetId}>
-                        <Card size="small" style={{ borderRadius: 6 }}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                            <a onClick={() => navigate(`/projects/${b.projectId}`)} style={{ fontWeight: 700, color: '#C62828' }}>
-                              {b.projectId}
-                            </a>
-                            <Tag color={statusInfo.color}>
-                              {statusInfo.label}
-                            </Tag>
-                          </div>
-                          <div style={{ fontSize: 12, color: '#595959', marginBottom: 6 }}>
-                            Được duyệt: <b>{approved.toLocaleString('vi-VN')}đ</b> • Đã giải ngân: <b>{settled.toLocaleString('vi-VN')}đ</b>
-                          </div>
-                          <Progress percent={pct} size="small" status={pct === 100 ? 'success' : 'active'} />
-                          {canSubmitVoucher && approved > 0 && b.project?.status !== 'REJECTED' && (
-                            <Button size="small" type="link" style={{ padding: 0, marginTop: 4 }} onClick={() => openAddSettlement(b.budgetId)}>
-                              + Kê khai chứng từ cho đề tài này
-                            </Button>
-                          )}
-                        </Card>
-                      </Col>
-                    );
-                  })}
-                </Row>
-              ),
-            },
-          ]}
-        />
-      </Card>
+        <Col xs={24} lg={11}>
+          <Card
+            bordered={false}
+            style={{ borderRadius: 10, border: '1px solid #F0F0F0', height: '100%' }}
+            bodyStyle={{ padding: '14px 16px' }}
+          >
+            <div style={{ fontWeight: 700, fontSize: 13, color: '#262626', marginBottom: 10 }}>
+              {isStudent ? 'Thống kê kinh phí đề tài của bạn' : 'Thống kê kinh phí đề tài'}
+            </div>
+            <Row gutter={[10, 10]}>
+              <Col xs={24} sm={12}>
+                <div
+                  style={{
+                    background: 'linear-gradient(90deg, #F6FFED 0%, #EAF7EC 100%)',
+                    borderRadius: 8,
+                    padding: '12px 14px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'space-between',
+                    minHeight: 74,
+                  }}
+                >
+                  <DollarOutlined style={{ color: '#389E0D', fontSize: 16 }} />
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginTop: 8, gap: 6 }}>
+                    <span style={{ fontSize: 12, color: '#595959', fontWeight: 500 }}>Đã giải ngân</span>
+                    <span style={{ fontSize: 20, fontWeight: 800, color: '#389E0D', lineHeight: 1 }}>
+                      {totalSettled.toLocaleString('vi-VN')} đ
+                    </span>
+                  </div>
+                </div>
+              </Col>
+              <Col xs={24} sm={12}>
+                <div
+                  style={{
+                    background: 'linear-gradient(90deg, #FFF5F5 0%, #FFF0EC 100%)',
+                    borderRadius: 8,
+                    padding: '12px 14px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'space-between',
+                    minHeight: 74,
+                  }}
+                >
+                  <BankOutlined style={{ color: '#C62828', fontSize: 16 }} />
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginTop: 8, gap: 6 }}>
+                    <span style={{ fontSize: 12, color: '#595959', fontWeight: 500 }}>Còn lại / Chưa chi</span>
+                    <span style={{ fontSize: 20, fontWeight: 800, color: '#C62828', lineHeight: 1 }}>
+                      {remainingAmount.toLocaleString('vi-VN')} đ
+                    </span>
+                  </div>
+                </div>
+              </Col>
+            </Row>
+          </Card>
+        </Col>
+      </Row>
 
-      <Card title="Bảng kê Chứng từ Thanh quyết toán (D7)" bordered={false} style={{ borderRadius: 8 }}>
+      {/* LƯU Ý NGHIỆP VỤ GỌN GÀNG NHƯ MẪU S-LINK */}
+      <div style={{ marginBottom: 14, padding: '2px 4px', fontSize: 12.5, lineHeight: 1.65, color: '#434343' }}>
+        <div style={{ fontStyle: 'italic', color: '#595959', marginBottom: 2 }}>Lưu ý:</div>
+        <div>
+          <span style={{ color: '#C62828', fontWeight: 700 }}>KHÔNG CHỈNH SỬA</span> hoặc tách chứng từ sau khi Phòng Tài chính - Kế toán đã phê duyệt giải ngân.
+        </div>
+        <div>
+          - Quy trình 3 bước (DFD 6.6): Chủ nhiệm kê khai hóa đơn VAT → Khoa xác nhận hoàn thành sản phẩm → P.TCKT phê duyệt giải ngân.
+        </div>
+        <div>
+          - Điều kiện giải ngân (Điều 5 QĐ 521): Đề tài phải có kết quả nghiệm thu <b>Đạt trở lên</b> trước khi P.TCKT giải ngân.
+        </div>
+      </div>
+
+      {/* BẢNG KÊ CHỨNG TỪ KÈM THANH LỌC CHUẨN S-LINK */}
+      <Card
+        bordered={false}
+        style={{ borderRadius: 10, border: '1px solid #F0F0F0' }}
+        bodyStyle={{ padding: '14px 16px' }}
+      >
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            flexWrap: 'wrap',
+            gap: 10,
+            marginBottom: 14,
+          }}
+        >
+          <Segmented
+            value={statusFilter}
+            onChange={(val) => setStatusFilter(val as any)}
+            options={[
+              { label: 'Tất cả chứng từ', value: 'ALL' },
+              { label: 'Chờ Khoa xác nhận', value: 'WAIT_FACULTY' },
+              { label: 'Chờ P.TCKT duyệt', value: 'WAIT_FINANCE' },
+              { label: 'Đã giải ngân', value: 'SETTLED' },
+            ]}
+          />
+
+          <Space wrap size={8}>
+            <Input
+              allowClear
+              prefix={<SearchOutlined style={{ color: '#bfbfbf' }} />}
+              placeholder="Tìm theo: Mã chứng từ, Đề tài..."
+              value={searchText}
+              onChange={(e) => setSearchText(e.target.value)}
+              style={{ width: 240 }}
+            />
+            <Button icon={<ReloadOutlined />} onClick={fetchBudgets} loading={loading}>
+              Tải lại
+            </Button>
+            <div
+              style={{
+                border: '1px solid #d9d9d9',
+                borderRadius: 6,
+                padding: '4px 12px',
+                fontSize: 13,
+                backgroundColor: '#FFFFFF',
+                fontWeight: 500,
+              }}
+            >
+              Tổng số: <b style={{ color: '#262626' }}>{filteredSettlements.length}</b>
+            </div>
+          </Space>
+        </div>
+
         <Table
           loading={loading}
-          dataSource={allSettlements}
+          dataSource={filteredSettlements}
           columns={settlementColumns}
           rowKey="settlementId"
           pagination={{ pageSize: 10 }}
-          locale={{ emptyText: 'Chưa có chứng từ quyết toán nào được kê khai' }}
+          locale={{ emptyText: 'Chưa có chứng từ quyết toán nào phù hợp' }}
         />
       </Card>
+
+      {/* DRAWER XEM HẠN MỨC DỰ TOÁN TỪNG ĐỀ TÀI (KHÔNG LÀM RỐI KHÚC TRÊN) */}
+      <Drawer
+        title={`Theo dõi Hạn mức Dự toán & Giải ngân theo Đề tài (${budgets.length})`}
+        open={quotaDrawerOpen}
+        onClose={() => setQuotaDrawerOpen(false)}
+        width={520}
+      >
+        <Space direction="vertical" size={12} style={{ width: '100%' }}>
+          {budgets.map((b) => {
+            const approved = Number(b.approvedAmount || 0);
+            const claimed = (b.settlements || []).reduce((sum: number, s: any) => sum + Number(s.amount || 0), 0);
+            const settled = (b.settlements || [])
+              .filter((s: any) => Boolean(s.settledAt))
+              .reduce((sum: number, s: any) => sum + Number(s.amount || 0), 0);
+            const pct = approved > 0 ? Math.min(100, Math.round((settled / approved) * 100)) : 0;
+            const statusInfo = BUDGET_STATUS_MAP[b.status] || { label: b.status, color: 'default' };
+            return (
+              <Card key={b.budgetId} size="small" style={{ borderRadius: 8 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                  <a onClick={() => navigate(`/projects/${b.projectId}`)} style={{ fontWeight: 700, color: '#C62828' }}>
+                    {b.projectId}
+                  </a>
+                  <Tag color={statusInfo.color}>{statusInfo.label}</Tag>
+                </div>
+                <div style={{ fontSize: 12, color: '#595959', marginBottom: 6 }}>
+                  Dự toán duyệt: <b>{approved.toLocaleString('vi-VN')}đ</b> • Đã giải ngân: <b>{settled.toLocaleString('vi-VN')}đ</b>
+                </div>
+                <Progress percent={pct} size="small" status={pct === 100 ? 'success' : 'active'} />
+                {canSubmitVoucher && approved > 0 && b.project?.status !== 'REJECTED' && b.status !== 'SETTLED' && claimed < approved && (
+                  <Button
+                    size="small"
+                    type="link"
+                    style={{ padding: 0, marginTop: 4 }}
+                    onClick={() => {
+                      setQuotaDrawerOpen(false);
+                      openAddSettlement(b.budgetId);
+                    }}
+                  >
+                    + Kê khai chứng từ cho đề tài này
+                  </Button>
+                )}
+              </Card>
+            );
+          })}
+        </Space>
+      </Drawer>
 
       <Modal
         title="Kê khai Chứng từ Thanh quyết toán Kinh phí NCKH"

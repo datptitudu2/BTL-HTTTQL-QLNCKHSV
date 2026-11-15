@@ -20,6 +20,7 @@ import {
   AuditOutlined,
   RobotOutlined,
   FilePdfOutlined,
+  CheckOutlined,
 } from '@ant-design/icons';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
@@ -57,29 +58,44 @@ export const SLinkLayout: React.FC<{ children: React.ReactNode }> = ({ children 
 
   useEffect(() => {
     let isMounted = true;
+    setNotifications([]);
     const fetchNotifs = async () => {
       try {
-        const data = await notificationService.getNotifications(roleCode);
+        const data = await notificationService.getNotifications(roleCode, user?.userId);
         if (isMounted) setNotifications(data);
       } catch (e) {
         console.error(e);
       }
     };
     fetchNotifs();
+
+    // Đồng bộ định kỳ (15s) và lắng nghe sự kiện tạo nhắc việc tức thời
+    const intervalId = window.setInterval(fetchNotifs, 15000);
+    const handleRefresh = () => {
+      fetchNotifs();
+    };
+    window.addEventListener('srms:notifications-refresh', handleRefresh);
+
     return () => {
       isMounted = false;
+      window.clearInterval(intervalId);
+      window.removeEventListener('srms:notifications-refresh', handleRefresh);
     };
-  }, [roleCode]);
+  }, [roleCode, user?.userId]);
 
   const unreadCount = notifications.filter((n) => !n.isRead).length;
 
-  const handleNotificationClick = async (item: AppNotification) => {
+  const handleConfirmRead = async (item: AppNotification) => {
     try {
-      await notificationService.markAsRead(item.id, roleCode);
+      await notificationService.markAsRead(item.id, roleCode, user?.userId);
       setNotifications((prev) =>
         prev.map((n) => (n.id === item.id ? { ...n, isRead: true } : n)),
       );
     } catch (e) {}
+  };
+
+  const handleNotificationClick = async (item: AppNotification) => {
+    await handleConfirmRead(item);
     if (item.targetUrl) {
       navigate(item.targetUrl);
     }
@@ -87,7 +103,7 @@ export const SLinkLayout: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const handleMarkAllRead = async () => {
     try {
-      await notificationService.markAllAsRead(roleCode);
+      await notificationService.markAllAsRead(roleCode, user?.userId);
       setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
     } catch (e) {}
   };
@@ -307,6 +323,25 @@ export const SLinkLayout: React.FC<{ children: React.ReactNode }> = ({ children 
                             </div>
                             <div style={{ fontSize: 12, color: '#595959', marginTop: 2, lineHeight: 1.4 }}>
                               {item.content}
+                            </div>
+                            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 6 }}>
+                              {!item.isRead ? (
+                                <Button
+                                  size="small"
+                                  icon={<CheckOutlined />}
+                                  style={{ fontSize: 11, height: 22, paddingInline: 8, color: '#C62828', borderColor: '#FFA39E', backgroundColor: '#FFF1F0' }}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleConfirmRead(item);
+                                  }}
+                                >
+                                  Xác nhận đã đọc
+                                </Button>
+                              ) : (
+                                <span style={{ fontSize: 11, color: '#389E0D', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                                  <CheckCircleOutlined /> Đã xác nhận đọc
+                                </span>
+                              )}
                             </div>
                           </div>
                         </List.Item>

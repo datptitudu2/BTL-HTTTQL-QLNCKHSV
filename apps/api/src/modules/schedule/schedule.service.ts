@@ -1,4 +1,5 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, ForbiddenException } from '@nestjs/common';
+import { PrismaService } from '../../prisma/prisma.service';
 
 export interface CalendarEventDto {
   id?: string;
@@ -23,6 +24,7 @@ export interface CalendarEventDto {
 
 @Injectable()
 export class ScheduleService {
+  constructor(private prisma: PrismaService) {}
   // Bộ dữ liệu khởi tạo chuẩn ERD & QĐ 521 theo tuần NCKH
   private defaultEvents: CalendarEventDto[] = [
     // 1. LỊCH CHUNG TOÀN HỌC VIỆN (ÁP XUỐNG TẤT CẢ)
@@ -297,19 +299,59 @@ export class ScheduleService {
   private eventsStore: CalendarEventDto[] = [...this.defaultEvents];
 
   async getEvents(roleCode?: string, scope?: string) {
-    let list = this.eventsStore;
+    let dbMapped: CalendarEventDto[] = [];
+    try {
+      const dbRows = await this.prisma.scheduleEvent.findMany({
+        orderBy: { eventId: 'desc' },
+      });
+      dbMapped = dbRows.map((row) => {
+        let parsedRoles: string[] = ['ALL'];
+        try {
+          const parsed = JSON.parse(row.targetRoles || '["ALL"]');
+          if (Array.isArray(parsed)) parsedRoles = parsed;
+        } catch {
+          parsedRoles = row.targetRoles ? [row.targetRoles] : ['ALL'];
+        }
+        const clampedHour = Math.min(20, Math.max(8, Number(row.startHour || 14)));
+        return {
+          id: String(row.eventId),
+          title: row.title,
+          type: row.eventType,
+          startDate: row.startDate,
+          startTime: row.startTime,
+          endDate: row.endDate,
+          endTime: row.endTime,
+          location: row.location,
+          regulatoryBasis: row.regulatoryBasis || undefined,
+          participants: row.participants || undefined,
+          projectId: row.projectId || undefined,
+          note: row.note || undefined,
+          dayIndex: row.dayIndex,
+          startHour: clampedHour,
+          durationHours: row.durationHours,
+          targetRoles: parsedRoles,
+          scopeLevel: row.scopeLevel,
+          broadcastBy: row.broadcastBy || undefined,
+        };
+      });
+    } catch {
+      dbMapped = [];
+    }
+
+    const dbTitles = new Set(dbMapped.map((d) => d.title));
+    let list: CalendarEventDto[] = [
+      ...dbMapped,
+      ...this.eventsStore.filter((e) => !dbTitles.has(e.title)),
+    ];
 
     // Phân quyền theo vai trò (DFD 8.0 & QĐ 521)
     if (scope === 'my_schedule' && roleCode) {
       if (roleCode === 'ADMIN' || roleCode === 'QLKHCN' || roleCode === 'BOARD') {
-        // Lãnh đạo và Admin thấy toàn bộ
         return list;
       }
 
       list = list.filter((e) => {
-        // Sự kiện toàn trường áp xuống: ai cũng thấy
         if (e.targetRoles.includes('ALL')) return true;
-        // Sự kiện gán đúng vai trò
         if (e.targetRoles.includes(roleCode)) return true;
         return false;
       });
@@ -318,16 +360,75 @@ export class ScheduleService {
     return list;
   }
 
-  async createEvent(dto: CalendarEventDto) {
-    const newEvent: CalendarEventDto = {
-      ...dto,
-      id: dto.id || `nckh_usr_${Date.now()}`,
-    };
-    this.eventsStore.unshift(newEvent);
-    return newEvent;
+  async createEvent(dto: CalendarEventDto, user?: any) {
+    const roleCode = user?.roleCode;
+    const isLeadership = ['QLKHCN', 'BOARD', 'ADMIN'].includes(roleCode);
+    const targetRoles = isLeadership
+      ? dto.targetRoles
+      : dto.targetRoles?.filter((r) => r !== 'ALL') || [roleCode || 'STUDENT'];
+    const finalRoles = targetRoles && targetRoles.length > 0 ? targetRoles : [roleCode || 'STUDENT'];
+    const finalScope = !isLeadership && dto.scopeLevel === 'Toàn Học viện' ? 'Nhóm đề tài' : dto.scopeLevel || 'Nhóm đề tài';
+
+    try {
+      const created = await this.prisma.scheduleEvent.create({
+        data: {
+          title: dto.title,
+          eventType: dto.type || 'Họp nhóm NCKH',
+          startDate: dto.startDate,
+          startTime: dto.startTime,
+          endDate: dto.endDate,
+          endTime: dto.endTime,
+          location: dto.location || 'Học viện PTIT',
+          regulatoryBasis: dto.regulatoryBasis || null,
+          participants: dto.participants || null,
+          projectId: dto.projectId || null,
+          note: dto.note || null,
+          dayIndex: Number(dto.dayIndex ?? 3),
+          startHour: Math.min(20, Math.max(8, Number(dto.startHour ?? 14))),
+          durationHours: Number(dto.durationHours ?? 2),
+          targetRoles: JSON.stringify(finalRoles),
+          scopeLevel: finalScope,
+          broadcastBy: dto.broadcastBy || user?.fullName || null,
+          createdByUserId: user?.userId || null,
+        },
+      });
+      return {
+        ...dto,
+        id: String(created.eventId),
+        targetRoles: finalRoles,
+        scopeLevel: finalScope,
+      };
+    } catch {
+      const newEvent: CalendarEventDto = {
+        ...dto,
+        id: dto.id || `nckh_usr_${Date.now()}`,
+        targetRoles: finalRoles,
+        scopeLevel: finalScope,
+      };
+      this.eventsStore.unshift(newEvent);
+      return newEvent;
+    }
   }
 
-  async deleteEvent(id: string) {
+  async deleteEvent(id: string, user?: any) {
+    const roleCode = user?.roleCode;
+    const isLeadership = ['QLKHCN', 'BOARD', 'ADMIN'].includes(roleCode);
+    const numericId = Number(id);
+
+    if (!Number.isNaN(numericId) && numericId > 0) {
+      const existing = await this.prisma.scheduleEvent.findUnique({ where: { eventId: numericId } });
+      if (existing) {
+        if (!isLeadership && existing.createdByUserId !== user?.userId) {
+          throw new ForbiddenException('Chỉ người tạo hoặc P.QLKHCN / Ban Giám Đốc mới được xóa sự kiện lịch này');
+        }
+        await this.prisma.scheduleEvent.delete({ where: { eventId: numericId } });
+        return { success: true, deletedId: id };
+      }
+    }
+
+    if (!isLeadership && !id.startsWith('nckh_usr_')) {
+      throw new ForbiddenException('Chỉ P.QLKHCN / Ban Giám Đốc mới được xóa sự kiện chính thức cấp Học viện hoặc Khoa');
+    }
     this.eventsStore = this.eventsStore.filter((e) => e.id !== id);
     return { success: true, deletedId: id };
   }

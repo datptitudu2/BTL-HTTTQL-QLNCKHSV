@@ -13,7 +13,6 @@ import {
   InputNumber,
   Row,
   Col,
-  Statistic,
   Tabs,
   message,
 } from 'antd';
@@ -36,10 +35,15 @@ const { Title, Text } = Typography;
 
 const GRADE_MAP: Record<string, { label: string; color: string }> = {
   XUAT_SAC: { label: 'Xuất sắc', color: 'green' },
+  'Xuất sắc': { label: 'Xuất sắc', color: 'green' },
   TOT: { label: 'Tốt', color: 'blue' },
+  'Tốt': { label: 'Tốt', color: 'blue' },
   KHA: { label: 'Khá', color: 'cyan' },
+  'Khá': { label: 'Khá', color: 'cyan' },
   DAT: { label: 'Đạt', color: 'gold' },
+  'Đạt': { label: 'Đạt', color: 'gold' },
   KHONG_DAT: { label: 'Không đạt', color: 'red' },
+  'Không đạt': { label: 'Không đạt', color: 'red' },
 };
 
 export const AwardsPage: React.FC = () => {
@@ -71,8 +75,9 @@ export const AwardsPage: React.FC = () => {
   const isCTSV = ['STUDENT_AFFAIRS', 'ADMIN'].includes(roleCode);
   const isStudent = roleCode === 'STUDENT';
   const isLecturer = roleCode === 'LECTURER';
-  const showBonusesTab = !isLecturer;
-  const showHoursTab = !isStudent && !isCTSV;
+  const isFinance = roleCode === 'FINANCE';
+  const showBonusesTab = !isLecturer && !isFinance;
+  const showHoursTab = !isStudent && !isCTSV && !isFinance;
 
   const fetchData = async () => {
     try {
@@ -158,20 +163,18 @@ export const AwardsPage: React.FC = () => {
     }
   };
 
+  const totalLecturerHours = data.lecturerHours.reduce((s, h) => s + Number(h.convertedHours || 0), 0);
+  const summaryColSpan = showBonusesTab && showHoursTab ? 6 : 8;
+
   return (
     <div style={{ maxWidth: 1600, margin: '0 auto' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, flexWrap: 'wrap', gap: 12 }}>
-        <div>
-          <Title level={4} style={{ margin: 0, color: '#262626', fontWeight: 700 }}>
-            Khen thưởng (Mẫu 5), Chứng nhận số & Quyền lợi NCKH (QĐ 521)
-          </Title>
-          <Text type="secondary" style={{ fontSize: 13 }}>
-            Đồng bộ dữ liệu thực Kho D8: Chứng nhận số QR (Điều 15.2.e ≥ Khá), ĐRL & Học bổng CTSV (Điều 15.2.h), Đề cử Mẫu 5 & Giờ chuẩn GVHD.
-          </Text>
-        </div>
+        <Title level={4} style={{ margin: 0, color: '#262626', fontWeight: 700 }}>
+          Khen thưởng, Chứng nhận & Quyền lợi NCKH
+        </Title>
         <Space>
           <Button icon={<ReloadOutlined />} onClick={fetchData} loading={loading}>
-            Làm mới
+            Tải lại
           </Button>
           {isFacultyStaff && (
             <Button
@@ -190,57 +193,136 @@ export const AwardsPage: React.FC = () => {
               onClick={() => setCertModalVisible(true)}
               disabled={eligibleAcceptedProjects.length === 0}
             >
-              Cấp Giấy chứng nhận số
+              Cấp Giấy chứng nhận SV
             </Button>
           )}
         </Space>
       </div>
 
-      <Card bordered={false} size="small" style={{ marginBottom: 16, borderRadius: 8 }} bodyStyle={{ padding: '14px 20px' }}>
-        <Row gutter={[24, 12]}>
-          <Col xs={12} sm={showBonusesTab && showHoursTab ? 6 : 8}>
-            <Statistic
-              title={isStudent ? 'Giấy chứng nhận của bạn' : 'Giấy chứng nhận số đã cấp'}
-              value={data.certificates.length}
-              prefix={<SafetyCertificateOutlined />}
-              valueStyle={{ color: '#C62828' }}
-            />
+      {/* KHỐI THỐNG KÊ PASTEL CHUẨN S-LINK PTIT */}
+      <Card
+        bordered={false}
+        style={{ marginBottom: 14, borderRadius: 10, border: '1px solid #F0F0F0' }}
+        bodyStyle={{ padding: '14px 16px' }}
+      >
+        <div style={{ fontWeight: 700, fontSize: 13, color: '#262626', marginBottom: 10 }}>
+          {isStudent ? 'Tổng hợp quyền lợi & chứng nhận của bạn' : 'Thống kê Khen thưởng & Chứng nhận NCKH'}
+        </div>
+        <Row gutter={[12, 12]}>
+          <Col xs={24} sm={12} md={summaryColSpan}>
+            <div
+              style={{
+                background: 'linear-gradient(90deg, #FFF5F5 0%, #FFF0EC 100%)',
+                borderRadius: 8,
+                padding: '12px 14px',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between',
+                minHeight: 74,
+              }}
+            >
+              <SafetyCertificateOutlined style={{ color: '#C62828', fontSize: 16 }} />
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginTop: 8, gap: 6 }}>
+                <span style={{ fontSize: 12, color: '#595959', fontWeight: 500 }}>
+                  {isStudent ? 'Giấy chứng nhận của bạn' : 'Giấy chứng nhận SV'}
+                </span>
+                <span style={{ fontSize: 22, fontWeight: 800, color: '#C62828', lineHeight: 1 }}>
+                  {data.certificates.length}
+                </span>
+              </div>
+            </div>
           </Col>
-          <Col xs={12} sm={showBonusesTab && showHoursTab ? 6 : 8}>
-            <Statistic
-              title="Hồ sơ Giải thưởng Mẫu 5"
-              value={data.nominations.length}
-              prefix={<TrophyOutlined />}
-              valueStyle={{ color: '#D48806' }}
-            />
+
+          <Col xs={24} sm={12} md={summaryColSpan}>
+            <div
+              style={{
+                backgroundColor: '#FFFBEB',
+                borderRadius: 8,
+                padding: '12px 14px',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between',
+                minHeight: 74,
+              }}
+            >
+              <TrophyOutlined style={{ color: '#D48806', fontSize: 16 }} />
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginTop: 8, gap: 6 }}>
+                <span style={{ fontSize: 12, color: '#595959', fontWeight: 500 }}>Hồ sơ Giải thưởng Mẫu 5</span>
+                <span style={{ fontSize: 22, fontWeight: 800, color: '#D48806', lineHeight: 1 }}>
+                  {data.nominations.length}
+                </span>
+              </div>
+            </div>
           </Col>
+
           {showBonusesTab && (
-            <Col xs={12} sm={showHoursTab ? 6 : 8}>
-              <Statistic
-                title={isStudent ? 'ĐRL & Điểm học bổng của bạn' : 'Lượt SV xét ĐRL & Học bổng'}
-                value={data.studentBonuses.length}
-                prefix={<StarOutlined />}
-                valueStyle={{ color: '#1890FF' }}
-              />
+            <Col xs={24} sm={12} md={summaryColSpan}>
+              <div
+                style={{
+                  background: 'linear-gradient(90deg, #F0F7FF 0%, #E6F4FF 100%)',
+                  borderRadius: 8,
+                  padding: '12px 14px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'space-between',
+                  minHeight: 74,
+                }}
+              >
+                <StarOutlined style={{ color: '#1677FF', fontSize: 16 }} />
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginTop: 8, gap: 6 }}>
+                  <span style={{ fontSize: 12, color: '#595959', fontWeight: 500 }}>
+                    {isStudent ? 'ĐRL & Học bổng của bạn' : 'Lượt SV xét ĐRL & Học bổng'}
+                  </span>
+                  <span style={{ fontSize: 22, fontWeight: 800, color: '#1677FF', lineHeight: 1 }}>
+                    {data.studentBonuses.length}
+                  </span>
+                </div>
+              </div>
             </Col>
           )}
+
           {showHoursTab && (
-            <Col xs={12} sm={showBonusesTab ? 6 : 8}>
-              <Statistic
-                title={isLecturer ? 'Giờ chuẩn NCKH của bạn' : 'Tổng Giờ chuẩn GVHD'}
-                value={data.lecturerHours.reduce((s, h) => s + Number(h.convertedHours || 0), 0)}
-                suffix="giờ"
-                prefix={<ClockCircleOutlined />}
-                valueStyle={{ color: '#389E0D' }}
-              />
+            <Col xs={24} sm={12} md={summaryColSpan}>
+              <div
+                style={{
+                  background: 'linear-gradient(90deg, #F6FFED 0%, #EAF7EC 100%)',
+                  borderRadius: 8,
+                  padding: '12px 14px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'space-between',
+                  minHeight: 74,
+                }}
+              >
+                <ClockCircleOutlined style={{ color: '#389E0D', fontSize: 16 }} />
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginTop: 8, gap: 6 }}>
+                  <span style={{ fontSize: 12, color: '#595959', fontWeight: 500 }}>
+                    {isLecturer ? 'Giờ chuẩn NCKH của bạn' : 'Tổng Giờ chuẩn GVHD'}
+                  </span>
+                  <span style={{ fontSize: 20, fontWeight: 800, color: '#389E0D', lineHeight: 1 }}>
+                    {totalLecturerHours} giờ
+                  </span>
+                </div>
+              </div>
             </Col>
           )}
         </Row>
       </Card>
 
-      <Card bordered={false} style={{ borderRadius: 8 }}>
+      {/* LƯU Ý QUY ĐỊNH 521 */}
+      <div style={{ marginBottom: 14, padding: '2px 4px', fontSize: 12.5, lineHeight: 1.65, color: '#434343' }}>
+        <div style={{ fontStyle: 'italic', color: '#595959', marginBottom: 2 }}>Lưu ý:</div>
+        <div>
+          - <b style={{ color: '#C62828' }}>Điều 15 QĐ 521:</b> Giấy chứng nhận số (kèm mã QR xác thực) chỉ cấp cho <b>Sinh viên</b> tham gia đề tài nghiệm thu đạt loại <b>Khá trở lên</b>; xét cộng ĐRL và điểm thưởng học bổng qua Phòng CT&amp;CTSV.
+        </div>
+        <div>
+          - <b>Điều 16 QĐ 521:</b> Giảng viên hướng dẫn được quy đổi Giờ chuẩn NCKH (20 giờ chuẩn/đề tài) sau khi đề tài hoàn thành nghiệm thu.
+        </div>
+      </div>
+
+      <Card bordered={false} style={{ borderRadius: 10, border: '1px solid #F0F0F0' }}>
         <Tabs
-          defaultActiveKey="certs"
+          defaultActiveKey={isFinance ? 'nominations' : 'certs'}
           items={[
             {
               key: 'certs',
@@ -421,8 +503,12 @@ export const AwardsPage: React.FC = () => {
                       dataIndex: 'awardLevel',
                       key: 'awardLevel',
                       render: (lvl: string) => (
-                        <Tag color={lvl === 'MINISTRY' ? 'purple' : 'blue'}>
-                          {lvl === 'MINISTRY' ? 'Cấp Bộ GD&ĐT' : 'Cấp Học viện'}
+                        <Tag color={lvl === 'INTERNATIONAL' ? 'volcano' : lvl === 'MINISTRY' ? 'purple' : 'blue'}>
+                          {lvl === 'INTERNATIONAL'
+                            ? 'Quốc tế (ISI/Scopus)'
+                            : lvl === 'MINISTRY'
+                            ? 'Cấp Bộ GD&ĐT'
+                            : 'Cấp Học viện'}
                         </Tag>
                       ),
                     },
@@ -437,6 +523,7 @@ export const AwardsPage: React.FC = () => {
                           CONSOLATION: { label: 'Giải Khuyến khích', color: 'default' },
                         };
                         const prizeInfo = r.prizeGrade ? prizeLabels[r.prizeGrade] : null;
+                        const supAmt = Number(r.supportAmount ?? r.supportFund ?? 0);
                         return (
                           <div>
                             {prizeInfo ? (
@@ -446,7 +533,7 @@ export const AwardsPage: React.FC = () => {
                             )}
                             <div style={{ fontSize: 12, color: '#389E0D', marginTop: 2 }}>
                               Thưởng: {Number(r.rewardAmount || 0).toLocaleString('vi-VN')}đ
-                              {Number(r.supportFund || 0) > 0 && ` (+Hỗ trợ: ${Number(r.supportFund).toLocaleString('vi-VN')}đ)`}
+                              {supAmt > 0 && ` (+Hỗ trợ: ${supAmt.toLocaleString('vi-VN')}đ)`}
                             </div>
                           </div>
                         );
@@ -456,7 +543,7 @@ export const AwardsPage: React.FC = () => {
                       title: 'Trạng thái',
                       key: 'status',
                       render: (_: any, r: any) =>
-                        r.status === 'APPROVED' ? (
+                        r.approvalStatus === 'APPROVED' || r.status === 'APPROVED' ? (
                           <Tag color="green">Đã duyệt ({r.rewardDecisionNo})</Tag>
                         ) : (
                           <Tag color="gold">Chờ P.QLKHCN / BGĐ duyệt</Tag>
@@ -466,7 +553,7 @@ export const AwardsPage: React.FC = () => {
                       title: 'Thao tác',
                       key: 'action',
                       render: (_: any, r: any) =>
-                        isQLKHOrBoard && r.status !== 'APPROVED' ? (
+                        isQLKHOrBoard && r.approvalStatus !== 'APPROVED' && r.status !== 'APPROVED' ? (
                           <Button
                             size="small"
                             type="primary"
@@ -586,10 +673,16 @@ export const AwardsPage: React.FC = () => {
             <Select>
               <Select.Option value="INSTITUTE">Giải thưởng NCKH Cấp Học viện PTIT</Select.Option>
               <Select.Option value="MINISTRY">Dự thi Sinh viên NCKH Cấp Bộ GD&ĐT</Select.Option>
+              <Select.Option value="INTERNATIONAL">Công bố / Giải thưởng Quốc tế (ISI/Scopus)</Select.Option>
             </Select>
           </Form.Item>
-          <Form.Item name="prizeGrade" label="Xếp giải đề xuất" initialValue="Đề xuất Giải Nhì">
-            <Input />
+          <Form.Item name="prizeGrade" label="Xếp giải đề xuất" initialValue="SECOND">
+            <Select>
+              <Select.Option value="FIRST">Giải Nhất (Học viện / Bộ GD&ĐT)</Select.Option>
+              <Select.Option value="SECOND">Giải Nhì</Select.Option>
+              <Select.Option value="THIRD">Giải Ba</Select.Option>
+              <Select.Option value="CONSOLATION">Giải Khuyến khích</Select.Option>
+            </Select>
           </Form.Item>
           <Form.Item name="rewardAmount" label="Mức tiền thưởng đề xuất (VNĐ)" initialValue={3000000}>
             <InputNumber style={{ width: '100%' }} min={500000} step={500000} />

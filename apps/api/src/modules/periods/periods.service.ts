@@ -120,12 +120,12 @@ export class PeriodsService {
         },
         criteria: {
           create: [
-            { orderNo: 1, title: 'Tổng quan tình hình nghiên cứu thuộc lĩnh vực đề tài', maxScore: 20 },
-            { orderNo: 2, title: 'Tính cấp thiết, mục tiêu và cách tiếp cận của đề tài', maxScore: 20 },
-            { orderNo: 3, title: 'Phương pháp nghiên cứu và kỹ thuật triển khai', maxScore: 20 },
-            { orderNo: 4, title: 'Kết quả, sản phẩm và mức độ hoàn thành nội dung', maxScore: 15 },
-            { orderNo: 5, title: 'Khả năng ứng dụng thực tiễn hoặc công bố khoa học', maxScore: 10 },
-            { orderNo: 6, title: 'Bố cục và hình thức trình bày báo cáo tổng kết', maxScore: 10 },
+            { orderNo: 1, title: 'Tổng quan tình hình nghiên cứu thuộc lĩnh vực đề tài', maxScore: 10 },
+            { orderNo: 2, title: 'Tính cấp thiết, mục tiêu và cách tiếp cận của đề tài', maxScore: 15 },
+            { orderNo: 3, title: 'Phương pháp nghiên cứu và kỹ thuật triển khai', maxScore: 15 },
+            { orderNo: 4, title: 'Kết quả, sản phẩm và mức độ hoàn thành nội dung', maxScore: 35 },
+            { orderNo: 5, title: 'Khả năng ứng dụng thực tiễn hoặc công bố khoa học', maxScore: 15 },
+            { orderNo: 6, title: 'Bố cục và hình thức trình bày báo cáo tổng kết', maxScore: 5 },
             { orderNo: 7, title: 'Kỹ năng thuyết trình và trả lời chất vấn của Hội đồng', maxScore: 5 },
           ],
         },

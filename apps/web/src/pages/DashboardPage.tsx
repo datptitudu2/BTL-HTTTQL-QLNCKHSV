@@ -44,6 +44,14 @@ interface DynamicTask {
   path: string;
 }
 
+const GRADE_LABEL_MAP: Record<string, string> = {
+  XUAT_SAC: 'Xuất sắc',
+  TOT: 'Tốt',
+  KHA: 'Khá',
+  DAT: 'Đạt',
+  KHONG_DAT: 'Không đạt',
+};
+
 const PROJECT_STATUS_META: Record<string, { label: string; color: string; progress: number }> = {
   PROPOSED: { label: 'Chờ Khoa sơ tuyển', color: 'orange', progress: 15 },
   FACULTY_APPROVED: { label: 'Chờ Học viện duyệt', color: 'purple', progress: 30 },
@@ -82,8 +90,9 @@ export const DashboardPage: React.FC = () => {
   const roleCode = user?.roleCode || 'STUDENT';
 
   const [loading, setLoading] = useState<boolean>(true);
-  const [periodFilter, setPeriodFilter] = useState<string>('2026-2027');
-  const [projects, setProjects] = useState<any[]>([]);
+  const [periodFilter, setPeriodFilter] = useState<string>('ALL');
+  const [periods, setPeriods] = useState<any[]>([]);
+  const [rawProjects, setRawProjects] = useState<any[]>([]);
   const [outlines, setOutlines] = useState<any[]>([]);
   const [progress, setProgress] = useState<any>({ seminars: [], reports: [], changeRequests: [], milestones: [], period: null });
   const [acceptances, setAcceptances] = useState<any[]>([]);
@@ -96,7 +105,7 @@ export const DashboardPage: React.FC = () => {
     const fetchAll = async () => {
       try {
         setLoading(true);
-        const [pRes, oRes, prRes, aRes, bRes, awRes, nRes, sRes] = await Promise.all([
+        const [pRes, oRes, prRes, aRes, bRes, awRes, nRes, sRes, pdRes] = await Promise.all([
           api.get('/projects').catch(() => ({ data: [] })),
           api.get('/outlines').catch(() => ({ data: [] })),
           api.get('/progress/overview').catch(() => ({ data: { seminars: [], reports: [], changeRequests: [], milestones: [], period: null } })),
@@ -105,8 +114,9 @@ export const DashboardPage: React.FC = () => {
           api.get('/awards').catch(() => ({ data: { nominations: [], certificates: [], lecturerHours: [], studentBonuses: [] } })),
           api.get('/notifications').catch(() => ({ data: [] })),
           api.get('/schedule/events').catch(() => ({ data: [] })),
+          api.get('/periods').catch(() => ({ data: [] })),
         ]);
-        setProjects(Array.isArray(pRes.data) ? pRes.data : []);
+        setRawProjects(Array.isArray(pRes.data) ? pRes.data : []);
         setOutlines(Array.isArray(oRes.data) ? oRes.data : []);
         setProgress(prRes.data || { seminars: [], reports: [], changeRequests: [], milestones: [], period: null });
         setAcceptances(aRes.data?.acceptances || []);
@@ -114,6 +124,12 @@ export const DashboardPage: React.FC = () => {
         setAwards(awRes.data || { nominations: [], certificates: [], lecturerHours: [], studentBonuses: [] });
         setNotifications(Array.isArray(nRes.data) ? nRes.data : []);
         setEvents(Array.isArray(sRes.data) ? sRes.data : []);
+        const periodList = Array.isArray(pdRes.data) ? pdRes.data : [];
+        setPeriods(periodList);
+        const activePeriod = periodList.find((p: any) => p.status === 'ACTIVE');
+        if (activePeriod?.periodId) {
+          setPeriodFilter(String(activePeriod.periodId));
+        }
       } finally {
         setLoading(false);
       }
@@ -121,12 +137,18 @@ export const DashboardPage: React.FC = () => {
     fetchAll();
   }, [user?.userId]);
 
+  const projects = useMemo(() => {
+    if (!periodFilter || periodFilter === 'ALL') return rawProjects;
+    const pid = Number(periodFilter);
+    return rawProjects.filter((p) => Number(p.period_id) === pid);
+  }, [rawProjects, periodFilter]);
+
   // Tổng hợp chứng từ tài chính từ DB
   const allSettlements = useMemo(() => {
     const items: any[] = [];
     budgets.forEach((b) => {
       (b.settlements || []).forEach((s: any) => {
-        const leader = b.project?.members?.find((m: any) => m.memberRole === 'LEADER') || b.project?.members?.[0];
+        const leader = b.project?.members?.find((m: any) => m.memberRole === 'LEAD' || m.memberRole === 'LEADER') || b.project?.members?.[0];
         items.push({
           ...s,
           projectId: b.projectId,
@@ -294,7 +316,7 @@ export const DashboardPage: React.FC = () => {
           tasks.push({
             code: s.voucherNo || s.projectId,
             title: `Thẩm định chứng từ ${s.voucherNo}: ${s.description} (${Number(s.amount || 0).toLocaleString('vi-VN')}đ)`,
-            deadline: formatDateShort(s.createdAt),
+            deadline: formatDateShort(s.submittedAt),
             status: s.facultyConfirmed ? 'Chờ duyệt chi P.TCKT' : 'Chờ Khoa xác nhận',
             color: s.facultyConfirmed ? 'orange' : 'blue',
             path: '/budgets',
@@ -307,7 +329,7 @@ export const DashboardPage: React.FC = () => {
           tasks.push({
             code: o.projectId,
             title: `Thẩm định Thuyết minh Đề cương Mẫu 2 (v${o.versionNo}): ${o.project?.titleVi || o.projectId}`,
-            deadline: formatDateShort(o.updatedAt),
+            deadline: formatDateShort(o.submittedAt),
             status: 'Chờ GVHD duyệt',
             color: 'red',
             path: '/outlines',
@@ -360,7 +382,7 @@ export const DashboardPage: React.FC = () => {
           tasks.push({
             code: o.projectId,
             title: `Ký duyệt Đề cương Mẫu 2 cấp Khoa: ${o.project?.titleVi || o.projectId}`,
-            deadline: formatDateShort(o.updatedAt),
+            deadline: formatDateShort(o.submittedAt),
             status: 'GVHD đã duyệt',
             color: 'blue',
             path: '/outlines',
@@ -373,7 +395,7 @@ export const DashboardPage: React.FC = () => {
           tasks.push({
             code: s.voucherNo || s.projectId,
             title: `Xác nhận chứng từ ${s.voucherNo} (${Number(s.amount || 0).toLocaleString('vi-VN')}đ)`,
-            deadline: formatDateShort(s.createdAt),
+            deadline: formatDateShort(s.submittedAt),
             status: 'Chờ Khoa xác nhận',
             color: 'orange',
             path: '/budgets',
@@ -397,22 +419,22 @@ export const DashboardPage: React.FC = () => {
         .forEach((a) => {
           tasks.push({
             code: a.projectId,
-            title: `Ban hành QĐ công nhận Kết quả Nghiệm thu (${Number(a.avgScore).toFixed(1)}đ - ${a.grade})`,
-            deadline: formatDateShort(a.meetingDate),
+            title: `Ban hành QĐ công nhận Kết quả Nghiệm thu (${Number(a.avgScore).toFixed(1)}đ - ${GRADE_LABEL_MAP[a.grade] || a.grade})`,
+            deadline: formatDateShort(a.defenseTime),
             status: 'Chờ QĐ Nghiệm thu',
             color: 'green',
             path: '/acceptance',
           });
         });
       (awards.nominations || [])
-        .filter((n: any) => !n.decisionNo)
+        .filter((n: any) => n.status !== 'APPROVED')
         .slice(0, 2)
         .forEach((n: any) => {
           tasks.push({
             code: n.projectId,
-            title: `Phê duyệt đề cử Giải thưởng NCKH (${n.rankAward}): ${n.project?.titleVi || n.projectId}`,
-            deadline: formatDateShort(n.createdAt),
-            status: 'Dự thảo QĐ',
+            title: `Phê duyệt đề cử Giải thưởng NCKH (${n.prizeGrade}): ${n.project?.titleVi || n.projectId}`,
+            deadline: n.awardYear || 'Năm học 2026-2027',
+            status: n.status === 'PENDING' ? 'Chờ phê duyệt' : 'Dự thảo QĐ',
             color: 'orange',
             path: '/awards',
           });
@@ -460,7 +482,7 @@ export const DashboardPage: React.FC = () => {
           tasks.push({
             code: o.projectId,
             title: `Chỉnh sửa Thuyết minh Đề cương Mẫu 2 (v${o.versionNo}) theo góp ý`,
-            deadline: formatDateShort(o.updatedAt),
+            deadline: formatDateShort(o.submittedAt),
             status: 'Cần chỉnh sửa',
             color: 'red',
             path: '/outlines',
@@ -498,7 +520,7 @@ export const DashboardPage: React.FC = () => {
 
   const currentTasks = getTasksByRole();
   const latestNotif = notifications[0];
-  const unreadNotifCount = notifications.filter((n) => !n.readAt).length;
+  const unreadNotifCount = notifications.filter((n) => !(n.isRead || n.readAt)).length;
   const nextEvent = events[0];
   const nextMilestone = (progress.milestones || [])[0];
   const now = new Date();
@@ -622,7 +644,7 @@ export const DashboardPage: React.FC = () => {
             justifyContent: 'space-between',
             cursor: 'pointer',
           }}
-          onClick={() => navigate(latestNotif?.targetUrl || '/notifications')}
+          onClick={() => navigate(latestNotif?.targetUrl || '/calendar')}
         >
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <span style={{ fontWeight: 700, fontSize: 14, color: '#262626' }}>Thông báo NCKH</span>
@@ -634,7 +656,11 @@ export const DashboardPage: React.FC = () => {
             {latestNotif?.title || 'Chưa có thông báo mới trong hệ thống'}
           </div>
           <div style={{ fontSize: 11, color: '#8c8c8c' }}>
-            {latestNotif?.sentAt ? `${formatDateShort(latestNotif.sentAt)} • Phòng Quản lý Khoa học Công nghệ` : 'Đồng bộ tự động từ dữ liệu D9'}
+            {latestNotif?.time
+              ? `${latestNotif.time} • Phòng Quản lý Khoa học Công nghệ`
+              : latestNotif?.sentAt
+                ? `${formatDateShort(latestNotif.sentAt)} • Phòng Quản lý Khoa học Công nghệ`
+                : 'Đồng bộ tự động từ dữ liệu D9'}
           </div>
         </div>
 
@@ -665,7 +691,7 @@ export const DashboardPage: React.FC = () => {
           </div>
           <div style={{ fontSize: 11, color: '#8c8c8c' }}>
             {nextEvent
-              ? `${formatDateShort(nextEvent.startTime)} • ${nextEvent.location || 'Học viện PTIT'}`
+              ? `${nextEvent.startDate ? formatDateShort(nextEvent.startDate) : ''}${nextEvent.startTime ? ` (${nextEvent.startTime})` : ''} • ${nextEvent.location || 'Học viện PTIT'}`
               : nextMilestone
                 ? `Hạn mốc: ${formatDateShort(nextMilestone.dueDate)}`
                 : 'Lịch công tác NCKH toàn Học viện'}
@@ -698,10 +724,13 @@ export const DashboardPage: React.FC = () => {
               value={periodFilter}
               onChange={setPeriodFilter}
               size="small"
-              style={{ width: 130 }}
+              style={{ width: 150 }}
               options={[
-                { value: '2026-2027', label: 'Đợt 2026-2027' },
-                { value: '2025-2026', label: 'Đợt 2025-2026' },
+                { value: 'ALL', label: 'Tất cả đợt NCKH' },
+                ...periods.map((p: any) => ({
+                  value: String(p.periodId),
+                  label: `Đợt ${p.academicYear}`,
+                })),
               ]}
             />
             <a style={{ color: '#C62828', fontSize: 13, fontWeight: 500 }} onClick={() => navigate(roleConfig.actionPath)}>
@@ -759,7 +788,7 @@ export const DashboardPage: React.FC = () => {
                     </div>
                     <div style={{ borderTop: '1px solid #f0f0f0', paddingTop: 10, marginTop: 12, display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 12 }}>
                       <span style={{ color: s.acceptanceGrade ? '#52C41A' : '#8c8c8c', fontWeight: 600 }}>
-                        {s.acceptanceGrade ? `Nghiệm thu: ${s.acceptanceGrade}` : s.category || 'Hồ sơ chi phí'}
+                        {s.acceptanceGrade ? `Nghiệm thu: ${GRADE_LABEL_MAP[s.acceptanceGrade] || s.acceptanceGrade}` : s.category || 'Hồ sơ chi phí'}
                       </span>
                       <Avatar size={24} style={{ backgroundColor: '#FA8C16', fontSize: 11 }}>TC</Avatar>
                     </div>
@@ -814,7 +843,7 @@ export const DashboardPage: React.FC = () => {
               const leaderName = leader?.students?.users?.full_name || 'Chủ nhiệm đề tài';
               const meta = PROJECT_STATUS_META[p.status] || { label: p.status, color: 'blue', progress: 50 };
               const hourRecord = (awards.lecturerHours || []).find((h: any) => h.projectId === p.project_id);
-              const hoursText = hourRecord ? `${hourRecord.standardHours} Giờ chuẩn NCKH` : p.status === 'ACCEPTED' ? '30 Giờ chuẩn NCKH' : 'Đang tính giờ NCKH';
+              const hoursText = hourRecord ? `${hourRecord.convertedHours} Giờ chuẩn NCKH` : p.status === 'ACCEPTED' ? '30 Giờ chuẩn NCKH' : 'Đang tính giờ NCKH';
               return (
                 <Col xs={24} sm={12} lg={6} key={p.project_id}>
                   <div
@@ -1372,7 +1401,7 @@ export const DashboardPage: React.FC = () => {
               <div style={{ fontWeight: 600, color: '#C62828', fontSize: 12 }}>Mốc gần nhất:</div>
               <div style={{ fontSize: 12, color: '#262626', marginTop: 2 }}>
                 {nextEvent
-                  ? `${formatDateShort(nextEvent.startTime)}: ${nextEvent.title}`
+                  ? `${nextEvent.startDate ? formatDateShort(nextEvent.startDate) : ''}${nextEvent.startTime ? ` (${nextEvent.startTime})` : ''}: ${nextEvent.title}`
                   : nextMilestone
                     ? `${formatDateShort(nextMilestone.dueDate)}: ${nextMilestone.milestoneName}`
                     : 'Đang theo dõi lịch công tác NCKH năm học 2026-2027'}

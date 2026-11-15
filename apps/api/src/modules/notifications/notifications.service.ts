@@ -176,42 +176,41 @@ export class NotificationsService {
     ],
   };
 
-  async getUserNotifications(userId?: number, roleCode?: string) {
+  async getUserNotifications(userId?: number, _roleCode?: string) {
     try {
       if (userId) {
         const fromDb = await this.prisma.notification.findMany({
-          where: { userId: userId },
+          where: { userId },
           orderBy: { sentAt: 'desc' },
           take: 50,
         });
-        if (fromDb && fromDb.length > 0) {
-          return fromDb.map((n) => ({
-            id: n.notifId,
-            userId: n.userId,
-            title: n.title,
-            content: n.content,
-            time: new Date(n.sentAt).toLocaleString('vi-VN'),
-            urgent: Boolean(n.urgent),
-            type: (n.type as NotificationItem['type']) || 'GENERAL',
-            targetUrl: n.targetUrl || '/calendar',
-            isRead: n.isConfirmed,
-            channel: n.channel,
-          }));
-        }
+        // Trả về đúng danh sách thông báo của riêng user đó (kể cả khi rỗng = []),
+        // tuyệt đối không fallback sang thông báo mẫu của vai trò khác hay sinh viên khác.
+        return fromDb.map((n) => ({
+          id: n.notifId,
+          userId: n.userId,
+          title: n.title,
+          content: n.content,
+          time: new Date(n.sentAt).toLocaleString('vi-VN'),
+          urgent: Boolean(n.urgent),
+          type: (n.type as NotificationItem['type']) || 'GENERAL',
+          targetUrl: n.targetUrl || '/calendar',
+          isRead: n.isConfirmed,
+          channel: n.channel,
+        }));
       }
     } catch (e) {
       // Fallback khi DB chưa kết nối
     }
 
-    const code = roleCode || 'STUDENT';
-    return this.mockRoleNotifications[code] || this.mockRoleNotifications.STUDENT;
+    return [];
   }
 
-  async markAsRead(notifId: number) {
+  async markAsRead(notifId: number, userId?: number) {
     try {
-      await this.prisma.notification.update({
-        where: { notifId: notifId },
-        data: { isConfirmed: true },
+      await this.prisma.notification.updateMany({
+        where: userId ? { notifId, userId } : { notifId },
+        data: { isConfirmed: true, readAt: new Date() },
       });
     } catch (e) {}
 
@@ -225,7 +224,15 @@ export class NotificationsService {
     return { success: true, notifId };
   }
 
-  async markAllAsRead(roleCode?: string) {
+  async markAllAsRead(roleCode?: string, userId?: number) {
+    if (userId) {
+      try {
+        await this.prisma.notification.updateMany({
+          where: { userId, isConfirmed: false },
+          data: { isConfirmed: true, readAt: new Date() },
+        });
+      } catch (e) {}
+    }
     const code = roleCode || 'STUDENT';
     if (this.mockRoleNotifications[code]) {
       this.mockRoleNotifications[code] = this.mockRoleNotifications[code].map((item) => ({
@@ -242,6 +249,9 @@ export class NotificationsService {
     title: string;
     content: string;
     channel?: string;
+    urgent?: boolean;
+    type?: string;
+    targetUrl?: string;
   }) {
     try {
       return await this.prisma.notification.create({
@@ -253,6 +263,9 @@ export class NotificationsService {
           channel: dto.channel || 'IN_APP',
           deliveryStatus: 'SENT',
           isConfirmed: false,
+          urgent: Boolean(dto.urgent),
+          type: dto.type || 'GENERAL',
+          targetUrl: dto.targetUrl || '/calendar',
         },
       });
     } catch (e) {

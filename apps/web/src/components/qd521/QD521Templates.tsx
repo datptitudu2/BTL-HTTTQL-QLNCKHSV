@@ -426,11 +426,11 @@ export const Mau41PhieuDanhGia: React.FC<Mau41Props> = ({ project, evaluator, pr
         <tbody>
           <tr><td style={{ textAlign: 'center' }}>1</td><td>Tổng quan tình hình nghiên cứu, lý do chọn đề tài</td><td style={{ textAlign: 'center' }}>10</td><td style={{ textAlign: 'center', fontWeight: 'bold' }}>{s1}</td></tr>
           <tr><td style={{ textAlign: 'center' }}>2</td><td>Mục tiêu đề tài</td><td style={{ textAlign: 'center' }}>15</td><td style={{ textAlign: 'center', fontWeight: 'bold' }}>{s2}</td></tr>
-          <tr><td style={{ textAlign: 'center' }}>3</td><td>Phương pháp nghiên cứu và cách tiếp cận khoa học</td><td style={{ textAlign: 'center' }}>15</td><td style={{ textAlign: 'center', fontWeight: 'bold' }}>{s3}</td></tr>
-          <tr><td style={{ textAlign: 'center' }}>4</td><td>Nội dung khoa học & chất lượng sản phẩm phần mềm web</td><td style={{ textAlign: 'center' }}>35</td><td style={{ textAlign: 'center', fontWeight: 'bold' }}>{s4}</td></tr>
-          <tr><td style={{ textAlign: 'center' }}>5</td><td>Đóng góp về mặt kinh tế - xã hội, chuyển đổi số đại học</td><td style={{ textAlign: 'center' }}>15</td><td style={{ textAlign: 'center', fontWeight: 'bold' }}>{s5}</td></tr>
-          <tr><td style={{ textAlign: 'center' }}>6</td><td>Hình thức trình bày báo cáo tổng kết đề tài (Mẫu 3.2 - 3.4)</td><td style={{ textAlign: 'center' }}>5</td><td style={{ textAlign: 'center', fontWeight: 'bold' }}>{s6}</td></tr>
-          <tr><td style={{ textAlign: 'center' }}>7</td><td>Điểm thưởng (có công bố khoa học / kỷ yếu hội thảo)</td><td style={{ textAlign: 'center' }}>5</td><td style={{ textAlign: 'center', fontWeight: 'bold' }}>{s7}</td></tr>
+          <tr><td style={{ textAlign: 'center' }}>3</td><td>Phương pháp nghiên cứu</td><td style={{ textAlign: 'center' }}>15</td><td style={{ textAlign: 'center', fontWeight: 'bold' }}>{s3}</td></tr>
+          <tr><td style={{ textAlign: 'center' }}>4</td><td>Nội dung khoa học</td><td style={{ textAlign: 'center' }}>35</td><td style={{ textAlign: 'center', fontWeight: 'bold' }}>{s4}</td></tr>
+          <tr><td style={{ textAlign: 'center' }}>5</td><td>Đóng góp về mặt kinh tế - xã hội, giáo dục và đào tạo, an ninh, quốc phòng</td><td style={{ textAlign: 'center' }}>15</td><td style={{ textAlign: 'center', fontWeight: 'bold' }}>{s5}</td></tr>
+          <tr><td style={{ textAlign: 'center' }}>6</td><td>Hình thức trình bày báo cáo tổng kết đề tài</td><td style={{ textAlign: 'center' }}>5</td><td style={{ textAlign: 'center', fontWeight: 'bold' }}>{s6}</td></tr>
+          <tr><td style={{ textAlign: 'center' }}>7</td><td>Điểm thưởng (có công bố khoa học từ kết quả nghiên cứu trên các tạp chí chuyên ngành trong và ngoài nước)</td><td style={{ textAlign: 'center' }}>5</td><td style={{ textAlign: 'center', fontWeight: 'bold' }}>{s7}</td></tr>
           <tr style={{ backgroundColor: '#fcfcfc', fontWeight: 'bold' }}><td colSpan={2} style={{ textAlign: 'center' }}>CỘNG TỔNG ĐIỂM</td><td style={{ textAlign: 'center' }}>100</td><td style={{ textAlign: 'center', color: '#C62828', fontSize: 15 }}>{totalScore}</td></tr>
         </tbody>
       </table>
@@ -754,13 +754,20 @@ export const Mau43BanNhanXet: React.FC<Mau43Props> = ({ project, printableId = '
 };
 
 export const Mau5DeNghiKhenThuong: React.FC<QD521Props> = ({ project }) => {
+  const leader = project?.project_members?.find(
+    (m: any) => m.member_role === 'LEADER' || m.member_role === 'LEAD',
+  ) || project?.project_members?.[0];
+  const advisor = project?.project_advisors?.find((a: any) => a.status === 'ACTIVE') || project?.project_advisors?.[0];
+  const deptName = project?.departments?.dept_name || 'Khoa Công nghệ thông tin 1';
+  const avgScore = project?.acceptances?.avg_score ?? project?.evaluations?.[0]?.total_score ?? '93.8';
+
   return (
     <div style={{ backgroundColor: '#ffffff', padding: '32px 40px', border: '1px solid #d9d9d9', maxWidth: 850, margin: '0 auto', fontFamily: '"Times New Roman", Times, serif', color: '#000000', lineHeight: 1.6 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
         <div style={{ textAlign: 'center' }}>
           <div style={{ fontSize: 12, fontWeight: 'bold' }}>HỌC VIỆN CÔNG NGHỆ BƯU CHÍNH VIỄN THÔNG</div>
-          <div style={{ fontSize: 13, fontWeight: 'bold' }}>{project?.departments?.dept_name?.toUpperCase() || 'KHOA CÔNG NGHỆ THÔNG TIN 1'}</div>
-          <div style={{ fontSize: 12, marginTop: 4 }}>Số: 88/CV-CNTT1</div>
+          <div style={{ fontSize: 13, fontWeight: 'bold' }}>{deptName.toUpperCase()}</div>
+          <div style={{ fontSize: 12, marginTop: 4 }}>Số: 88/CV-KHOA</div>
         </div>
         <div style={{ textAlign: 'center' }}>
           <div style={{ fontSize: 12, fontWeight: 'bold' }}>CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</div>
@@ -780,10 +787,10 @@ export const Mau5DeNghiKhenThuong: React.FC<QD521Props> = ({ project }) => {
           Căn cứ Quyết định số 521/QĐ-HV ngày 17/07/2020 của Giám đốc Học viện ban hành Quy định về hoạt động nghiên cứu khoa học của sinh viên trong Học viện Công nghệ Bưu chính Viễn thông;
         </p>
         <p style={{ textIndent: 30 }}>
-          Căn cứ Biên bản họp Hội đồng đánh giá nghiệm thu đề tài NCKH sinh viên ngày 28/04/2027;
+          Căn cứ Biên bản họp Hội đồng đánh giá nghiệm thu đề tài NCKH sinh viên;
         </p>
         <p style={{ textIndent: 30 }}>
-          {project?.departments?.dept_name || 'Khoa Công nghệ thông tin 1'} trân trọng đề nghị Giám đốc Học viện xem xét quyết định khen thưởng cho đề tài NCKH của sinh viên có kết quả xuất sắc năm học 2026 - 2027 như sau:
+          {deptName} trân trọng đề nghị Giám đốc Học viện xem xét quyết định khen thưởng cho đề tài NCKH của sinh viên có kết quả xuất sắc năm học {project?.nckh_periods?.academic_year || '2026 - 2027'} như sau:
         </p>
 
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13, margin: '14px 0' }} border={1}>
@@ -805,15 +812,15 @@ export const Mau5DeNghiKhenThuong: React.FC<QD521Props> = ({ project }) => {
                 <span style={{ fontSize: 11, color: '#666' }}>Mã: {project?.project_id}</span>
               </td>
               <td style={{ padding: 6, textAlign: 'center' }}>
-                <b>Nguyễn Văn An</b><br />
-                <span style={{ fontSize: 11 }}>Lớp D23CQCN01-B</span>
+                <b>{leader?.students?.users?.full_name || 'Sinh viên chủ trì'}</b><br />
+                <span style={{ fontSize: 11 }}>Lớp {leader?.students?.class_name || leader?.students?.className || 'PTIT'}</span>
               </td>
               <td style={{ padding: 6, textAlign: 'center' }}>
-                <b>TS. Ngô Quốc Dũng</b><br />
-                <span style={{ fontSize: 11 }}>Khoa CNTT 1</span>
+                <b>{advisor?.lecturers?.academic_rank ? `${advisor.lecturers.academic_rank}. ` : ''}{advisor?.lecturers?.users?.full_name || 'Giảng viên hướng dẫn'}</b><br />
+                <span style={{ fontSize: 11 }}>{deptName}</span>
               </td>
-              <td style={{ textAlign: 'center', fontWeight: 'bold', color: '#C62828' }}>93.8</td>
-              <td style={{ textAlign: 'center', fontWeight: 'bold' }}>Giải Nhất Học viện</td>
+              <td style={{ textAlign: 'center', fontWeight: 'bold', color: '#C62828' }}>{avgScore}</td>
+              <td style={{ textAlign: 'center', fontWeight: 'bold' }}>Khen thưởng Học viện</td>
             </tr>
           </tbody>
         </table>
@@ -826,7 +833,7 @@ export const Mau5DeNghiKhenThuong: React.FC<QD521Props> = ({ project }) => {
       <div style={{ textAlign: 'right', marginTop: 30, paddingRight: 40 }}>
         <div style={{ fontWeight: 'bold', fontSize: 13 }}>TRƯỞNG KHOA</div>
         <div style={{ fontStyle: 'italic', fontSize: 11 }}>(Ký và ghi rõ họ tên)</div>
-        <div style={{ marginTop: 50, fontWeight: 'bold' }}>Trần Đình Trưởng Khoa</div>
+        <div style={{ marginTop: 50, fontWeight: 'bold' }}>Lãnh đạo {deptName}</div>
       </div>
     </div>
   );

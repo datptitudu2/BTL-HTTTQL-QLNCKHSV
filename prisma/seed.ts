@@ -3,11 +3,16 @@ import * as crypto from 'crypto';
 
 const prisma = new PrismaClient();
 
+export const TERMINAL_PROJECT_STATUSES = ['REJECTED', 'CANCELLED', 'ACCEPTED'];
+
 function hashPassword(pass: string): string {
   return crypto.createHash('sha256').update(pass + 'srms_salt_2026').digest('hex');
 }
 
 async function main() {
+  if (process.env.NODE_ENV === 'production' && process.env.ALLOW_PRODUCTION_SEED !== 'true') {
+    throw new Error('Chặn chạy seed xóa dữ liệu trên môi trường production (NODE_ENV=production).');
+  }
   console.log('--- BẮT ĐẦU KHỞI TẠO DỮ LIỆU CHUẨN ERD & QĐ 521/QĐ-HV ---');
 
   // 0. DỌN DẸP SẠCH DỮ LIỆU GIAO DỊCH CŨ ĐỂ ĐẢM BẢO TOÀN VẸN & KHÔNG TRÙNG LẶP
@@ -38,6 +43,9 @@ async function main() {
   await prisma.facultyDossier.deleteMany();
   await prisma.notification.deleteMany();
   await prisma.scheduleEvent.deleteMany();
+  await prisma.systemSetting.deleteMany();
+  await prisma.notificationTemplate.deleteMany();
+  await prisma.auditLog.deleteMany();
   await prisma.projectCodeCounter.deleteMany();
   await prisma.student.deleteMany();
   await prisma.lecturer.deleteMany();
@@ -90,12 +98,16 @@ async function main() {
   const deptRecords = await prisma.department.findMany();
   const getDeptId = (code: string) => deptRecords.find((d) => d.deptCode === code)!.deptId;
 
-  const passwordHash = hashPassword('ptit@123');
+  const defaultSeedPass = process.env.SEED_DEFAULT_PASSWORD || (process.env.NODE_ENV !== 'production' ? 'ptit@123' : '');
+  if (!defaultSeedPass) {
+    throw new Error('Thiếu biến môi trường SEED_DEFAULT_PASSWORD');
+  }
+  const passwordHash = hashPassword(defaultSeedPass);
 
   // Danh sách người dùng chuẩn hóa (đảm bảo 1 SV chỉ tối đa 1 đề tài/năm học)
   const usersData = [
     { username: 'admin', name: 'Quản trị viên Hệ thống PTIT', role: 'ADMIN', email: 'admin@ptit.edu.vn' },
-    // 13 Sinh viên thuộc 5 khoa (sv001..sv012 cho 10 đề tài, sv015 chưa đăng ký đề tài nào để test Tạo mới)
+    // 17 Sinh viên thuộc 5 khoa (sv001..sv012 cho 10 đề tài, sv015..sv019 chưa tham gia đề tài nào để đăng ký mới / ghép nhóm)
     { username: 'sv001', name: 'Nguyễn Văn An', role: 'STUDENT', email: 'an.nv@stu.ptit.edu.vn', studentId: 'B23DCCN001', class: 'D23CQCN01-B', dept: 'CNTT1', gpa: 3.72 },
     { username: 'sv002', name: 'Trần Thị Bình', role: 'STUDENT', email: 'binh.tt@stu.ptit.edu.vn', studentId: 'B23DCCN002', class: 'D23CQCN01-B', dept: 'CNTT1', gpa: 3.55 },
     { username: 'sv003', name: 'Lê Minh Khôi', role: 'STUDENT', email: 'khoi.lm@stu.ptit.edu.vn', studentId: 'B23DCCN003', class: 'D23CQCN02-B', dept: 'CNTT1', gpa: 3.60 },
@@ -109,6 +121,10 @@ async function main() {
     { username: 'sv011', name: 'Nguyễn Hải Đăng', role: 'STUDENT', email: 'dang.nh@stu.ptit.edu.vn', studentId: 'B23DCAT019', class: 'D23CQAT02-B', dept: 'ATTT', gpa: 3.44 },
     { username: 'sv012', name: 'Trần Quốc Bảo', role: 'STUDENT', email: 'bao.tq@stu.ptit.edu.vn', studentId: 'B23DCVT005', class: 'D23CQVT01-B', dept: 'DTVT1', gpa: 3.58 },
     { username: 'sv015', name: 'Lê Hoàng Nam', role: 'STUDENT', email: 'nam.lh@stu.ptit.edu.vn', studentId: 'B23DCCN099', class: 'D23CQCN04-B', dept: 'CNTT1', gpa: 3.75 },
+    { username: 'sv016', name: 'Nguyễn Minh Anh', role: 'STUDENT', email: 'anh.nm@stu.ptit.edu.vn', studentId: 'B23DCCN101', class: 'D23CQCN03-B', dept: 'CNTT1', gpa: 3.66 },
+    { username: 'sv017', name: 'Phạm Thảo Vy', role: 'STUDENT', email: 'vy.pt@stu.ptit.edu.vn', studentId: 'B23DCCN102', class: 'D23CQCN04-B', dept: 'CNTT1', gpa: 3.59 },
+    { username: 'sv018', name: 'Vũ Đức Mạnh', role: 'STUDENT', email: 'manh.vd@stu.ptit.edu.vn', studentId: 'B23DCAT025', class: 'D23CQAT02-B', dept: 'ATTT', gpa: 3.48 },
+    { username: 'sv019', name: 'Lê Bảo Ngọc', role: 'STUDENT', email: 'ngoc.lb@stu.ptit.edu.vn', studentId: 'B23DCDT022', class: 'D23CQDT01-B', dept: 'DPT', gpa: 3.64 },
 
     // 6 Giảng viên hướng dẫn (Mỗi GV hướng dẫn tối đa 2 đề tài/năm học theo QĐ 521)
     { username: 'gv001', name: 'TS. Ngô Quốc Dũng', role: 'LECTURER', email: 'dungnq@ptit.edu.vn', lecturerId: 'GV001', rank: 'TS', degree: 'Tiến sĩ', dept: 'CNTT1', field: 'Công nghệ Phần mềm & Hệ thống thông tin' },
@@ -117,6 +133,8 @@ async function main() {
     { username: 'gv004', name: 'TS. Nguyễn Văn Tuấn', role: 'LECTURER', email: 'tuannv@ptit.edu.vn', lecturerId: 'GV004', rank: 'TS', degree: 'Tiến sĩ', dept: 'ATTT', field: 'An toàn mạng & Trí tuệ nhân tạo' },
     { username: 'gv005', name: 'PGS.TS. Hoàng Minh', role: 'LECTURER', email: 'minhh@ptit.edu.vn', lecturerId: 'GV005', rank: 'PGS.TS', degree: 'Tiến sĩ', dept: 'DTVT1', field: 'Viễn thông thế hệ mới 5G/6G' },
     { username: 'gv006', name: 'TS. Vũ Trọng Hùng', role: 'LECTURER', email: 'hungvt@ptit.edu.vn', lecturerId: 'GV006', rank: 'TS', degree: 'Tiến sĩ', dept: 'CNTT1', field: 'Khoa học dữ liệu & Học máy' },
+    // Giảng viên được mời tham dự Hội đồng (0 đề tài hướng dẫn, chuyên chấm Hội đồng Nghiệm thu 04)
+    { username: 'gv007', name: 'TS. Nguyễn Quang Hưng', role: 'LECTURER', email: 'hungnq@ptit.edu.vn', lecturerId: 'GV007', rank: 'TS', degree: 'Tiến sĩ', dept: 'CNTT1', field: 'Mạng máy tính & Hệ thống phân tán' },
 
     // Cán bộ quản lý các cấp
     { username: 'tk001', name: 'ThS. Nguyễn Thị Lan', role: 'FACULTY_SECRETARY', email: 'lannt@ptit.edu.vn', dept: 'CNTT1' },
@@ -147,8 +165,8 @@ async function main() {
       });
       await prisma.userCredential.upsert({
         where: { userId: user.userId },
-        update: { passwordHash },
-        create: { userId: user.userId, passwordHash },
+        update: { passwordHash, mustChangePass: true },
+        create: { userId: user.userId, passwordHash, mustChangePass: true },
       });
     } else {
       user = await prisma.user.create({
@@ -159,7 +177,7 @@ async function main() {
           email: u.email,
           phone: '0988123456',
           status: 'ACTIVE',
-          credentials: { create: { passwordHash } },
+          credentials: { create: { passwordHash, mustChangePass: true } },
         },
       });
     }
@@ -176,7 +194,9 @@ async function main() {
           ethnicity: 'Kinh',
           className: u.class || 'D23CQCN01-B',
           cohort: '2023-2028',
+          major: u.dept === 'DPT' ? 'Công nghệ Đa phương tiện' : u.dept === 'QTKD1' ? 'Quản trị kinh doanh' : u.dept === 'ATTT' ? 'An toàn thông tin' : u.dept === 'DTVT1' ? 'Kỹ thuật Điện tử Viễn thông' : 'Công nghệ thông tin',
           studyYear: 3,
+          programYears: 4,
           gpa: u.gpa || 3.5,
         },
       });
@@ -225,21 +245,23 @@ async function main() {
 
   // Bộ 7 tiêu chí chuẩn Mẫu 4.1 QĐ 521 (Thang điểm: 10 + 15 + 15 + 35 + 15 + 5 + 5 = 100 điểm)
   const criteriaData = [
-    { orderNo: 1, name: 'Tổng quan tình hình nghiên cứu và tính cấp thiết của đề tài', max: 10 },
-    { orderNo: 2, name: 'Mục tiêu, đối tượng, phạm vi và cách tiếp cận nghiên cứu', max: 15 },
-    { orderNo: 3, name: 'Phương pháp nghiên cứu và kỹ thuật triển khai thực hiện', max: 15 },
-    { orderNo: 4, name: 'Kết quả nghiên cứu, sản phẩm khoa học và tính sáng tạo, ứng dụng', max: 35 },
-    { orderNo: 5, name: 'Công bố khoa học, bài báo hội thảo và khả năng phát triển', max: 15 },
-    { orderNo: 6, name: 'Bố cục, hình thức trình bày báo cáo tổng kết theo Mẫu 3.2 - 3.4', max: 5 },
-    { orderNo: 7, name: 'Kỹ năng thuyết trình và trả lời chất vấn của Hội đồng', max: 5 },
+    { orderNo: 1, name: 'Tổng quan tình hình nghiên cứu, lý do chọn đề tài', max: 10 },
+    { orderNo: 2, name: 'Mục tiêu đề tài', max: 15 },
+    { orderNo: 3, name: 'Phương pháp nghiên cứu', max: 15 },
+    { orderNo: 4, name: 'Nội dung khoa học', max: 35 },
+    { orderNo: 5, name: 'Đóng góp về mặt kinh tế - xã hội, giáo dục và đào tạo, an ninh, quốc phòng', max: 15 },
+    { orderNo: 6, name: 'Hình thức trình bày báo cáo tổng kết đề tài', max: 5 },
+    { orderNo: 7, name: 'Điểm thưởng (có công bố khoa học từ kết quả nghiên cứu trên các tạp chí chuyên ngành trong và ngoài nước)', max: 5 },
   ];
 
+  const criteriaByOrder: Record<number, number> = {};
   for (const c of criteriaData) {
-    await prisma.evaluationCriteria.upsert({
-      where: { criteriaId: c.orderNo },
-      update: { periodId: period.periodId, orderNo: c.orderNo, title: c.name, maxScore: c.max },
-      create: { criteriaId: c.orderNo, periodId: period.periodId, orderNo: c.orderNo, title: c.name, maxScore: c.max },
+    const crit = await prisma.evaluationCriteria.upsert({
+      where: { periodId_orderNo: { periodId: period.periodId, orderNo: c.orderNo } },
+      update: { title: c.name, maxScore: c.max, isActive: true },
+      create: { periodId: period.periodId, orderNo: c.orderNo, title: c.name, maxScore: c.max, isActive: true },
     });
+    criteriaByOrder[c.orderNo] = crit.criteriaId;
   }
 
   const milestonesData = [
@@ -460,13 +482,14 @@ async function main() {
         titleVi: p.titleVi,
         titleEn: p.titleEn,
         researchField: p.field,
+        coordinatingUnit: 'Trung tâm Đổi mới Sáng tạo & Khởi nghiệp PTIT',
+        keywords: `${p.id}, ${p.field}, NCKH PTIT, QĐ 521`,
         objectives: `Nghiên cứu, thiết kế và hoàn thiện sản phẩm đề tài "${p.titleVi}" tuân thủ quy trình QĐ 521/QĐ-HV.`,
         content: 'Khảo sát cơ sở lý thuyết, thiết kế kiến trúc/mô hình đề xuất, cài đặt thực nghiệm và đánh giá hiệu năng.',
         methodology: 'Nghiên cứu lý thuyết kết hợp thực nghiệm kiểm chứng định lượng trên tập dữ liệu thực.',
         expectedResult: '01 Báo cáo tổng kết Mẫu 3.2-3.4, 01 Sản phẩm/Phần mềm demo, 01 Bài báo khoa học.',
         status: p.status,
-        prelimRank: p.prelimResult || null,
-        prelimScore: p.prelimResult === 'PASSED' ? 88 : p.prelimResult === 'FAILED' ? 42 : null,
+        prelimResult: p.prelimResult === 'PASSED' ? 'APPROVED' : p.prelimResult === 'FAILED' ? 'REJECTED' : null,
         registeredAt: new Date('2026-09-10'),
         members: {
           create: p.members.map((m) => ({
@@ -494,6 +517,24 @@ async function main() {
           },
         },
       },
+    });
+  }
+
+  // Đồng bộ active_project_count cho bảng lecturers (D1) chuẩn ERD
+  for (const gvId of ['GV001', 'GV002', 'GV003', 'GV004', 'GV005', 'GV006', 'GV007']) {
+    const activeCount = await prisma.projectAdvisor.count({
+      where: {
+        lecturerId: gvId,
+        status: 'ACTIVE',
+        project: {
+          periodId: period.periodId,
+          status: { notIn: TERMINAL_PROJECT_STATUSES },
+        },
+      },
+    });
+    await prisma.lecturer.update({
+      where: { lecturerId: gvId },
+      data: { activeProjectCount: activeCount },
     });
   }
 
@@ -733,6 +774,9 @@ async function main() {
       invitationCode: '128/GM-CNTT1',
       status: 'COMPLETED',
       feedback: 'Nhóm SV trình bày xuất sắc demo hệ thống SRMS chuẩn QĐ 521. Hội đồng góp ý tối ưu hóa phần xuất biểu mẫu PDF và thuật toán chấm điểm.',
+      discussion: 'Nhóm SV trình bày xuất sắc demo hệ thống SRMS chuẩn QĐ 521. Hội đồng góp ý tối ưu hóa phần xuất biểu mẫu PDF và thuật toán chấm điểm.',
+      overallAssessment: 'Đạt yêu cầu chất lượng học thuật và tiến độ cấp Khoa (Mẫu 3.5).',
+      revisionRequests: 'Bổ sung kiểm thử hiệu năng xuất PDF hàng loạt trước khi nộp nghiệm thu.',
       minutesFileUrl: '/storage/seminars/BB_3_5_CNTT1_001.pdf',
       members: {
         create: [
@@ -778,6 +822,9 @@ async function main() {
         invitationCode: '135/GM-CNTT1',
         status: 'COMPLETED',
         feedback: 'Đã nghiệm thu tiến độ bước 1, mô hình trích xuất đặc trưng đạt độ chính xác tốt.',
+        discussion: 'Đã nghiệm thu tiến độ bước 1, mô hình trích xuất đặc trưng đạt độ chính xác tốt.',
+        overallAssessment: 'Đạt yêu cầu tiến độ bước 1 cấp Bộ môn/Khoa.',
+        revisionRequests: 'Bổ sung so sánh với mô hình ARIMA truyền thống trong báo cáo tổng kết.',
         minutesFileUrl: '/storage/seminars/BB_3_5_CNTT1_003.pdf',
       },
       {
@@ -788,6 +835,9 @@ async function main() {
         invitationCode: '129/GM-DPT',
         status: 'COMPLETED',
         feedback: 'Sản phẩm Mobile AR hoạt động ổn định trên Android/iOS.',
+        discussion: 'Sản phẩm Mobile AR hoạt động ổn định trên Android/iOS.',
+        overallAssessment: 'Sản phẩm thực nghiệm hoàn thiện tốt, đủ điều kiện hoàn tất báo cáo.',
+        revisionRequests: 'Hoàn thiện phụ lục bảng hỏi khảo sát người dùng.',
         minutesFileUrl: '/storage/seminars/BB_3_5_DPT_001.pdf',
       },
       {
@@ -798,6 +848,9 @@ async function main() {
         invitationCode: '134/GM-QTKD1',
         status: 'COMPLETED',
         feedback: 'Hoàn thành tốt nội dung sinh hoạt khoa học cấp Khoa.',
+        discussion: 'Hoàn thành tốt nội dung sinh hoạt khoa học cấp Khoa.',
+        overallAssessment: 'Đạt yêu cầu sinh hoạt học thuật cấp Khoa.',
+        revisionRequests: 'Làm rõ chi phí gas thực thi Smart Contract trong chương 3.',
         minutesFileUrl: '/storage/seminars/BB_3_5_QTKD1_001.pdf',
       },
       {
@@ -808,6 +861,9 @@ async function main() {
         invitationCode: '130/GM-ATTT',
         status: 'COMPLETED',
         feedback: 'Nhóm SV trình diễn phát hiện tấn công Zero-day đạt yêu cầu tiến độ.',
+        discussion: 'Nhóm SV trình diễn phát hiện tấn công Zero-day đạt yêu cầu tiến độ.',
+        overallAssessment: 'Đạt yêu cầu tiến độ và chất lượng chuyên môn ATTT.',
+        revisionRequests: 'Bổ sung ma trận nhầm lẫn (Confusion Matrix) vào báo cáo tổng kết.',
         minutesFileUrl: '/storage/seminars/BB_3_5_ATTT_001.pdf',
       },
     ],
@@ -823,7 +879,7 @@ async function main() {
       resultStatus: 'PENDING',
       approvals: {
         create: [
-          { approverUserId: userMap['gv001'], stage: 'ADVISOR', decision: 'APPROVED', comment: 'Xác nhận lý do chính đáng, đề nghị Khoa xem xét gia hạn 15 ngày.' },
+          { approverUserId: userMap['gv001'], stage: 'ADVISOR', approvalMode: 'DIRECT', decision: 'APPROVED', comment: 'Xác nhận lý do chính đáng, đề nghị Khoa xem xét gia hạn 15 ngày.' },
         ],
       },
     },
@@ -906,15 +962,16 @@ async function main() {
     data: {
       councilName: 'Hội đồng Nghiệm thu Đề tài NCKH Khoa CNTT 1 - Hội đồng 01',
       decisionNo: '145/QĐ-HV',
+      decisionDate: new Date('2027-04-15'),
       defenseDate: new Date('2027-04-28T08:30:00Z'),
       location: 'Hội trường Tầng 1 - Nhà A2, Học viện PTIT',
       members: {
         create: [
-          { lecturerId: 'GV005', councilRole: 'CHAIR' },
-          { lecturerId: 'GV006', councilRole: 'REVIEWER_1' },
-          { lecturerId: 'GV002', councilRole: 'REVIEWER_2' },
-          { lecturerId: 'GV004', councilRole: 'SECRETARY' },
-          { lecturerId: 'GV001', councilRole: 'MEMBER' },
+          { lecturerId: 'GV005', councilRole: 'CHAIR', attendance: 'Có mặt' },
+          { lecturerId: 'GV006', councilRole: 'REVIEWER_1', attendance: 'Có mặt' },
+          { lecturerId: 'GV002', councilRole: 'REVIEWER_2', attendance: 'Có mặt' },
+          { lecturerId: 'GV004', councilRole: 'SECRETARY', attendance: 'Có mặt' },
+          { lecturerId: 'GV003', councilRole: 'MEMBER', attendance: 'Có mặt' },
         ],
       },
     },
@@ -953,29 +1010,33 @@ async function main() {
         strengths: 'Hệ thống phần mềm hoàn thiện cao, số hóa toàn diện quy trình QĐ 521/QĐ-HV.',
         limitations: 'Cần mở rộng tích hợp SSO thực tế khi Học viện cấp endpoint OIDC.',
         qaNotes: 'Nhóm sinh viên trả lời tự tin, nắm chắc mô hình ERD và thuật toán loại trừ điểm lệch.',
+        qaComment: 'Nhóm sinh viên trả lời tự tin, nắm chắc mô hình ERD và thuật toán loại trừ điểm lệch.',
+        conclusionAwardRec: 'Đề tài đạt loại Xuất sắc, đề nghị Giám đốc Học viện khen thưởng Giải Nhất và đề cử dự thi cấp Bộ.',
         recommendAward: true,
         submittedAt: new Date('2027-04-28T10:30:00Z'),
+        scoredAt: new Date('2027-04-28T10:30:00Z'),
         scores: {
-          create: s.map((val, idx) => ({ criteriaId: idx + 1, score: val })),
+          create: s.map((val, idx) => ({ criteriaId: criteriaByOrder[idx + 1], score: val })),
         },
       },
     });
   }
 
-  // Hội đồng 2: SV-2026-DPT-001 (Đã nghiệm thu TỐT 84.6đ - có 1 phiếu lệch >15đ minh họa thuật toán Mẫu 4.2!)
+  // Hội đồng 2: SV-2026-DPT-001 (Đã nghiệm thu TỐT 85.5đ - có 1 phiếu lệch >15đ minh họa thuật toán Mẫu 4.2!)
   const council2 = await prisma.council.create({
     data: {
       councilName: 'Hội đồng Nghiệm thu Đề tài NCKH Khoa Đa phương tiện - Hội đồng 02',
       decisionNo: '148/QĐ-HV',
+      decisionDate: new Date('2027-04-16'),
       defenseDate: new Date('2027-04-29T09:00:00Z'),
       location: 'Phòng Lab Đa phương tiện 302 - Nhà A2',
       members: {
         create: [
-          { lecturerId: 'GV002', councilRole: 'CHAIR' },
-          { lecturerId: 'GV001', councilRole: 'REVIEWER_1' },
-          { lecturerId: 'GV003', councilRole: 'REVIEWER_2' },
-          { lecturerId: 'GV005', councilRole: 'SECRETARY' },
-          { lecturerId: 'GV006', councilRole: 'MEMBER' },
+          { lecturerId: 'GV004', councilRole: 'CHAIR', attendance: 'Có mặt' },
+          { lecturerId: 'GV001', councilRole: 'REVIEWER_1', attendance: 'Có mặt' },
+          { lecturerId: 'GV003', councilRole: 'REVIEWER_2', attendance: 'Có mặt' },
+          { lecturerId: 'GV005', councilRole: 'SECRETARY', attendance: 'Có mặt' },
+          { lecturerId: 'GV006', councilRole: 'MEMBER', attendance: 'Có mặt' },
         ],
       },
     },
@@ -1004,6 +1065,7 @@ async function main() {
   for (let i = 0; i < council2.members.length; i++) {
     const s = scoresC2[i];
     const total = s.reduce((a, b) => a + b, 0);
+    const qaText = i === 2 ? 'Phiếu chấm quá khắt khe, chênh lệch >15 điểm so với mặt bằng Hội đồng.' : 'Bảo vệ tốt.';
     await prisma.evaluationSheet.create({
       data: {
         acceptanceId: acc2.acceptanceId,
@@ -1012,11 +1074,14 @@ async function main() {
         isOutlier: i === 2,
         strengths: 'Ứng dụng Mobile AR trực quan, có bài báo quốc tế IEEE.',
         limitations: 'Cần mở rộng mẫu khảo sát tại khu vực miền Bắc.',
-        qaNotes: i === 2 ? 'Phiếu chấm quá khắt khe, chênh lệch >15 điểm so với mặt bằng Hội đồng.' : 'Bảo vệ tốt.',
+        qaNotes: qaText,
+        qaComment: qaText,
+        conclusionAwardRec: i === 2 ? 'Đề tài đạt mức Khá.' : 'Đề tài đạt loại Tốt, đề xuất xét khen thưởng cấp Học viện.',
         recommendAward: i !== 2,
         submittedAt: new Date('2027-04-29T11:00:00Z'),
+        scoredAt: new Date('2027-04-29T11:00:00Z'),
         scores: {
-          create: s.map((val, idx) => ({ criteriaId: idx + 1, score: val })),
+          create: s.map((val, idx) => ({ criteriaId: criteriaByOrder[idx + 1], score: val })),
         },
       },
     });
@@ -1027,15 +1092,16 @@ async function main() {
     data: {
       councilName: 'Hội đồng Nghiệm thu Đề tài NCKH Khoa An toàn thông tin - Hội đồng 03',
       decisionNo: '150/QĐ-HV',
+      decisionDate: new Date('2027-04-17'),
       defenseDate: new Date('2027-04-30T14:00:00Z'),
       location: 'Phòng Lab An toàn thông tin 404 - Nhà A2',
       members: {
         create: [
-          { lecturerId: 'GV004', councilRole: 'CHAIR' },
-          { lecturerId: 'GV001', councilRole: 'REVIEWER_1' },
-          { lecturerId: 'GV006', councilRole: 'REVIEWER_2' },
-          { lecturerId: 'GV005', councilRole: 'SECRETARY' },
-          { lecturerId: 'GV003', councilRole: 'MEMBER' },
+          { lecturerId: 'GV002', councilRole: 'CHAIR', attendance: 'Có mặt' },
+          { lecturerId: 'GV001', councilRole: 'REVIEWER_1', attendance: 'Có mặt' },
+          { lecturerId: 'GV006', councilRole: 'REVIEWER_2', attendance: 'Có mặt' },
+          { lecturerId: 'GV005', councilRole: 'SECRETARY', attendance: 'Có mặt' },
+          { lecturerId: 'GV003', councilRole: 'MEMBER', attendance: 'Có mặt' },
         ],
       },
     },
@@ -1072,10 +1138,14 @@ async function main() {
         isOutlier: false,
         strengths: 'Mô hình Zero-day đạt độ chính xác phát hiện khả quan trên mạng IoT.',
         limitations: 'Cần tối ưu kích thước mô hình để nhúng trên thiết bị cấu hình thấp.',
+        qaNotes: 'Nhóm nắm vững kiến trúc mạng ResNet và tập dữ liệu CICIoT.',
+        qaComment: 'Nhóm nắm vững kiến trúc mạng ResNet và tập dữ liệu CICIoT.',
+        conclusionAwardRec: 'Đề tài đạt yêu cầu nghiệm thu xếp loại Khá.',
         recommendAward: false,
         submittedAt: new Date('2027-04-30T16:00:00Z'),
+        scoredAt: new Date('2027-04-30T16:00:00Z'),
         scores: {
-          create: s.map((val, idx) => ({ criteriaId: idx + 1, score: val })),
+          create: s.map((val, idx) => ({ criteriaId: criteriaByOrder[idx + 1], score: val })),
         },
       },
     });
@@ -1086,15 +1156,16 @@ async function main() {
     data: {
       councilName: 'Hội đồng Nghiệm thu Đề tài NCKH Khoa CNTT 1 - Hội đồng 04 (Đợt 2)',
       decisionNo: '155/QĐ-HV',
+      decisionDate: new Date('2027-04-20'),
       defenseDate: new Date('2027-05-05T08:30:00Z'),
       location: 'Phòng Hội thảo Tầng 2 - Thư viện PTIT',
       members: {
         create: [
-          { lecturerId: 'GV001', councilRole: 'CHAIR' },
-          { lecturerId: 'GV006', councilRole: 'REVIEWER_1' },
-          { lecturerId: 'GV004', councilRole: 'REVIEWER_2' },
-          { lecturerId: 'GV002', councilRole: 'SECRETARY' },
-          { lecturerId: 'GV005', councilRole: 'MEMBER' },
+          { lecturerId: 'GV001', councilRole: 'CHAIR', attendance: 'Có mặt' },
+          { lecturerId: 'GV003', councilRole: 'REVIEWER_1', attendance: 'Có mặt' },
+          { lecturerId: 'GV004', councilRole: 'REVIEWER_2', attendance: 'Có mặt' },
+          { lecturerId: 'GV002', councilRole: 'SECRETARY', attendance: 'Có mặt' },
+          { lecturerId: 'GV007', councilRole: 'MEMBER', attendance: 'Có mặt' },
         ],
       },
     },
@@ -1210,6 +1281,9 @@ async function main() {
         prizeGrade: 'Giải Nhất cấp Học viện (Đề cử Bộ GD&ĐT)',
         rewardAmount: 5000000,
         supportFund: 1000000, // Tối đa 1.000.000đ theo Điều 15.2.i QĐ 521
+        supportAmount: 1000000,
+        qlkhReviewStatus: 'APPROVED',
+        approvalStatus: 'APPROVED',
         status: 'APPROVED',
       },
       {
@@ -1218,6 +1292,9 @@ async function main() {
         prizeGrade: 'Giải Nhì cấp Học viện',
         rewardAmount: 3000000,
         supportFund: 0,
+        supportAmount: 0,
+        qlkhReviewStatus: 'APPROVED',
+        approvalStatus: 'PENDING',
         status: 'PENDING', // Chờ P.QLKHCN & BGĐ phê duyệt đề cử Mẫu 5
       },
     ],
@@ -1243,14 +1320,6 @@ async function main() {
         issuedDate: new Date('2027-05-05'),
       },
       {
-        projectId: 'SV-2026-CNTT1-001',
-        recipientUserId: userMap['gv001'],
-        recipientType: 'ADVISOR',
-        certCode: 'GCN-GVHD-2027-001',
-        grade: 'Xuất sắc',
-        issuedDate: new Date('2027-05-05'),
-      },
-      {
         projectId: 'SV-2026-DPT-001',
         recipientUserId: userMap['sv006'],
         recipientType: 'STUDENT',
@@ -1261,12 +1330,15 @@ async function main() {
     ],
   });
 
-  // Giờ chuẩn NCKH Giảng viên (Điều 16.2.b)
+  // Giờ chuẩn NCKH Giảng viên (Điều 16.2.b) - liên kết advisor_assignment_id chuẩn ERD
+  const advG001 = await prisma.projectAdvisor.findFirstOrThrow({ where: { lecturerId: 'GV001', projectId: 'SV-2026-CNTT1-001' } });
+  const advG002 = await prisma.projectAdvisor.findFirstOrThrow({ where: { lecturerId: 'GV002', projectId: 'SV-2026-DPT-001' } });
+  const advG004 = await prisma.projectAdvisor.findFirstOrThrow({ where: { lecturerId: 'GV004', projectId: 'SV-2026-ATTT-001' } });
   await prisma.lecturerHour.createMany({
     data: [
-      { lecturerId: 'GV001', projectId: 'SV-2026-CNTT1-001', academicYear: '2026-2027', convertedHours: 30, declarationStatus: 'CONFIRMED' },
-      { lecturerId: 'GV002', projectId: 'SV-2026-DPT-001', academicYear: '2026-2027', convertedHours: 25, declarationStatus: 'PENDING' },
-      { lecturerId: 'GV004', projectId: 'SV-2026-ATTT-001', academicYear: '2026-2027', convertedHours: 20, declarationStatus: 'PENDING' },
+      { lecturerId: 'GV001', projectId: 'SV-2026-CNTT1-001', advisorAssignmentId: advG001.advisorAssignmentId, academicYear: '2026-2027', convertedHours: 30, declarationStatus: 'CONFIRMED' },
+      { lecturerId: 'GV002', projectId: 'SV-2026-DPT-001', advisorAssignmentId: advG002.advisorAssignmentId, academicYear: '2026-2027', convertedHours: 25, declarationStatus: 'PENDING' },
+      { lecturerId: 'GV004', projectId: 'SV-2026-ATTT-001', advisorAssignmentId: advG004.advisorAssignmentId, academicYear: '2026-2027', convertedHours: 20, declarationStatus: 'PENDING' },
     ],
   });
 
@@ -1278,7 +1350,6 @@ async function main() {
         projectId: 'SV-2026-CNTT1-001',
         bonusPoints: 0.4, // Giải Nhất trong nước: +0.4 TBC học bổng
         trainingScore: 10, // Xuất sắc: +10 ĐRL
-        creditBonus: 3,
         scholarshipPriority: true,
         approvalStatus: 'PENDING', // Chờ Phòng CT&CTSV (ThS. Bùi Văn Toàn) đối soát duyệt
       },
@@ -1287,7 +1358,6 @@ async function main() {
         projectId: 'SV-2026-CNTT1-001',
         bonusPoints: 0.4,
         trainingScore: 10,
-        creditBonus: 3,
         scholarshipPriority: true,
         approvalStatus: 'PENDING',
       },
@@ -1296,7 +1366,6 @@ async function main() {
         projectId: 'SV-2026-DPT-001',
         bonusPoints: 0.3, // Giải Nhì trong nước: +0.3 TBC học bổng
         trainingScore: 8,  // Tốt: +8 ĐRL
-        creditBonus: 3,
         scholarshipPriority: true,
         approvalStatus: 'APPROVED',
         decisionNotice: 'TB-CTSV/2027-08',
@@ -1308,7 +1377,6 @@ async function main() {
         projectId: 'SV-2026-ATTT-001',
         bonusPoints: 0.0,
         trainingScore: 6, // Khá: +6 ĐRL
-        creditBonus: 3,
         scholarshipPriority: false,
         approvalStatus: 'APPROVED',
         decisionNotice: 'TB-CTSV/2027-09',
@@ -1403,6 +1471,27 @@ async function main() {
         targetUrl: '/awards',
         type: 'BONUS',
       },
+      {
+        userId: userMap['sv015'],
+        title: 'Thông báo mở đăng ký Đợt NCKH Sinh viên Năm học 2026 - 2027',
+        content: 'Cổng SRMS đang mở tiếp nhận hồ sơ đăng ký đề tài mới (Mẫu 1 & Mẫu 2). Thời hạn nộp đề cương chi tiết: 23:59 ngày 15/10/2026.',
+        channel: 'WEB',
+        deliveryStatus: 'SENT',
+        urgent: false,
+        targetUrl: '/projects/create',
+        type: 'GENERAL',
+      },
+      {
+        userId: userMap['gv007'],
+        scheduleRef: 'QĐ 155/QĐ-HV',
+        title: 'Giấy mời tham dự Hội đồng Nghiệm thu 04 (QĐ 155/QĐ-HV)',
+        content: 'Kính mời TS. Nguyễn Quang Hưng tham dự và chấm điểm Hội đồng Nghiệm thu 04 cho đề tài SV-2026-CNTT1-003 (Chẩn đoán hình ảnh y tế Deep Learning). Vui lòng truy cập mục Nghiệm thu & Đánh giá.',
+        channel: 'WEB',
+        deliveryStatus: 'SENT',
+        urgent: true,
+        targetUrl: '/acceptance',
+        type: 'COUNCIL',
+      },
     ],
   });
 
@@ -1421,11 +1510,12 @@ async function main() {
         projectId: 'SV-2026-CNTT1-002',
         note: 'GVHD phê duyệt cấp 1 trước khi Lãnh đạo Khoa phê duyệt cấp 2.',
         dayIndex: 3,
-        startHour: 23,
+        startHour: 20,
         durationHours: 1,
         targetRoles: JSON.stringify(['ALL']),
         scopeLevel: 'Toàn Học viện',
         broadcastBy: 'Phòng Quản lý Khoa học Công nghệ',
+        createdByUserId: userMap['qlkh001'],
       },
       {
         title: 'Sinh hoạt học thuật Bộ môn HTTT - Đánh giá mô hình RAG (Mẫu 3.5)',
@@ -1445,6 +1535,7 @@ async function main() {
         targetRoles: JSON.stringify(['STUDENT', 'LECTURER', 'FACULTY_LEADER', 'FACULTY_SECRETARY']),
         scopeLevel: 'Khoa Công nghệ thông tin 1',
         broadcastBy: 'Ban Chủ nhiệm Khoa CNTT 1',
+        createdByUserId: userMap['lead001'],
       },
       {
         title: 'Phiên họp Hội đồng Nghiệm thu 04 - Đề tài SV-2026-CNTT1-003 (Mẫu 4.1 & 4.2)',
@@ -1464,6 +1555,7 @@ async function main() {
         targetRoles: JSON.stringify(['STUDENT', 'LECTURER', 'QLKHCN', 'BOARD', 'FACULTY_LEADER', 'FACULTY_SECRETARY']),
         scopeLevel: 'Khoa Công nghệ thông tin 1',
         broadcastBy: 'Phòng Quản lý Khoa học Công nghệ',
+        createdByUserId: userMap['qlkh001'],
       },
       {
         title: 'Đối soát Điểm rèn luyện & Trao giải thưởng NCKH Sinh viên (Điều 14 & 15)',
@@ -1483,6 +1575,75 @@ async function main() {
         targetRoles: JSON.stringify(['STUDENT_AFFAIRS', 'QLKHCN', 'STUDENT', 'ADMIN']),
         scopeLevel: 'Phòng CT&CTSV',
         broadcastBy: 'Phòng Công tác Chính trị & CTSV',
+        createdByUserId: userMap['ctsv001'],
+      },
+    ],
+  });
+
+  // =========================================================================
+  // 13. BẢNG HỆ THỐNG KỸ THUẬT: SYSTEM_SETTINGS, NOTIFICATION_TEMPLATES, AUDIT_LOGS
+  // =========================================================================
+  await prisma.systemSetting.createMany({
+    data: [
+      { settingKey: 'QD521_MAX_TEAM_SIZE', settingValue: '5', description: 'Tối đa 05 sinh viên/nhóm nghiên cứu (Điều 6 QĐ 521/QĐ-HV)' },
+      { settingKey: 'QD521_MAX_STUDENT_PROJECTS_PER_YEAR', settingValue: '1', description: 'Tối đa 01 đề tài/sinh viên trong 01 năm học (Điều 15.2.a QĐ 521/QĐ-HV)' },
+      { settingKey: 'QD521_MAX_ADVISOR_QUOTA', settingValue: '2', description: 'Tối đa 02 đề tài/GVHD trong cùng thời gian (Điều 16.2.a QĐ 521/QĐ-HV)' },
+      { settingKey: 'QD521_PLAGIARISM_THRESHOLD', settingValue: '20', description: 'Ngưỡng tỷ lệ trùng lặp tối đa cho phép (< 20%) khi nộp nghiệm thu (Điều 10 QĐ 521/QĐ-HV)' },
+      { settingKey: 'QD521_SCORE_DEVIATION_LIMIT', settingValue: '15', description: 'Ngưỡng cảnh báo độ lệch điểm giữa các thành viên Hội đồng (> 15 điểm, Mẫu 4.2)' },
+    ],
+  });
+
+  await prisma.notificationTemplate.createMany({
+    data: [
+      {
+        templateCode: 'OUTLINE_APPROVED_L2',
+        title: 'Phê duyệt Đề cương chi tiết (Mẫu 2)',
+        content: 'Đề cương đề tài {{projectId}} đã được Lãnh đạo Khoa phê duyệt Cấp 2.',
+        channels: 'IN_APP,EMAIL',
+      },
+      {
+        templateCode: 'SEMINAR_INVITATION_M35',
+        title: 'Thư mời tham dự Hội thảo Khoa học cấp Khoa (Mẫu 3.5)',
+        content: 'Kính mời đại biểu và nhóm đề tài {{projectId}} tham dự phiên Sinh hoạt học thuật cấp Khoa.',
+        channels: 'IN_APP,EMAIL',
+      },
+      {
+        templateCode: 'ACCEPTANCE_RESULT_M42',
+        title: 'Công bố Kết quả Nghiệm thu Đề tài NCKH (Mẫu 4.2)',
+        content: 'Đề tài {{projectId}} đã hoàn thành nghiệm thu với xếp loại {{grade}}.',
+        channels: 'IN_APP,EMAIL',
+      },
+    ],
+  });
+
+  await prisma.auditLog.createMany({
+    data: [
+      {
+        userId: userMap['qlkh001'],
+        action: 'CREATE_NCKH_PERIOD',
+        entity: 'nckh_periods',
+        entityId: String(period.periodId),
+        oldValue: null,
+        newValue: JSON.stringify({ academicYear: '2026-2027', status: 'ACTIVE', maxBudgetPerProject: 15000000 }),
+        ipAddress: '10.10.1.15',
+      },
+      {
+        userId: userMap['lead001'],
+        action: 'APPROVE_OUTLINE_LEVEL_2',
+        entity: 'project_outlines',
+        entityId: 'SV-2026-CNTT1-001',
+        oldValue: JSON.stringify({ status: 'ADVISOR_APPROVED' }),
+        newValue: JSON.stringify({ status: 'FACULTY_APPROVED', isCurrent: true }),
+        ipAddress: '10.10.2.20',
+      },
+      {
+        userId: userMap['qlkh001'],
+        action: 'APPROVE_ACCEPTANCE_RESULT',
+        entity: 'acceptance_results',
+        entityId: 'SV-2026-CNTT1-001',
+        oldValue: JSON.stringify({ qlkhcnApproved: false }),
+        newValue: JSON.stringify({ qlkhcnApproved: true, avgScore: 93.8, grade: 'Xuất sắc' }),
+        ipAddress: '10.10.1.15',
       },
     ],
   });

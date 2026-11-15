@@ -45,9 +45,8 @@ export class BudgetsService {
         select: { deptId: true },
       });
       const deptIds = deptPositions.map((d) => d.deptId);
-      if (deptIds.length > 0) {
-        whereClause = { project: { deptId: { in: deptIds } } };
-      }
+      if (deptIds.length === 0) return [];
+      whereClause = { project: { deptId: { in: deptIds } } };
     } else if (roleCode === 'STUDENT_AFFAIRS') {
       return [];
     }
@@ -110,7 +109,7 @@ export class BudgetsService {
         select: { deptId: true },
       });
       const deptIds = deptPositions.map((d) => d.deptId);
-      if (deptIds.length > 0 && budget.project?.deptId && !deptIds.includes(budget.project.deptId)) {
+      if (deptIds.length === 0 || (budget.project?.deptId && !deptIds.includes(budget.project.deptId))) {
         throw new ForbiddenException('Bạn chỉ xem được kinh phí đề tài thuộc Khoa mình quản lý');
       }
     }
@@ -159,6 +158,15 @@ export class BudgetsService {
       if (!isMember) {
         throw new ForbiddenException('Sinh viên chỉ được kê khai chứng từ thanh quyết toán cho đề tài nhóm mình');
       }
+    } else if (user.roleCode === 'FACULTY_SECRETARY') {
+      const deptPositions = await this.prisma.deptPosition.findMany({
+        where: { userId: user.userId, isActive: true },
+        select: { deptId: true },
+      });
+      const deptIds = deptPositions.map((d) => d.deptId);
+      if (!budget.project?.deptId || !deptIds.includes(budget.project.deptId)) {
+        throw new ForbiddenException('Thư ký Khoa chỉ được kê khai chứng từ hộ đề tài thuộc Khoa mình quản lý');
+      }
     }
 
     const amount = Number(dto.amount);
@@ -194,8 +202,22 @@ export class BudgetsService {
       throw new ForbiddenException('Chỉ Thư ký Khoa hoặc Lãnh đạo Khoa mới có quyền xác nhận chứng từ hoàn thành sản phẩm');
     }
 
-    const existing = await this.prisma.settlement.findUnique({ where: { settlementId } });
+    const existing = await this.prisma.settlement.findUnique({
+      where: { settlementId },
+      include: { budget: { include: { project: true } } },
+    });
     if (!existing) throw new NotFoundException('Không tìm thấy chứng từ thanh quyết toán');
+
+    if (user.roleCode === 'FACULTY_SECRETARY' || user.roleCode === 'FACULTY_LEADER') {
+      const deptPositions = await this.prisma.deptPosition.findMany({
+        where: { userId: user.userId, isActive: true },
+        select: { deptId: true },
+      });
+      const deptIds = deptPositions.map((d) => d.deptId);
+      if (!existing.budget?.project?.deptId || !deptIds.includes(existing.budget.project.deptId)) {
+        throw new ForbiddenException('Chỉ được xác nhận chứng từ cho đề tài thuộc Khoa mình quản lý');
+      }
+    }
 
     return this.prisma.settlement.update({
       where: { settlementId },
@@ -243,10 +265,16 @@ export class BudgetsService {
       (sum, s) => (s.settledAt || s.settlementId === settlementId ? sum + Number(s.amount) : sum),
       0,
     );
-    if (Number(settlement.budget.approvedAmount) > 0 && settledSum >= Number(settlement.budget.approvedAmount)) {
+    const approvedAmount = Number(settlement.budget.approvedAmount);
+    if (approvedAmount > 0 && settledSum >= approvedAmount) {
       await this.prisma.budget.update({
         where: { budgetId: settlement.budgetId },
         data: { status: 'SETTLED' },
+      });
+    } else if (settledSum > 0) {
+      await this.prisma.budget.update({
+        where: { budgetId: settlement.budgetId },
+        data: { status: 'PARTIALLY_SETTLED' },
       });
     }
 

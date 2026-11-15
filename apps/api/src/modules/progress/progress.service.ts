@@ -442,7 +442,7 @@ export class ProgressService {
   async saveMinutes(
     seminarId: number,
     user: any,
-    dto: { feedback: string; minutesFileUrl?: string },
+    dto: { feedback: string; discussion?: string; overallAssessment?: string; revisionRequests?: string; minutesFileUrl?: string },
   ) {
     if (!['LECTURER', ...this.STAFF_ROLES].includes(user.roleCode)) {
       throw new ForbiddenException('Chỉ Thư ký Khoa, Lãnh đạo Khoa hoặc GVHD được cập nhật Biên bản Mẫu 3.5');
@@ -455,6 +455,9 @@ export class ProgressService {
       where: { seminarId },
       data: {
         feedback: dto.feedback,
+        discussion: dto.discussion || dto.feedback,
+        overallAssessment: dto.overallAssessment || 'Đạt yêu cầu tiến độ và chất lượng học thuật cấp Khoa',
+        revisionRequests: dto.revisionRequests || 'Hoàn thiện báo cáo tổng kết theo góp ý của Hội thảo',
         minutesFileUrl: dto.minutesFileUrl || `/storage/seminars/BB_${seminar.projectId}_Mau3.5.pdf`,
         status: 'COMPLETED',
       },
@@ -510,7 +513,7 @@ export class ProgressService {
   async approveChangeRequest(
     requestId: number,
     user: any,
-    dto: { decision: 'APPROVED' | 'REJECTED'; comment?: string },
+    dto: { decision: 'APPROVED' | 'REJECTED'; mode?: 'DIRECT' | 'PROXY'; comment?: string },
   ) {
     const req = await this.prisma.changeRequest.findUnique({
       where: { requestId },
@@ -543,6 +546,7 @@ export class ProgressService {
         requestId,
         approverUserId: user.userId,
         stage,
+        approvalMode: dto.mode || (user.roleCode === 'FACULTY_SECRETARY' ? 'PROXY' : 'DIRECT'),
         decision: dto.decision,
         comment: dto.comment || '',
       },
@@ -561,6 +565,12 @@ export class ProgressService {
           decisionNo: `DC-${requestId}/${new Date().getFullYear()}/QĐ-QLKH`,
         },
       });
+      if (req.requestType === 'CANCELLATION') {
+        await this.prisma.project.update({
+          where: { projectId: req.projectId },
+          data: { status: 'CANCELLED' },
+        });
+      }
     }
 
     return approval;

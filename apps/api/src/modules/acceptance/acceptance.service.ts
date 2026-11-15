@@ -225,6 +225,19 @@ export class AcceptanceService {
     if (!project) {
       throw new NotFoundException(`Không tìm thấy đề tài ${projectId}`);
     }
+    if (user?.roleCode === 'FACULTY_LEADER' && project.deptId) {
+      const deptHasDedicatedStaff = await this.prisma.deptPosition.count({
+        where: { deptId: project.deptId, isActive: true },
+      });
+      if (deptHasDedicatedStaff > 0) {
+        const hasDeptPos = await this.prisma.deptPosition.findFirst({
+          where: { userId: user.userId, deptId: project.deptId, isActive: true },
+        });
+        if (!hasDeptPos && user.deptId !== project.deptId) {
+          throw new ForbiddenException('Bạn chỉ có quyền thành lập Hội đồng nghiệm thu cho đề tài thuộc Khoa của mình');
+        }
+      }
+    }
     if (project.status !== 'SUBMITTED') {
       throw new BadRequestException('Đề tài phải ở trạng thái đã nộp báo cáo tổng kết (SUBMITTED) mới được thành lập Hội đồng nghiệm thu (DFD 5.1 → 5.2)');
     }
@@ -295,6 +308,7 @@ export class AcceptanceService {
     const acceptance = await this.prisma.acceptance.findUnique({
       where: { acceptanceId: dto.acceptanceId },
       include: {
+        project: { select: { periodId: true } },
         council: {
           include: { members: true },
         },
@@ -324,8 +338,12 @@ export class AcceptanceService {
     const cmId = ownMember.cmId;
 
     // Kiểm tra trần điểm từng tiêu chí theo Điều 10 QĐ 521
-    const criteriaList = await this.prisma.evaluationCriteria.findMany();
-    const criteriaMap = new Map(criteriaList.map((c) => [c.criteriaId, c]));
+    const periodId = acceptance.project?.periodId;
+    const criteriaList = await this.prisma.evaluationCriteria.findMany(
+      periodId ? { where: { periodId } } : undefined,
+    );
+    const effectiveCriteria = criteriaList.length > 0 ? criteriaList : await this.prisma.evaluationCriteria.findMany();
+    const criteriaMap = new Map(effectiveCriteria.map((c) => [c.criteriaId, c]));
 
     for (const s of dto.scores) {
       const crit = criteriaMap.get(Number(s.criteriaId));
@@ -355,9 +373,17 @@ export class AcceptanceService {
           strengths: dto.strengths,
           limitations: dto.limitations,
           qaNotes: dto.qaComment || '',
+          qaComment: dto.qaComment || '',
+          conclusionAwardRec:
+            typeof dto.conclusionAwardRec === 'string'
+              ? dto.conclusionAwardRec
+              : dto.conclusionAwardRec
+                ? 'Đề xuất khen thưởng cấp Học viện'
+                : 'Đạt yêu cầu nghiệm thu',
           recommendAward: Boolean(dto.conclusionAwardRec),
           totalScore: totalRaw,
           submittedAt: new Date(),
+          scoredAt: new Date(),
           scores: {
             create: dto.scores.map((s) => ({
               criteriaId: Number(s.criteriaId),
@@ -375,9 +401,17 @@ export class AcceptanceService {
           strengths: dto.strengths,
           limitations: dto.limitations,
           qaNotes: dto.qaComment || '',
+          qaComment: dto.qaComment || '',
+          conclusionAwardRec:
+            typeof dto.conclusionAwardRec === 'string'
+              ? dto.conclusionAwardRec
+              : dto.conclusionAwardRec
+                ? 'Đề xuất khen thưởng cấp Học viện'
+                : 'Đạt yêu cầu nghiệm thu',
           recommendAward: Boolean(dto.conclusionAwardRec),
           totalScore: totalRaw,
           submittedAt: new Date(),
+          scoredAt: new Date(),
           scores: {
             create: dto.scores.map((s) => ({
               criteriaId: Number(s.criteriaId),
@@ -412,7 +446,7 @@ export class AcceptanceService {
     // Thuật toán loại trừ điểm lệch > 15 điểm so với trung bình ban đầu (Điều 10 QĐ 521 / Mẫu 4.2)
     const validTotals: number[] = [];
     for (const s of sheetTotals) {
-      const isOutlier = sheetTotals.length >= 3 && Math.abs(s.total - initialAvg) > 15;
+      const isOutlier = Math.abs(s.total - initialAvg) > 15;
       await this.prisma.evaluationSheet.update({
         where: { sheetId: s.sheetId },
         data: { isOutlier, totalScore: s.total },
@@ -495,7 +529,6 @@ export class AcceptanceService {
               projectId: acceptance.projectId,
               bonusPoints: 0,
               trainingScore,
-              creditBonus: acceptance.grade === 'XUAT_SAC' ? 3 : 2,
               scholarshipPriority: ['XUAT_SAC', 'TOT'].includes(acceptance.grade),
               approvalStatus: 'PENDING',
             },
