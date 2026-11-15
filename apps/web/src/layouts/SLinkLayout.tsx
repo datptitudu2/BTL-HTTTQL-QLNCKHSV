@@ -405,7 +405,7 @@ export const SLinkLayout: React.FC<{ children: React.ReactNode }> = ({ children 
                 : location.pathname,
             ]}
             defaultOpenKeys={['grp_srms', 'grp_system']}
-            style={{ borderRight: 0, padding: '12px 0' }}
+            style={{ borderRight: 0, padding: '12px 0 64px' }}
             items={menuItems}
             onClick={handleMenuClick}
           />

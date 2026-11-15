@@ -16,39 +16,58 @@ async function main() {
   console.log('--- BẮT ĐẦU KHỞI TẠO DỮ LIỆU CHUẨN ERD & QĐ 521/QĐ-HV ---');
 
   // 0. DỌN DẸP SẠCH DỮ LIỆU GIAO DỊCH CŨ ĐỂ ĐẢM BẢO TOÀN VẸN & KHÔNG TRÙNG LẶP
-  await prisma.auditLog.deleteMany();
-  await prisma.sheetScore.deleteMany();
-  await prisma.evaluationSheet.deleteMany();
-  await prisma.acceptance.deleteMany();
-  await prisma.councilMember.deleteMany();
-  await prisma.council.deleteMany();
-  await prisma.projectDocument.deleteMany();
-  await prisma.settlement.deleteMany();
-  await prisma.budget.deleteMany();
-  await prisma.certificate.deleteMany();
-  await prisma.lecturerHour.deleteMany();
-  await prisma.studentBonus.deleteMany();
-  await prisma.awardNomination.deleteMany();
-  await prisma.requestApproval.deleteMany();
-  await prisma.changeRequest.deleteMany();
-  await prisma.seminarMember.deleteMany();
-  await prisma.seminar.deleteMany();
-  await prisma.progressReport.deleteMany();
-  await prisma.outlineApproval.deleteMany();
-  await prisma.outline.deleteMany();
-  await prisma.projectAdvisor.deleteMany();
-  await prisma.projectMember.deleteMany();
-  await prisma.project.deleteMany();
-  await prisma.decision.deleteMany();
-  await prisma.facultyDossier.deleteMany();
-  await prisma.notification.deleteMany();
-  await prisma.scheduleEvent.deleteMany();
-  await prisma.systemSetting.deleteMany();
-  await prisma.notificationTemplate.deleteMany();
-  await prisma.auditLog.deleteMany();
-  await prisma.projectCodeCounter.deleteMany();
-  await prisma.student.deleteMany();
-  await prisma.lecturer.deleteMany();
+  // Tạm tắt trigger khóa sửa/xóa phiếu chấm đã phê duyệt khi reset dữ liệu seed
+  await prisma.$executeRawUnsafe(`
+    DO $$ BEGIN
+      IF EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'trg_lock_approved_evaluation_sheet') THEN
+        ALTER TABLE evaluation_sheets DISABLE TRIGGER trg_lock_approved_evaluation_sheet;
+      END IF;
+    END $$;
+  `);
+
+  try {
+    await prisma.auditLog.deleteMany();
+    await prisma.sheetScore.deleteMany();
+    await prisma.evaluationSheet.deleteMany();
+    await prisma.acceptance.deleteMany();
+    await prisma.councilMember.deleteMany();
+    await prisma.council.deleteMany();
+    await prisma.projectDocument.deleteMany();
+    await prisma.settlement.deleteMany();
+    await prisma.budget.deleteMany();
+    await prisma.certificate.deleteMany();
+    await prisma.lecturerHour.deleteMany();
+    await prisma.studentBonus.deleteMany();
+    await prisma.awardNomination.deleteMany();
+    await prisma.requestApproval.deleteMany();
+    await prisma.changeRequest.deleteMany();
+    await prisma.seminarMember.deleteMany();
+    await prisma.seminar.deleteMany();
+    await prisma.progressReport.deleteMany();
+    await prisma.outlineApproval.deleteMany();
+    await prisma.outline.deleteMany();
+    await prisma.projectAdvisor.deleteMany();
+    await prisma.projectMember.deleteMany();
+    await prisma.project.deleteMany();
+    await prisma.decision.deleteMany();
+    await prisma.facultyDossier.deleteMany();
+    await prisma.notification.deleteMany();
+    await prisma.scheduleEvent.deleteMany();
+    await prisma.systemSetting.deleteMany();
+    await prisma.notificationTemplate.deleteMany();
+    await prisma.auditLog.deleteMany();
+    await prisma.projectCodeCounter.deleteMany();
+    await prisma.student.deleteMany();
+    await prisma.lecturer.deleteMany();
+  } finally {
+    await prisma.$executeRawUnsafe(`
+      DO $$ BEGIN
+        IF EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'trg_lock_approved_evaluation_sheet') THEN
+          ALTER TABLE evaluation_sheets ENABLE TRIGGER trg_lock_approved_evaluation_sheet;
+        END IF;
+      END $$;
+    `);
+  }
 
   // =========================================================================
   // KHO D1: ROLES, DEPARTMENTS, USERS, STUDENTS, LECTURERS, DEPT_POSITIONS
@@ -1478,7 +1497,7 @@ async function main() {
         channel: 'WEB',
         deliveryStatus: 'SENT',
         urgent: false,
-        targetUrl: '/projects/create',
+        targetUrl: '/projects/new',
         type: 'GENERAL',
       },
       {

@@ -84,6 +84,7 @@ export const App: React.FC = () => {
                 </ProtectedRoute>
               }
             />
+            <Route path="/projects/create" element={<Navigate to="/projects/new" replace />} />
             <Route
               path="/projects/:id"
               element={

@@ -113,7 +113,7 @@ export const DashboardPage: React.FC = () => {
           api.get('/budgets').catch(() => ({ data: [] })),
           api.get('/awards').catch(() => ({ data: { nominations: [], certificates: [], lecturerHours: [], studentBonuses: [] } })),
           api.get('/notifications').catch(() => ({ data: [] })),
-          api.get('/schedule/events').catch(() => ({ data: [] })),
+          api.get('/schedule', { params: { role: roleCode, scope: 'my_schedule' } }).catch(() => ({ data: [] })),
           api.get('/periods').catch(() => ({ data: [] })),
         ]);
         setRawProjects(Array.isArray(pRes.data) ? pRes.data : []);
@@ -193,7 +193,7 @@ export const DashboardPage: React.FC = () => {
         (a: any) => user?.fullName && a.lecturers?.users?.full_name === user.fullName,
       ),
     );
-    return matched.length > 0 ? matched : projects;
+    return matched;
   }, [projects, user?.fullName]);
 
   // Thống kê theo Khoa từ DB cho QLKHCN / ADMIN

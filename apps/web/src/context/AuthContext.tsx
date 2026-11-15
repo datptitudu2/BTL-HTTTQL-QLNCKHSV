@@ -38,6 +38,17 @@ export const roleProfiles: Record<string, UserProfile> = {
     studentId: 'B23DCCN001',
     deptId: 1,
   },
+  STUDENT_MOI: {
+    userId: 29,
+    username: 'sv.moi',
+    fullName: 'Lê Hoàng Nam',
+    email: 'namlh.b23@stu.ptit.edu.vn',
+    phone: '0988777666',
+    roleCode: 'STUDENT',
+    roleName: 'Sinh viên',
+    studentId: 'B23DCCN099',
+    deptId: 1,
+  },
   LECTURER: {
     userId: 2,
     username: 'dungnq',
@@ -91,6 +102,17 @@ export const roleProfiles: Record<string, UserProfile> = {
     roleCode: 'LECTURER',
     roleName: 'Giảng viên Hội đồng',
     lecturerId: 'GV007',
+    deptId: 1,
+  },
+  LECTURER_HUNGVT: {
+    userId: 27,
+    username: 'hungvt',
+    fullName: 'TS. Vũ Trọng Hùng',
+    email: 'hungvt@ptit.edu.vn',
+    phone: '0912345666',
+    roleCode: 'LECTURER',
+    roleName: 'Giảng viên hướng dẫn',
+    lecturerId: 'GV006',
     deptId: 1,
   },
   FACULTY_SECRETARY: {
@@ -219,7 +241,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           roleName: roleData.roleName ?? roleData.role_name ?? res.data.roleName ?? 'Sinh viên',
           studentId: studentData.studentId ?? studentData.student_id,
           lecturerId: lecturerData.lecturerId ?? lecturerData.lecturer_id,
-          deptId: studentData.deptId ?? studentData.dept_id ?? lecturerData.deptId ?? lecturerData.dept_id ?? res.data.deptId,
+          deptId:
+            studentData.deptId ??
+            studentData.dept_id ??
+            lecturerData.deptId ??
+            lecturerData.dept_id ??
+            res.data.positions?.[0]?.deptId ??
+            res.data.positions?.[0]?.dept_id ??
+            res.data.deptId,
         };
         setUser(userData);
         localStorage.setItem('srms_user', JSON.stringify(userData));
@@ -250,9 +279,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // Fallback xác thực cục bộ khớp tên đăng nhập / vai trò
       const u = username.toLowerCase();
       let matched = roleProfiles.STUDENT;
-      if (u.includes('tritd') || u.includes('gv002')) matched = roleProfiles.LECTURER_TRI;
+      if (u.includes('sv.moi') || u.includes('sv015')) matched = roleProfiles.STUDENT_MOI;
+      else if (u.includes('tritd') || u.includes('gv002')) matched = roleProfiles.LECTURER_TRI;
       else if (u.includes('huydq') || u.includes('gv003')) matched = roleProfiles.LECTURER_HUY;
       else if (u.includes('tuannv') || u.includes('gv004')) matched = roleProfiles.LECTURER_TUAN;
+      else if (u.includes('hungvt') || u.includes('gv006')) matched = roleProfiles.LECTURER_HUNGVT;
       else if (u.includes('hungnq') || u.includes('gv007')) matched = roleProfiles.LECTURER_HUNG;
       else if (u.includes('dung') || u.includes('gv001')) matched = roleProfiles.LECTURER;
       else if (u.includes('thuky') || u.includes('tk001')) matched = roleProfiles.FACULTY_SECRETARY;

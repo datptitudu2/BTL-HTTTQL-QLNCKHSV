@@ -7,71 +7,191 @@ interface QD521Props {
   project: any;
 }
 
-export const Mau1CongVanKhoa: React.FC<QD521Props> = ({ project }) => {
+interface Mau1Props {
+  project?: any;
+  projects?: any[];
+  isBlank?: boolean;
+  departmentName?: string;
+  periodName?: string;
+  officialLetterNo?: string;
+  issueDate?: string;
+  recipient?: string;
+  councilChair?: string;
+  deanName?: string;
+}
+
+export const Mau1CongVanKhoa: React.FC<Mau1Props> = ({
+  project,
+  projects,
+  isBlank = false,
+  departmentName,
+  periodName,
+  officialLetterNo,
+  issueDate,
+  recipient,
+  councilChair,
+  deanName,
+}) => {
+  const rows = !isBlank
+    ? (projects && projects.length > 0 ? projects : project ? [project] : [])
+    : [project || {}];
+
+  const resolvedDept = isBlank
+    ? 'KHOA ....................................'
+    : (departmentName || rows[0]?.departments?.dept_name || 'Khoa Công nghệ thông tin 1');
+
+  const resolvedDeptInline = isBlank
+    ? 'Khoa ..............................'
+    : (departmentName || rows[0]?.departments?.dept_name || 'Khoa Công nghệ thông tin 1');
+
+  const resolvedPeriod = isBlank
+    ? '2026 - 2027'
+    : (periodName || rows[0]?.nckh_periods?.period_name || '2026 - 2027');
+
+  const resolvedLetterNo = isBlank
+    ? '....../HV-......'
+    : (officialLetterNo || rows.find((r) => r?.dossier?.officialLetterNo)?.dossier?.officialLetterNo || `CV-${rows[0]?.departments?.dept_code || 'KHOA'}-${new Date().getFullYear()}`);
+
+  const resolvedRecipient = isBlank
+    ? 'Phòng Quản lý Khoa học công nghệ và Hợp tác quốc tế'
+    : (recipient || 'Phòng Quản lý Khoa học công nghệ và Hợp tác quốc tế');
+
+  const totalBudget = isBlank
+    ? 0
+    : rows.reduce((sum, p) => {
+        const val = Number(p?.budgets?.faculty_proposed || p?.budgets?.requested_amount || 0);
+        return sum + (Number.isFinite(val) ? val : 0);
+      }, 0);
+
+  const today = new Date();
+  const dateLine = isBlank
+    ? 'Hà Nội, ngày ... tháng ... năm 20...'
+    : (issueDate || `Hà Nội, ngày ${String(today.getDate()).padStart(2, '0')} tháng ${String(today.getMonth() + 1).padStart(2, '0')} năm ${today.getFullYear()}`);
+
   return (
-    <div style={{ backgroundColor: '#ffffff', padding: '32px 40px', border: '1px solid #d9d9d9', maxWidth: 850, margin: '0 auto', fontFamily: '"Times New Roman", Times, serif', color: '#000000', lineHeight: 1.5 }}>
+    <div style={{ backgroundColor: '#ffffff', padding: '28px 32px', border: '1px solid #d9d9d9', maxWidth: 850, margin: '0 auto', fontFamily: '"Times New Roman", Times, serif', color: '#000000', lineHeight: 1.5, boxSizing: 'border-box', overflow: 'hidden' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 }}>
-        <div style={{ textAlign: 'center' }}>
+        <div style={{ textAlign: 'center', width: '48%' }}>
           <div style={{ fontSize: 13, fontWeight: 'bold' }}>HỌC VIỆN CÔNG NGHỆ BƯU CHÍNH VIỄN THÔNG</div>
-          <div style={{ fontSize: 13, fontWeight: 'bold', textDecoration: 'underline' }}>{project?.departments?.dept_name?.toUpperCase() || 'KHOA CÔNG NGHỆ THÔNG TIN 1'}</div>
-          <div style={{ fontSize: 13, marginTop: 8 }}>Số: 45/HV-CNTT1</div>
-          <div style={{ fontSize: 12 }}>V/v: Đăng ký đề tài NCKH của sinh viên năm học 2026-2027</div>
+          <div style={{ fontSize: 13, fontWeight: 'bold', textDecoration: 'underline' }}>{resolvedDept.toUpperCase()}</div>
+          <div style={{ fontSize: 13, marginTop: 8 }}>Số: {resolvedLetterNo}</div>
+          <div style={{ fontSize: 12 }}>V/v: Đăng ký đề tài NCKH của sinh viên ({resolvedPeriod})</div>
         </div>
-        <div style={{ textAlign: 'center' }}>
+        <div style={{ textAlign: 'center', width: '48%' }}>
           <div style={{ fontSize: 13, fontWeight: 'bold' }}>CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</div>
           <div style={{ fontSize: 13, fontWeight: 'bold', textDecoration: 'underline' }}>Độc lập - Tự do - Hạnh phúc</div>
-          <div style={{ fontSize: 13, fontStyle: 'italic', marginTop: 8 }}>Hà Nội, ngày 10 tháng 09 năm 2026</div>
+          <div style={{ fontSize: 13, fontStyle: 'italic', marginTop: 8 }}>{dateLine}</div>
         </div>
       </div>
 
       <div style={{ textAlign: 'center', margin: '24px 0 16px' }}>
         <div style={{ fontSize: 13, fontWeight: 'bold' }}>Mẫu 1. Công văn đăng ký đề tài NCKH của sinh viên</div>
-        <div style={{ fontSize: 15, fontWeight: 'bold', marginTop: 12 }}>Kính gửi: Phòng Quản lý Khoa học công nghệ và Hợp tác quốc tế</div>
+        <div style={{ fontSize: 15, fontWeight: 'bold', marginTop: 12 }}>Kính gửi: {resolvedRecipient}</div>
       </div>
 
-      <Paragraph style={{ textIndent: 30, fontSize: 14 }}>
-        Thực hiện kế hoạch hoạt động nghiên cứu khoa học của sinh viên năm học 2026-2027, {project?.departments?.dept_name || 'Khoa Công nghệ thông tin 1'} đăng ký thực hiện đề tài NCKH của sinh viên với số lượng cụ thể như sau:
+      <Paragraph style={{ textIndent: 30, fontSize: 14, textAlign: 'justify' }}>
+        Thực hiện kế hoạch hoạt động nghiên cứu khoa học của sinh viên {resolvedPeriod}, {resolvedDeptInline} tổng hợp và đăng ký thực hiện{' '}
+        {isBlank ? (
+          <>với tổng số ...... đề tài NCKH của sinh viên (Tổng kinh phí đề xuất: ................ VNĐ) cụ thể như sau:</>
+        ) : (
+          <>
+            với tổng số <b>{rows.length} đề tài</b> NCKH của sinh viên (Tổng kinh phí đề xuất:{' '}
+            <b>{totalBudget.toLocaleString('vi-VN')} VNĐ</b>) cụ thể như sau:
+          </>
+        )}
       </Paragraph>
 
-      <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: 20, fontSize: 13 }} border={1}>
+      <table style={{ width: '100%', tableLayout: 'fixed', borderCollapse: 'collapse', marginBottom: 20, fontSize: 12 }} border={1}>
         <thead>
           <tr style={{ backgroundColor: '#f5f5f5', textAlign: 'center' }}>
-            <th style={{ padding: 6, width: 40 }}>STT</th>
-            <th style={{ padding: 6 }}>Tên đề tài</th>
-            <th style={{ padding: 6, width: 170 }}>Người hướng dẫn</th>
-            <th style={{ padding: 6, width: 110 }}>Thuộc lĩnh vực KHCN</th>
-            <th style={{ padding: 6 }}>Mục tiêu đề tài</th>
-            <th style={{ padding: 6, width: 100 }}>Dự kiến kinh phí (VNĐ)</th>
+            <th style={{ padding: 6, width: '6%' }}>STT</th>
+            <th style={{ padding: 6, width: '28%' }}>Tên đề tài &amp; Chủ nhiệm</th>
+            <th style={{ padding: 6, width: '20%' }}>Người hướng dẫn</th>
+            <th style={{ padding: 6, width: '14%' }}>Lĩnh vực KHCN</th>
+            <th style={{ padding: 6, width: '20%' }}>Mục tiêu đề tài</th>
+            <th style={{ padding: 6, width: '12%' }}>Kinh phí (VNĐ)</th>
           </tr>
         </thead>
         <tbody>
-          <tr>
-            <td style={{ textAlign: 'center', padding: 6 }}>1</td>
-            <td style={{ padding: 6, fontWeight: 'bold' }}>{project?.title_vi}</td>
-            <td style={{ padding: 6 }}>
-              {project?.project_advisors?.[0]?.lecturers?.academic_rank ? project.project_advisors[0].lecturers.academic_rank + '. ' : ''}
-              {project?.project_advisors?.[0]?.lecturers?.users?.full_name || 'TS. Ngô Quốc Dũng'}
-              <br /><span style={{ fontSize: 11, color: '#555' }}>dungnq@ptit.edu.vn</span>
-            </td>
-            <td style={{ padding: 6, textAlign: 'center' }}>{project?.research_field || 'Công nghệ thông tin'}</td>
-            <td style={{ padding: 6 }}>{project?.objectives || 'Xây dựng hệ thống web quản lý đề tài NCKH SV theo QĐ 521'}</td>
-            <td style={{ padding: 6, textAlign: 'right', fontWeight: 'bold' }}>
-              {Number(project?.budgets?.faculty_proposed || 5000000).toLocaleString('vi-VN')}
-            </td>
-          </tr>
+          {rows.length === 0 ? (
+            <tr>
+              <td colSpan={6} style={{ textAlign: 'center', padding: 14, fontStyle: 'italic', color: '#595959' }}>
+                Chưa có đề tài nào được chọn đưa vào Công văn {resolvedDeptInline}.
+              </td>
+            </tr>
+          ) : (
+            rows.map((p: any, idx: number) => {
+              const leader = p?.project_members?.find((m: any) => m.member_role === 'LEADER' || m.member_role === 'LEAD') || p?.project_members?.[0];
+              const advisor = p?.project_advisors?.[0]?.lecturers;
+              const advisorName = isBlank
+                ? '............................'
+                : [advisor?.academic_rank, advisor?.users?.full_name].filter(Boolean).join('. ') || 'Chưa phân công';
+              const advisorEmail = isBlank ? '' : (advisor?.users?.email || '');
+              const budgetVal = isBlank ? null : Number(p?.budgets?.faculty_proposed || p?.budgets?.requested_amount || 0);
+
+              return (
+                <tr key={p?.project_id || idx}>
+                  <td style={{ textAlign: 'center', padding: 6, verticalAlign: 'top' }}>{idx + 1}</td>
+                  <td style={{ padding: 6, verticalAlign: 'top', overflowWrap: 'anywhere' }}>
+                    <div style={{ fontWeight: 'bold' }}>{isBlank ? '........................................' : (p?.title_vi || '')}</div>
+                    {!isBlank && (
+                      <div style={{ fontSize: 11, color: '#444', marginTop: 3 }}>
+                        Mã: <b>{p?.project_id}</b>
+                        {leader?.students?.users?.full_name && (
+                          <> &nbsp;|&nbsp; CN: {leader.students.users.full_name} ({leader.student_id})</>
+                        )}
+                      </div>
+                    )}
+                  </td>
+                  <td style={{ padding: 6, verticalAlign: 'top', overflowWrap: 'anywhere' }}>
+                    {advisorName}
+                    {advisorEmail && (
+                      <>
+                        <br />
+                        <span style={{ fontSize: 11, color: '#555' }}>{advisorEmail}</span>
+                      </>
+                    )}
+                  </td>
+                  <td style={{ padding: 6, textAlign: 'center', verticalAlign: 'top', overflowWrap: 'anywhere' }}>
+                    {isBlank ? '................' : (p?.research_field || 'Chưa cập nhật')}
+                  </td>
+                  <td style={{ padding: 6, verticalAlign: 'top', overflowWrap: 'anywhere' }}>
+                    {isBlank ? '................................' : (p?.objectives || 'Theo thuyết minh đề cương Mẫu 2')}
+                  </td>
+                  <td style={{ padding: 6, textAlign: 'right', fontWeight: isBlank ? 'normal' : 'bold', verticalAlign: 'top', overflowWrap: 'anywhere' }}>
+                    {isBlank ? '............' : (budgetVal || 0).toLocaleString('vi-VN')}
+                  </td>
+                </tr>
+              );
+            })
+          )}
+          {!isBlank && rows.length > 0 && (
+            <tr style={{ backgroundColor: '#fafafa', fontWeight: 'bold' }}>
+              <td colSpan={5} style={{ padding: 6, textAlign: 'right' }}>
+                Tổng cộng ({rows.length} đề tài):
+              </td>
+              <td style={{ padding: 6, textAlign: 'right' }}>
+                {totalBudget.toLocaleString('vi-VN')}
+              </td>
+            </tr>
+          )}
         </tbody>
       </table>
 
       <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 36, textAlign: 'center' }}>
-        <div>
+        <div style={{ width: '45%' }}>
           <div style={{ fontWeight: 'bold', fontSize: 13 }}>CHỦ TỊCH HỘI ĐỒNG KHOA HỌC KHOA</div>
           <div style={{ fontStyle: 'italic', fontSize: 12 }}>(Ký, ghi rõ họ tên)</div>
-          <div style={{ marginTop: 60, fontWeight: 'bold' }}>PGS.TS. Hoàng Minh</div>
+          <div style={{ marginTop: 60, fontWeight: 'bold' }}>
+            {isBlank ? '........................................' : (councilChair || '')}
+          </div>
         </div>
-        <div>
+        <div style={{ width: '45%' }}>
           <div style={{ fontWeight: 'bold', fontSize: 13 }}>TRƯỞNG KHOA</div>
-          <div style={{ fontStyle: 'italic', fontSize: 12 }}>(Ký, ghi rõ họ tên)</div>
-          <div style={{ marginTop: 60, fontWeight: 'bold' }}>Trần Đình Trưởng Khoa</div>
+          <div style={{ fontStyle: 'italic', fontSize: 12 }}>(Ký, đóng dấu, ghi rõ họ tên)</div>
+          <div style={{ marginTop: 60, fontWeight: 'bold' }}>
+            {isBlank ? '........................................' : (deanName || '')}
+          </div>
         </div>
       </div>
     </div>
@@ -503,61 +623,115 @@ export const Mau34BaoCaoTomTat: React.FC<QD521Props> = ({ project }) => {
   );
 };
 
-export const Mau35BienBanSinhHoat: React.FC<QD521Props> = ({ project }) => {
+export interface Mau35Props {
+  project?: any;
+  isBlank?: boolean;
+  meetingDate?: string;
+  meetingTime?: string;
+  location?: string;
+  chairName?: string;
+  secretaryName?: string;
+  attendees?: string;
+  progressNote?: string;
+  feedbackNote?: string;
+  explanationNote?: string;
+  conclusionNote?: string;
+}
+
+export const Mau35BienBanSinhHoat: React.FC<Mau35Props> = ({
+  project,
+  isBlank = false,
+  meetingDate,
+  meetingTime,
+  location,
+  chairName,
+  secretaryName,
+  attendees,
+  progressNote,
+  feedbackNote,
+  explanationNote,
+  conclusionNote,
+}) => {
+  const leader =
+    project?.project_members?.find((m: any) => m.member_role === 'LEADER' || m.member_role === 'LEAD') ||
+    project?.project_members?.[0];
+  const advisor = project?.project_advisors?.[0]?.lecturers;
+  const deptName = isBlank
+    ? 'KHOA ....................................'
+    : (project?.departments?.dept_name || 'Khoa Công nghệ thông tin 1');
+  const today = new Date();
+  const dateHeader = isBlank
+    ? 'Hà Nội, ngày ... tháng ... năm 20...'
+    : (meetingDate || `Hà Nội, ngày ${String(today.getDate()).padStart(2, '0')} tháng ${String(today.getMonth() + 1).padStart(2, '0')} năm ${today.getFullYear()}`);
+
+  const leaderDisplay = isBlank
+    ? '........................................ (Lớp .................)'
+    : `${leader?.students?.users?.full_name || 'Chưa cập nhật'} (${leader?.students?.class_name ? `Lớp ${leader.students.class_name}` : leader?.student_id || 'PTIT'})`;
+  const advisorDisplay = isBlank
+    ? '........................................'
+    : ([advisor?.academic_rank, advisor?.users?.full_name].filter(Boolean).join('. ') || 'Chưa phân công');
+
   return (
     <div style={{ backgroundColor: '#ffffff', padding: '32px 40px', border: '1px solid #d9d9d9', maxWidth: 850, margin: '0 auto', fontFamily: '"Times New Roman", Times, serif', color: '#000000', lineHeight: 1.6 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
-        <div style={{ textAlign: 'center' }}>
+        <div style={{ textAlign: 'center', width: '48%' }}>
           <div style={{ fontSize: 12, fontWeight: 'bold' }}>HỌC VIỆN CÔNG NGHỆ BƯU CHÍNH VIỄN THÔNG</div>
-          <div style={{ fontSize: 13, fontWeight: 'bold' }}>{project?.departments?.dept_name?.toUpperCase() || 'KHOA CÔNG NGHỆ THÔNG TIN 1'}</div>
+          <div style={{ fontSize: 13, fontWeight: 'bold' }}>{deptName.toUpperCase()}</div>
           <div style={{ width: 100, height: 1, backgroundColor: '#000', margin: '4px auto' }} />
         </div>
-        <div style={{ textAlign: 'center' }}>
+        <div style={{ textAlign: 'center', width: '48%' }}>
           <div style={{ fontSize: 12, fontWeight: 'bold' }}>CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</div>
           <div style={{ fontSize: 12, fontWeight: 'bold', textDecoration: 'underline' }}>Độc lập - Tự do - Hạnh phúc</div>
-          <div style={{ fontSize: 12, fontStyle: 'italic', marginTop: 4 }}>Hà Nội, ngày 20 tháng 12 năm 2026</div>
+          <div style={{ fontSize: 12, fontStyle: 'italic', marginTop: 4 }}>{dateHeader}</div>
         </div>
       </div>
 
       <div style={{ textAlign: 'center', margin: '16px 0 20px' }}>
         <div style={{ fontSize: 12, fontWeight: 'bold' }}>Mẫu 3.5. Biên bản sinh hoạt khoa học</div>
         <div style={{ fontSize: 16, fontWeight: 'bold', marginTop: 6 }}>BIÊN BẢN SINH HOẠT KHOA HỌC / HỘI THẢO CẤP KHOA</div>
-        <div style={{ fontSize: 13, fontStyle: 'italic' }}>Đánh giá tiến độ đề tài NCKH sinh viên năm học 2026 - 2027</div>
+        <div style={{ fontSize: 13, fontStyle: 'italic' }}>
+          Đánh giá tiến độ đề tài NCKH sinh viên {isBlank ? 'năm học 20... - 20...' : (project?.nckh_periods?.period_name || 'năm học 2026 - 2027')}
+        </div>
       </div>
 
       <div style={{ fontSize: 13, lineHeight: 1.6 }}>
-        <p><b>1. Thời gian, địa điểm:</b> Hồi 08 giờ 30 ngày 20/12/2026 tại Phòng Hội thảo Tầng 2 - Nhà A2, Học viện PTIT.</p>
+        <p>
+          <b>1. Thời gian, địa điểm:</b>{' '}
+          {isBlank
+            ? 'Hồi ... giờ ... ngày .../.../20... tại ................................................................'
+            : `${meetingTime || '08 giờ 30'} tại ${location || 'Phòng Hội thảo Khoa, Học viện PTIT'}.`}
+        </p>
         <p><b>2. Thành phần tham dự:</b></p>
         <ul style={{ paddingLeft: 24, margin: '4px 0 8px' }}>
-          <li>Chủ trì: <b>PGS.TS. Hoàng Minh</b> - Chủ tịch Hội đồng KH Khoa</li>
-          <li>Thư ký: <b>ThS. Đỗ Thị Thu Hiền</b> - Thư ký Khoa CNTT 1</li>
-          <li>Đại biểu tham dự: 12 giảng viên trong Khoa và các nhóm sinh viên NCKH.</li>
+          <li>Chủ trì: <b>{isBlank ? '........................................' : (chairName || 'Chủ tịch Hội đồng KH Khoa')}</b></li>
+          <li>Thư ký: <b>{isBlank ? '........................................' : (secretaryName || 'Thư ký Khoa')}</b></li>
+          <li>Đại biểu tham dự: {isBlank ? '................................................................................' : (attendees || 'Các giảng viên chuyên môn trong Khoa và nhóm sinh viên thực hiện đề tài.')}</li>
         </ul>
-        <p><b>3. Tên đề tài báo cáo tiến độ:</b> <b>{project?.title_vi}</b></p>
-        <p style={{ textIndent: 20 }}><i>Mã số đề tài:</i> <b>{project?.project_id}</b></p>
-        <p style={{ textIndent: 20 }}><i>Chủ trì đề tài:</i> <b>Nguyễn Văn An</b> (Lớp D23CQCN01-B)</p>
-        <p style={{ textIndent: 20 }}><i>Người hướng dẫn:</i> <b>TS. Ngô Quốc Dũng</b></p>
+        <p><b>3. Tên đề tài báo cáo tiến độ:</b> <b>{isBlank ? '................................................................................................' : project?.title_vi}</b></p>
+        <p style={{ textIndent: 20 }}><i>Mã số đề tài:</i> <b>{isBlank ? 'SV-20...-......-...' : project?.project_id}</b></p>
+        <p style={{ textIndent: 20 }}><i>Chủ trì đề tài:</i> <b>{leaderDisplay}</b></p>
+        <p style={{ textIndent: 20 }}><i>Người hướng dẫn:</i> <b>{advisorDisplay}</b></p>
 
-        <p><b>4. Nội dung sinh hoạt khoa học & Góp ý của Hội thảo:</b></p>
+        <p><b>4. Nội dung sinh hoạt khoa học &amp; Góp ý của Hội thảo:</b></p>
         <div style={{ backgroundColor: '#FAFAFA', padding: 12, border: '1px solid #ECECEC', borderRadius: 4, marginBottom: 12 }}>
-          <p>• <b>Tiến độ công việc đã đạt được:</b> Nhóm nghiên cứu đã hoàn thành khảo sát thực tế quy trình nghiệp vụ, hoàn thiện tài liệu đặc tả kiến trúc giải pháp, xây dựng mô hình dữ liệu tổng thể và hoàn thành thử nghiệm các phân hệ cốt lõi của hệ thống.</p>
-          <p>• <b>Ý kiến góp ý chuyên môn:</b> Đề nghị nhóm bổ sung ma trận phân quyền chi tiết cho các vai trò và hoàn thiện giao diện mẫu Phiếu chấm điểm Mẫu 4.1, Biên bản Mẫu 4.2 trước buổi nghiệm thu chính thức.</p>
-          <p>• <b>Ý kiến giải trình của nhóm:</b> Nhóm sinh viên đã tiếp thu đầy đủ ý kiến và cam kết hoàn thiện báo cáo tổng kết theo đúng hạn quy định.</p>
+          <p>• <b>Tiến độ công việc đã đạt được:</b> {isBlank ? '................................................................................................................................' : (progressNote || 'Nhóm nghiên cứu đã hoàn thành khảo sát, thiết kế giải pháp và triển khai đúng tiến độ đề cương.')}</p>
+          <p>• <b>Ý kiến góp ý chuyên môn:</b> {isBlank ? '................................................................................................................................' : (feedbackNote || 'Hội thảo góp ý hoàn thiện nội dung chuyên môn và chuẩn hóa hồ sơ báo cáo theo QĐ 521.')}</p>
+          <p>• <b>Ý kiến giải trình của nhóm:</b> {isBlank ? '................................................................................................................................' : (explanationNote || 'Nhóm sinh viên tiếp thu đầy đủ ý kiến đóng góp và cam kết hoàn thiện đúng thời hạn.')}</p>
         </div>
 
-        <p><b>5. Kết luận của Hội thảo:</b> Đề tài đạt tiến độ xuất sắc, nhất trí cho phép tiếp tục triển khai giai đoạn thực nghiệm và chuẩn bị hồ sơ nghiệm thu chính thức.</p>
+        <p><b>5. Kết luận của Hội thảo:</b> {isBlank ? '................................................................................................................................' : (conclusionNote || 'Đề tài đạt tiến độ theo kế hoạch, nhất trí cho phép tiếp tục triển khai giai đoạn tiếp theo.')}</p>
       </div>
 
       <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 30, textAlign: 'center' }}>
-        <div>
+        <div style={{ width: '45%' }}>
           <div style={{ fontWeight: 'bold', fontSize: 13 }}>THƯ KÝ HỘI THẢO</div>
           <div style={{ fontStyle: 'italic', fontSize: 12 }}>(Ký và ghi rõ họ tên)</div>
-          <div style={{ marginTop: 50, fontWeight: 'bold' }}>ThS. Đỗ Thị Thu Hiền</div>
+          <div style={{ marginTop: 50, fontWeight: 'bold' }}>{isBlank ? '........................................' : (secretaryName || '')}</div>
         </div>
-        <div>
+        <div style={{ width: '45%' }}>
           <div style={{ fontWeight: 'bold', fontSize: 13 }}>CHỦ TỌA SINH HOẠT KHOA HỌC</div>
           <div style={{ fontStyle: 'italic', fontSize: 12 }}>(Ký và ghi rõ họ tên)</div>
-          <div style={{ marginTop: 50, fontWeight: 'bold' }}>PGS.TS. Hoàng Minh</div>
+          <div style={{ marginTop: 50, fontWeight: 'bold' }}>{isBlank ? '........................................' : (chairName || '')}</div>
         </div>
       </div>
     </div>
@@ -686,15 +860,51 @@ export interface Mau43Props {
   printableId?: string;
 }
 
-export const Mau43BanNhanXet: React.FC<Mau43Props> = ({ project, printableId = 'mau43-ban-nhan-xet' }) => {
-  const leader = project?.project_members?.find((m: any) => m.member_role === 'LEADER' || m.member_role === 'LEAD');
-  const leaderName = leader?.students?.users?.full_name || leader?.full_name || 'Nguyễn Văn An';
+export interface Mau43Props {
+  project?: any;
+  printableId?: string;
+  isBlank?: boolean;
+  reviewDate?: string;
+  reviewerName?: string;
+  reviewerRole?: string;
+  reviewerDept?: string;
+  urgencyComment?: string;
+  methodComment?: string;
+  practicalComment?: string;
+  improveComment?: string;
+  conclusionComment?: string;
+}
+
+export const Mau43BanNhanXet: React.FC<Mau43Props> = ({
+  project,
+  printableId = 'mau43-ban-nhan-xet',
+  isBlank = false,
+  reviewDate,
+  reviewerName,
+  reviewerRole,
+  reviewerDept,
+  urgencyComment,
+  methodComment,
+  practicalComment,
+  improveComment,
+  conclusionComment,
+}) => {
+  const leader =
+    project?.project_members?.find((m: any) => m.member_role === 'LEADER' || m.member_role === 'LEAD') ||
+    project?.project_members?.[0];
+  const leaderName = isBlank
+    ? '........................................'
+    : (leader?.students?.users?.full_name || leader?.full_name || 'Chưa cập nhật');
   const deptName = project?.departments?.dept_name || 'Khoa Công nghệ thông tin 1';
-  const reviewer = project?.reviewer || {
-    name: 'TS. Vũ Trọng Hùng',
-    role: 'Ủy viên Phản biện 1',
-    dept: deptName,
+  const reviewer = {
+    name: isBlank ? '........................................' : (reviewerName || project?.reviewer?.name || 'TS. Vũ Trọng Hùng'),
+    role: isBlank ? '........................................' : (reviewerRole || project?.reviewer?.role || 'Ủy viên Phản biện'),
+    dept: isBlank ? '........................................' : (reviewerDept || project?.reviewer?.dept || deptName),
   };
+  const today = new Date();
+  const dateHeader = isBlank
+    ? 'Hà Nội, ngày ... tháng ... năm 20...'
+    : (reviewDate || `Hà Nội, ngày ${String(today.getDate()).padStart(2, '0')} tháng ${String(today.getMonth() + 1).padStart(2, '0')} năm ${today.getFullYear()}`);
 
   return (
     <div
@@ -711,14 +921,14 @@ export const Mau43BanNhanXet: React.FC<Mau43Props> = ({ project, printableId = '
       }}
     >
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
-        <div style={{ textAlign: 'center' }}>
+        <div style={{ textAlign: 'center', width: '48%' }}>
           <div style={{ fontSize: 12, fontWeight: 'bold' }}>HỌC VIỆN CÔNG NGHỆ BƯU CHÍNH VIỄN THÔNG</div>
           <div style={{ fontSize: 12, fontWeight: 'bold', textDecoration: 'underline' }}>HỘI ĐỒNG ĐÁNH GIÁ NGHIỆM THU</div>
         </div>
-        <div style={{ textAlign: 'center' }}>
+        <div style={{ textAlign: 'center', width: '48%' }}>
           <div style={{ fontSize: 12, fontWeight: 'bold' }}>CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</div>
           <div style={{ fontSize: 12, fontWeight: 'bold', textDecoration: 'underline' }}>Độc lập - Tự do - Hạnh phúc</div>
-          <div style={{ fontSize: 12, fontStyle: 'italic', marginTop: 4 }}>Hà Nội, ngày 27 tháng 04 năm 2027</div>
+          <div style={{ fontSize: 12, fontStyle: 'italic', marginTop: 4 }}>{dateHeader}</div>
         </div>
       </div>
 
@@ -730,56 +940,92 @@ export const Mau43BanNhanXet: React.FC<Mau43Props> = ({ project, printableId = '
       <div style={{ fontSize: 13, lineHeight: 1.6 }}>
         <p>Họ tên người nhận xét: <b>{reviewer.name}</b> - Đơn vị công tác: <b>{reviewer.dept}</b></p>
         <p>Vai trò trong Hội đồng: <b>{reviewer.role}</b></p>
-        <p>Tên đề tài: <b>{project?.title_vi || 'Nghiên cứu và xây dựng hệ thống web quản lý đề tài NCKH sinh viên PTIT S-Link'}</b> (Mã số: <b>{project?.project_id || 'SV-2026-CNTT1-001'}</b>)</p>
+        <p>Tên đề tài: <b>{isBlank ? '................................................................................................' : project?.title_vi}</b> (Mã số: <b>{isBlank ? 'SV-20...-......-...' : project?.project_id}</b>)</p>
         <p>Sinh viên thực hiện: <b>{leaderName}</b> (Chủ nhiệm đề tài) cùng nhóm nghiên cứu.</p>
 
         <p><b>NỘI DUNG NHẬN XÉT CHUYÊN MÔN:</b></p>
         <div style={{ paddingLeft: 16 }}>
-          <p><b>1. Tính thời sự và ý nghĩa khoa học của đề tài:</b> Rất cao. Việc nghiên cứu hệ thống giải quyết trực tiếp nhu cầu cấp bách của Học viện trong công tác chuyển đổi số quản trị đại học.</p>
-          <p><b>2. Phương pháp nghiên cứu và kiến trúc giải pháp:</b> Tiếp cận bài bản, phương pháp luận khoa học chặt chẽ, kiến trúc hệ thống hiện đại, tối ưu hóa quy trình nghiệp vụ và đảm bảo tính bảo mật, toàn vẹn dữ liệu cao.</p>
-          <p><b>3. Giá trị thực tiễn và khả năng ứng dụng:</b> Sản phẩm phần mềm web S-Link đã hoạt động ổn định, giao diện thân thiện, chính xác theo Quyết định 521/QĐ-HV.</p>
-          <p><b>4. Điểm cần hoàn thiện:</b> Cần tiếp tục nghiên cứu mở rộng tích hợp phân tích học tập (Learning Analytics) cho các khóa sau.</p>
+          <p><b>1. Tính thời sự và ý nghĩa khoa học của đề tài:</b> {isBlank ? '................................................................................................................' : (urgencyComment || 'Đề tài có tính thời sự và ý nghĩa thực tiễn rõ nét, bám sát mục tiêu nghiên cứu đã phê duyệt.')}</p>
+          <p><b>2. Phương pháp nghiên cứu và kiến trúc giải pháp:</b> {isBlank ? '................................................................................................................' : (methodComment || 'Tiếp cận bài bản, phương pháp luận khoa học chặt chẽ, giải pháp kỹ thuật phù hợp và có tính khả thi cao.')}</p>
+          <p><b>3. Giá trị thực tiễn và khả năng ứng dụng:</b> {isBlank ? '................................................................................................................' : (practicalComment || 'Sản phẩm nghiên cứu đáp ứng tốt yêu cầu đặt ra, có khả năng triển khai ứng dụng thực tế tại đơn vị.')}</p>
+          <p><b>4. Điểm cần hoàn thiện:</b> {isBlank ? '................................................................................................................' : (improveComment || 'Nhóm cần rà soát bổ sung thêm kiểm thử hiệu năng và hoàn thiện định dạng báo cáo tổng kết theo chuẩn QĐ 521.')}</p>
         </div>
 
-        <p><b>KẾT LUẬN VÀ ĐÁNH GIÁ:</b> Đề tài đạt chất lượng Xuất sắc, đủ điều kiện đưa ra bảo vệ trước Hội đồng.</p>
+        <p><b>KẾT LUẬN VÀ ĐÁNH GIÁ:</b> {isBlank ? '................................................................................................................' : (conclusionComment || 'Đề tài đạt yêu cầu về nội dung và hình thức, đủ điều kiện đưa ra bảo vệ trước Hội đồng nghiệm thu.')}</p>
       </div>
 
       <div style={{ textAlign: 'right', marginTop: 30, paddingRight: 40 }}>
         <div style={{ fontWeight: 'bold', fontSize: 13 }}>NGƯỜI NHẬN XÉT PHẢN BIỆN</div>
         <div style={{ fontStyle: 'italic', fontSize: 11 }}>(Ký và ghi rõ họ tên)</div>
-        <div style={{ marginTop: 50, fontWeight: 'bold' }}>{reviewer.name}</div>
+        <div style={{ marginTop: 50, fontWeight: 'bold' }}>{isBlank ? '........................................' : reviewer.name}</div>
       </div>
     </div>
   );
 };
 
-export const Mau5DeNghiKhenThuong: React.FC<QD521Props> = ({ project }) => {
-  const leader = project?.project_members?.find(
-    (m: any) => m.member_role === 'LEADER' || m.member_role === 'LEAD',
-  ) || project?.project_members?.[0];
-  const advisor = project?.project_advisors?.find((a: any) => a.status === 'ACTIVE') || project?.project_advisors?.[0];
-  const deptName = project?.departments?.dept_name || 'Khoa Công nghệ thông tin 1';
-  const avgScore = project?.acceptances?.avg_score ?? project?.evaluations?.[0]?.total_score ?? '93.8';
+export interface Mau5Props {
+  project?: any;
+  projects?: any[];
+  isBlank?: boolean;
+  departmentName?: string;
+  periodName?: string;
+  officialLetterNo?: string;
+  issueDate?: string;
+  recipient?: string;
+  deanName?: string;
+  awardType?: string;
+}
+
+export const Mau5DeNghiKhenThuong: React.FC<Mau5Props> = ({
+  project,
+  projects,
+  isBlank = false,
+  departmentName,
+  periodName,
+  officialLetterNo,
+  issueDate,
+  recipient,
+  deanName,
+  awardType,
+}) => {
+  const rows = !isBlank
+    ? (projects && projects.length > 0 ? projects : project ? [project] : [])
+    : [project || {}];
+  const deptName = isBlank
+    ? 'KHOA ....................................'
+    : (departmentName || rows[0]?.departments?.dept_name || 'Khoa Công nghệ thông tin 1');
+  const resolvedPeriod = isBlank
+    ? '20... - 20...'
+    : (periodName || rows[0]?.nckh_periods?.period_name || '2026 - 2027');
+  const resolvedLetterNo = isBlank
+    ? '....../CV-......'
+    : (officialLetterNo || `KT-${rows[0]?.departments?.dept_code || 'KHOA'}-${new Date().getFullYear()}`);
+  const today = new Date();
+  const dateHeader = isBlank
+    ? 'Hà Nội, ngày ... tháng ... năm 20...'
+    : (issueDate || `Hà Nội, ngày ${String(today.getDate()).padStart(2, '0')} tháng ${String(today.getMonth() + 1).padStart(2, '0')} năm ${today.getFullYear()}`);
 
   return (
-    <div style={{ backgroundColor: '#ffffff', padding: '32px 40px', border: '1px solid #d9d9d9', maxWidth: 850, margin: '0 auto', fontFamily: '"Times New Roman", Times, serif', color: '#000000', lineHeight: 1.6 }}>
+    <div style={{ backgroundColor: '#ffffff', padding: '28px 32px', border: '1px solid #d9d9d9', maxWidth: 850, margin: '0 auto', fontFamily: '"Times New Roman", Times, serif', color: '#000000', lineHeight: 1.6, boxSizing: 'border-box' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
-        <div style={{ textAlign: 'center' }}>
+        <div style={{ textAlign: 'center', width: '48%' }}>
           <div style={{ fontSize: 12, fontWeight: 'bold' }}>HỌC VIỆN CÔNG NGHỆ BƯU CHÍNH VIỄN THÔNG</div>
           <div style={{ fontSize: 13, fontWeight: 'bold' }}>{deptName.toUpperCase()}</div>
-          <div style={{ fontSize: 12, marginTop: 4 }}>Số: 88/CV-KHOA</div>
+          <div style={{ fontSize: 12, marginTop: 4 }}>Số: {resolvedLetterNo}</div>
         </div>
-        <div style={{ textAlign: 'center' }}>
+        <div style={{ textAlign: 'center', width: '48%' }}>
           <div style={{ fontSize: 12, fontWeight: 'bold' }}>CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</div>
           <div style={{ fontSize: 12, fontWeight: 'bold', textDecoration: 'underline' }}>Độc lập - Tự do - Hạnh phúc</div>
-          <div style={{ fontSize: 12, fontStyle: 'italic', marginTop: 4 }}>Hà Nội, ngày 05 tháng 05 năm 2027</div>
+          <div style={{ fontSize: 12, fontStyle: 'italic', marginTop: 4 }}>{dateHeader}</div>
         </div>
       </div>
 
       <div style={{ textAlign: 'center', margin: '20px 0 24px' }}>
         <div style={{ fontSize: 12, fontWeight: 'bold' }}>Mẫu 5. Công văn đề nghị khen thưởng đề tài NCKH sinh viên</div>
         <div style={{ fontSize: 16, fontWeight: 'bold', marginTop: 8 }}>CÔNG VĂN ĐỀ NGHỊ KHEN THƯỞNG ĐỀ TÀI NCKH SINH VIÊN XUẤT SẮC</div>
-        <div style={{ fontSize: 14, fontWeight: 'bold', marginTop: 8 }}>Kính gửi: Giám đốc Học viện Công nghệ Bưu chính Viễn thông</div>
+        <div style={{ fontSize: 14, fontWeight: 'bold', marginTop: 8 }}>
+          Kính gửi: {isBlank ? 'Giám đốc Học viện Công nghệ Bưu chính Viễn thông' : (recipient || 'Giám đốc Học viện Công nghệ Bưu chính Viễn thông')}
+        </div>
       </div>
 
       <div style={{ fontSize: 13, lineHeight: 1.6 }}>
@@ -790,38 +1036,66 @@ export const Mau5DeNghiKhenThuong: React.FC<QD521Props> = ({ project }) => {
           Căn cứ Biên bản họp Hội đồng đánh giá nghiệm thu đề tài NCKH sinh viên;
         </p>
         <p style={{ textIndent: 30 }}>
-          {deptName} trân trọng đề nghị Giám đốc Học viện xem xét quyết định khen thưởng cho đề tài NCKH của sinh viên có kết quả xuất sắc năm học {project?.nckh_periods?.academic_year || '2026 - 2027'} như sau:
+          {isBlank ? 'Khoa ..............................' : deptName} trân trọng đề nghị Giám đốc Học viện xem xét quyết định khen thưởng cho{' '}
+          {isBlank ? '...... đề tài' : <b>{rows.length} đề tài</b>} NCKH của sinh viên có kết quả xuất sắc {resolvedPeriod} như sau:
         </p>
 
-        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13, margin: '14px 0' }} border={1}>
+        <table style={{ width: '100%', tableLayout: 'fixed', borderCollapse: 'collapse', fontSize: 12, margin: '14px 0' }} border={1}>
           <thead>
             <tr style={{ backgroundColor: '#f5f5f5', textAlign: 'center' }}>
-              <th style={{ padding: 6, width: 40 }}>STT</th>
-              <th style={{ padding: 6 }}>Tên đề tài & Mã số</th>
-              <th style={{ padding: 6, width: 140 }}>Sinh viên chủ trì</th>
-              <th style={{ padding: 6, width: 130 }}>Người hướng dẫn</th>
-              <th style={{ padding: 6, width: 80 }}>Điểm TB</th>
-              <th style={{ padding: 6, width: 110 }}>Hình thức đề nghị</th>
+              <th style={{ padding: 6, width: '6%' }}>STT</th>
+              <th style={{ padding: 6, width: '32%' }}>Tên đề tài &amp; Mã số</th>
+              <th style={{ padding: 6, width: '20%' }}>Sinh viên chủ trì</th>
+              <th style={{ padding: 6, width: '20%' }}>Người hướng dẫn</th>
+              <th style={{ padding: 6, width: '9%' }}>Điểm TB</th>
+              <th style={{ padding: 6, width: '13%' }}>Hình thức đề nghị</th>
             </tr>
           </thead>
           <tbody>
-            <tr>
-              <td style={{ textAlign: 'center' }}>1</td>
-              <td style={{ padding: 6 }}>
-                <b>{project?.title_vi}</b><br />
-                <span style={{ fontSize: 11, color: '#666' }}>Mã: {project?.project_id}</span>
-              </td>
-              <td style={{ padding: 6, textAlign: 'center' }}>
-                <b>{leader?.students?.users?.full_name || 'Sinh viên chủ trì'}</b><br />
-                <span style={{ fontSize: 11 }}>Lớp {leader?.students?.class_name || leader?.students?.className || 'PTIT'}</span>
-              </td>
-              <td style={{ padding: 6, textAlign: 'center' }}>
-                <b>{advisor?.lecturers?.academic_rank ? `${advisor.lecturers.academic_rank}. ` : ''}{advisor?.lecturers?.users?.full_name || 'Giảng viên hướng dẫn'}</b><br />
-                <span style={{ fontSize: 11 }}>{deptName}</span>
-              </td>
-              <td style={{ textAlign: 'center', fontWeight: 'bold', color: '#C62828' }}>{avgScore}</td>
-              <td style={{ textAlign: 'center', fontWeight: 'bold' }}>Khen thưởng Học viện</td>
-            </tr>
+            {rows.length === 0 ? (
+              <tr>
+                <td colSpan={6} style={{ textAlign: 'center', padding: 12, fontStyle: 'italic' }}>
+                  Chưa có đề tài nào được chọn để đề nghị khen thưởng.
+                </td>
+              </tr>
+            ) : (
+              rows.map((p: any, idx: number) => {
+                const leader =
+                  p?.project_members?.find((m: any) => m.member_role === 'LEADER' || m.member_role === 'LEAD') ||
+                  p?.project_members?.[0];
+                const advisor =
+                  p?.project_advisors?.find((a: any) => a.status === 'ACTIVE') || p?.project_advisors?.[0];
+                const avgScore = p?.acceptances?.avg_score ?? p?.evaluations?.[0]?.total_score ?? '—';
+                return (
+                  <tr key={p?.project_id || idx}>
+                    <td style={{ textAlign: 'center', padding: 6 }}>{idx + 1}</td>
+                    <td style={{ padding: 6, overflowWrap: 'anywhere' }}>
+                      <b>{isBlank ? '........................................' : p?.title_vi}</b>
+                      <br />
+                      <span style={{ fontSize: 11, color: '#666' }}>Mã: {isBlank ? 'SV-20...-...' : p?.project_id}</span>
+                    </td>
+                    <td style={{ padding: 6, textAlign: 'center', overflowWrap: 'anywhere' }}>
+                      <b>{isBlank ? '........................' : (leader?.students?.users?.full_name || 'Sinh viên chủ trì')}</b>
+                      <br />
+                      <span style={{ fontSize: 11 }}>{isBlank ? 'Lớp ............' : `Lớp ${leader?.students?.class_name || leader?.students?.className || 'PTIT'}`}</span>
+                    </td>
+                    <td style={{ padding: 6, textAlign: 'center', overflowWrap: 'anywhere' }}>
+                      <b>
+                        {isBlank
+                          ? '........................'
+                          : `${advisor?.lecturers?.academic_rank ? `${advisor.lecturers.academic_rank}. ` : ''}${advisor?.lecturers?.users?.full_name || 'Giảng viên hướng dẫn'}`}
+                      </b>
+                    </td>
+                    <td style={{ textAlign: 'center', fontWeight: 'bold', color: isBlank ? '#000' : '#C62828' }}>
+                      {isBlank ? '......' : avgScore}
+                    </td>
+                    <td style={{ textAlign: 'center', fontWeight: isBlank ? 'normal' : 'bold', overflowWrap: 'anywhere' }}>
+                      {isBlank ? '................' : (awardType || 'Khen thưởng Học viện')}
+                    </td>
+                  </tr>
+                );
+              })
+            )}
           </tbody>
         </table>
 
@@ -833,7 +1107,7 @@ export const Mau5DeNghiKhenThuong: React.FC<QD521Props> = ({ project }) => {
       <div style={{ textAlign: 'right', marginTop: 30, paddingRight: 40 }}>
         <div style={{ fontWeight: 'bold', fontSize: 13 }}>TRƯỞNG KHOA</div>
         <div style={{ fontStyle: 'italic', fontSize: 11 }}>(Ký và ghi rõ họ tên)</div>
-        <div style={{ marginTop: 50, fontWeight: 'bold' }}>Lãnh đạo {deptName}</div>
+        <div style={{ marginTop: 50, fontWeight: 'bold' }}>{isBlank ? '........................................' : (deanName || '')}</div>
       </div>
     </div>
   );

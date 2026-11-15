@@ -626,7 +626,20 @@ export const ProjectsPage: React.FC = () => {
           isFaculty: true,
           isUniversityAdmin: false,
           tag: (
-            <Tag color="purple" style={{ fontSize: 10, marginTop: 3, padding: '0 6px', lineHeight: '18px', fontWeight: 500 }}>
+            <Tag
+              color="purple"
+              style={{
+                fontSize: 10,
+                marginTop: 4,
+                marginInlineEnd: 0,
+                padding: '2px 6px',
+                lineHeight: '15px',
+                fontWeight: 500,
+                whiteSpace: 'normal',
+                maxWidth: '100%',
+                display: 'inline-block',
+              }}
+            >
               {deptLabel} quản lý
             </Tag>
           ),
@@ -871,7 +884,13 @@ export const ProjectsPage: React.FC = () => {
             />
           </Tooltip>
 
-          {((isFacultyLeader && record.status === 'PROPOSED') ||
+          {((isFacultyLeader &&
+            record.status === 'PROPOSED' &&
+            (() => {
+              const myDeptId = (user as any)?.deptId ?? (user?.username?.includes('cntt1') ? 1 : undefined);
+              const recDeptId = record.dept_id ?? (record as any).deptId;
+              return !myDeptId || !recDeptId || Number(recDeptId) === Number(myDeptId);
+            })()) ||
             (isQLKH && (record.status === 'FACULTY_APPROVED' || (roleCode === 'ADMIN' && record.status === 'PROPOSED')))) && (
             <>
               <Tooltip
@@ -1161,6 +1180,22 @@ export const ProjectsPage: React.FC = () => {
               >
                 Xuất dữ liệu
               </Button>
+
+              {['FACULTY_SECRETARY', 'FACULTY_LEADER', 'QLKHCN', 'ADMIN'].includes(roleCode) && (
+                <Button
+                  icon={<FileProtectOutlined />}
+                  style={{
+                    borderColor: '#722ED1',
+                    color: '#722ED1',
+                    fontWeight: 600,
+                    borderRadius: 4,
+                    height: 32,
+                  }}
+                  onClick={() => navigate('/forms?form=m1&mode=project')}
+                >
+                  Lập Công văn Mẫu 1
+                </Button>
+              )}
 
               <Select
                 placeholder="Lọc theo đơn vị"

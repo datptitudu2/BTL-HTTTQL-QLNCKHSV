@@ -68,6 +68,7 @@ export class ProjectsService {
         documents: true,
         budget: true,
         acceptance: true,
+        awardNominations: true,
       },
       orderBy: { registeredAt: 'desc' },
     });
@@ -79,6 +80,7 @@ export class ProjectsService {
       title_vi: p.titleVi,
       title_en: p.titleEn,
       research_field: p.researchField,
+      objectives: p.objectives,
       status: p.status,
       prelim_result: p.prelimResult,
       prelim_rank: p.prelimResult,
@@ -119,6 +121,7 @@ export class ProjectsService {
           academic_rank: a.lecturer.academicRank,
           users: {
             full_name: a.lecturer.user.fullName,
+            email: a.lecturer.user.email,
           },
         },
       })),
@@ -137,6 +140,12 @@ export class ProjectsService {
           grade: p.acceptance.grade,
         }
         : null,
+      award_nominations: (p.awardNominations || []).map((an) => ({
+        nomination_id: an.nominationId,
+        award_level: an.awardLevel,
+        prize_grade: an.prizeGrade,
+        approval_status: an.approvalStatus,
+      })),
     }));
   }
 
@@ -196,7 +205,7 @@ export class ProjectsService {
               include: {
                 members: {
                   include: {
-                    lecturer: { include: { user: true } },
+                    lecturer: { include: { user: true, department: true } },
                   },
                 },
               },
@@ -205,7 +214,7 @@ export class ProjectsService {
               include: {
                 councilMember: {
                   include: {
-                    lecturer: { include: { user: true } },
+                    lecturer: { include: { user: true, department: true } },
                   },
                 },
                 scores: {
@@ -287,6 +296,7 @@ export class ProjectsService {
           academic_rank: a.lecturer.academicRank,
           users: {
             full_name: a.lecturer.user.fullName,
+            email: a.lecturer.user.email,
           },
         },
       })),
@@ -366,6 +376,9 @@ export class ProjectsService {
                 cm_id: cm.cmId,
                 council_role: cm.councilRole,
                 lecturers: {
+                  departments: {
+                    dept_name: cm.lecturer.department?.deptName,
+                  },
                   users: {
                     full_name: cm.lecturer.user.fullName,
                   },
@@ -373,6 +386,21 @@ export class ProjectsService {
               })),
             }
             : null,
+          sheets: (p.acceptance.sheets || []).map((s) => ({
+            sheet_id: s.sheetId,
+            cm_id: s.cmId,
+            council_role: s.councilMember?.councilRole,
+            lecturer_name: s.councilMember?.lecturer?.user?.fullName,
+            dept_name: s.councilMember?.lecturer?.department?.deptName,
+            total_score: s.totalScore,
+            strengths: s.strengths,
+            limitations: s.limitations,
+            qa_notes: s.qaNotes,
+            qa_comment: s.qaComment,
+            conclusion_award_rec: s.conclusionAwardRec,
+            submitted_at: s.submittedAt,
+            scored_at: s.scoredAt,
+          })),
         }
         : null,
     };
@@ -863,8 +891,18 @@ export class ProjectsService {
               reviewStatus: 'APPROVED',
             },
           });
+        } else if (options?.officialLetterNo && dossier.officialLetterNo !== options.officialLetterNo) {
+          dossier = await this.prisma.facultyDossier.update({
+            where: { dossierId: dossier.dossierId },
+            data: { officialLetterNo: options.officialLetterNo },
+          });
         }
         dataToUpdate.dossierId = dossier.dossierId;
+      } else if (options?.officialLetterNo) {
+        await this.prisma.facultyDossier.update({
+          where: { dossierId: project.dossierId },
+          data: { officialLetterNo: options.officialLetterNo },
+        });
       }
 
       if (project.budget) {
