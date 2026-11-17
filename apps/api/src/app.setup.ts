@@ -49,16 +49,18 @@ export function configureApp(app: INestApplication): void {
   // Global Filter RFC 7807 Problem Details
   app.useGlobalFilters(new ProblemDetailsFilter());
 
-  // Swagger Documentation
-  const config = new DocumentBuilder()
-    .setTitle('Hệ thống Quản lý Đề tài NCKH Sinh viên Học viện PTIT (SRMS API)')
-    .setDescription(
-      'Hệ thống API RESTful phục vụ toàn bộ 8 phân hệ DFD/BFD theo quy chuẩn QĐ 521/QĐ-HV và giao diện S-Link PTIT',
-    )
-    .setVersion('1.0.0')
-    .addBearerAuth()
-    .build();
+  // Swagger Documentation (skip heavy schema reflection on Vercel cold starts unless explicitly enabled)
+  if (process.env.VERCEL !== '1' || process.env.ENABLE_SWAGGER === 'true') {
+    const config = new DocumentBuilder()
+      .setTitle('Hệ thống Quản lý Đề tài NCKH Sinh viên Học viện PTIT (SRMS API)')
+      .setDescription(
+        'Hệ thống API RESTful phục vụ toàn bộ 8 phân hệ DFD/BFD theo quy chuẩn QĐ 521/QĐ-HV và giao diện S-Link PTIT',
+      )
+      .setVersion('1.0.0')
+      .addBearerAuth()
+      .build();
 
-  const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api/docs', app, document);
+    const document = SwaggerModule.createDocument(app, config);
+    SwaggerModule.setup('api/docs', app, document);
+  }
 }
