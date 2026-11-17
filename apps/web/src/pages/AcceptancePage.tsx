@@ -78,9 +78,28 @@ export const AcceptancePage: React.FC = () => {
   const [detailAcc, setDetailAcc] = useState<any>(null);
   const [councilModalVisible, setCouncilModalVisible] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [includeExternalLecturers, setIncludeExternalLecturers] = useState(false);
 
   const [scoreForm] = Form.useForm();
   const [councilForm] = Form.useForm();
+
+  const selectedProjectIdWatch = Form.useWatch('projectId', councilForm);
+  const chairIdWatch = Form.useWatch('chairId', councilForm);
+  const reviewer1IdWatch = Form.useWatch('reviewer1Id', councilForm);
+  const reviewer2IdWatch = Form.useWatch('reviewer2Id', councilForm);
+  const secretaryIdWatch = Form.useWatch('secretaryId', councilForm);
+  const memberIdWatch = Form.useWatch('memberId', councilForm);
+
+  const selectedSubmittedProject = submittedProjects.find((p) => p.project_id === selectedProjectIdWatch);
+  const targetDeptId =
+    selectedSubmittedProject?.dept_id ??
+    selectedSubmittedProject?.departments?.dept_id ??
+    (user as any)?.deptId;
+  const targetAdvisorIds = new Set(
+    (selectedSubmittedProject?.project_advisors || [])
+      .filter((a: any) => a.status !== 'REJECTED')
+      .map((a: any) => a.lecturer_id),
+  );
 
   const isStudent = roleCode === 'STUDENT';
   const isLecturer = roleCode === 'LECTURER';
@@ -190,8 +209,10 @@ export const AcceptancePage: React.FC = () => {
       setSubmitting(true);
       const members = [
         { lecturerId: values.chairId, councilRole: 'CHAIR' },
-        { lecturerId: values.reviewerId, councilRole: 'REVIEWER' },
+        { lecturerId: values.reviewer1Id, councilRole: 'REVIEWER_1' },
+        { lecturerId: values.reviewer2Id, councilRole: 'REVIEWER_2' },
         { lecturerId: values.secretaryId, councilRole: 'SECRETARY' },
+        { lecturerId: values.memberId, councilRole: 'MEMBER' },
       ];
       await api.post(`/acceptance/project/${values.projectId}/council`, {
         councilName: values.councilName,
@@ -662,7 +683,10 @@ export const AcceptancePage: React.FC = () => {
       <Modal
         title="Thành lập Hội đồng Nghiệm thu Đề tài NCKH (DFD 5.2)"
         open={councilModalVisible}
-        onCancel={() => setCouncilModalVisible(false)}
+        onCancel={() => {
+          setCouncilModalVisible(false);
+          setIncludeExternalLecturers(false);
+        }}
         onOk={() => councilForm.submit()}
         confirmLoading={submitting}
         okText="Ban hành Hội đồng"
@@ -670,7 +694,18 @@ export const AcceptancePage: React.FC = () => {
       >
         <Form form={councilForm} layout="vertical" onFinish={handleCreateCouncil}>
           <Form.Item name="projectId" label="Đề tài đã nộp tổng kết (SUBMITTED)" rules={[{ required: true }]}>
-            <Select placeholder="Chọn đề tài">
+            <Select
+              placeholder="Chọn đề tài"
+              onChange={() => {
+                councilForm.setFieldsValue({
+                  chairId: undefined,
+                  reviewer1Id: undefined,
+                  reviewer2Id: undefined,
+                  secretaryId: undefined,
+                  memberId: undefined,
+                });
+              }}
+            >
               {submittedProjects.map((p) => (
                 <Select.Option key={p.project_id} value={p.project_id}>
                   {p.project_id} — {p.title_vi}
@@ -696,33 +731,54 @@ export const AcceptancePage: React.FC = () => {
           <Form.Item name="location" label="Phòng bảo vệ" rules={[{ required: true }]}>
             <Input placeholder="Phòng Hội thảo A2, PTIT" />
           </Form.Item>
-          <Form.Item name="chairId" label="Chủ tịch Hội đồng" rules={[{ required: true }]}>
-            <Select>
-              {lecturers.map((l) => (
-                <Select.Option key={l.lecturerId} value={l.lecturerId}>
+          <div style={{ marginBottom: 12, padding: '8px 10px', backgroundColor: '#FFF7F5', border: '1px solid #FADCD5', borderRadius: 6 }}>
+            <Checkbox
+              checked={includeExternalLecturers}
+              onChange={(e) => setIncludeExternalLecturers(e.target.checked)}
+            >
+              <span style={{ fontSize: 12, fontWeight: 500 }}>
+                Mời thêm GV ngoài Khoa (đề tài liên ngành / phản biện độc lập)
+              </span>
+            </Checkbox>
+          </div>
+          {[
+            { name: 'chairId', label: '1. Chủ tịch Hội đồng', current: chairIdWatch, others: [reviewer1IdWatch, reviewer2IdWatch, secretaryIdWatch, memberIdWatch], allowExternal: includeExternalLecturers },
+            { name: 'reviewer1Id', label: '2. Ủy viên Phản biện 1', current: reviewer1IdWatch, others: [chairIdWatch, reviewer2IdWatch, secretaryIdWatch, memberIdWatch], allowExternal: includeExternalLecturers },
+            { name: 'reviewer2Id', label: '3. Ủy viên Phản biện 2', current: reviewer2IdWatch, others: [chairIdWatch, reviewer1IdWatch, secretaryIdWatch, memberIdWatch], allowExternal: includeExternalLecturers },
+            { name: 'secretaryId', label: '4. Thư ký Hội đồng', current: secretaryIdWatch, others: [chairIdWatch, reviewer1IdWatch, reviewer2IdWatch, memberIdWatch], allowExternal: includeExternalLecturers },
+            { name: 'memberId', label: '5. Ủy viên Hội đồng', current: memberIdWatch, others: [chairIdWatch, reviewer1IdWatch, reviewer2IdWatch, secretaryIdWatch], allowExternal: includeExternalLecturers },
+          ].map((field) => {
+            const sameDept = lecturers.filter((l) => !targetDeptId || (l.deptId ?? l.department?.deptId) === targetDeptId);
+            const otherDept = lecturers.filter((l) => targetDeptId && (l.deptId ?? l.department?.deptId) !== targetDeptId);
+            const renderOption = (l: any) => {
+              const isAdvisor = targetAdvisorIds.has(l.lecturerId);
+              const isPickedElsewhere = field.others.includes(l.lecturerId);
+              return (
+                <Select.Option
+                  key={l.lecturerId}
+                  value={l.lecturerId}
+                  disabled={isAdvisor || isPickedElsewhere}
+                >
                   {l.user?.fullName} ({l.department?.deptCode})
+                  {isAdvisor ? ' — GVHD đề tài (không được chấm)' : isPickedElsewhere ? ' — Đã chọn vai trò khác' : ''}
                 </Select.Option>
-              ))}
-            </Select>
-          </Form.Item>
-          <Form.Item name="reviewerId" label="Ủy viên Phản biện" rules={[{ required: true }]}>
-            <Select>
-              {lecturers.map((l) => (
-                <Select.Option key={l.lecturerId} value={l.lecturerId}>
-                  {l.user?.fullName} ({l.department?.deptCode})
-                </Select.Option>
-              ))}
-            </Select>
-          </Form.Item>
-          <Form.Item name="secretaryId" label="Thư ký Hội đồng" rules={[{ required: true }]}>
-            <Select>
-              {lecturers.map((l) => (
-                <Select.Option key={l.lecturerId} value={l.lecturerId}>
-                  {l.user?.fullName} ({l.department?.deptCode})
-                </Select.Option>
-              ))}
-            </Select>
-          </Form.Item>
+              );
+            };
+            return (
+              <Form.Item key={field.name} name={field.name} label={field.label} rules={[{ required: true }]}>
+                <Select placeholder={`Chọn ${field.label.toLowerCase()} (ưu tiên GV cùng Khoa)`}>
+                  <Select.OptGroup label="Giảng viên nội bộ cùng Khoa">
+                    {sameDept.map(renderOption)}
+                  </Select.OptGroup>
+                  {field.allowExternal && otherDept.length > 0 && (
+                    <Select.OptGroup label="Giảng viên Khoa khác (liên ngành / phản biện)">
+                      {otherDept.map(renderOption)}
+                    </Select.OptGroup>
+                  )}
+                </Select>
+              </Form.Item>
+            );
+          })}
         </Form>
       </Modal>
     </div>

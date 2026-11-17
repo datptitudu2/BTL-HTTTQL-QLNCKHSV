@@ -155,6 +155,32 @@ async function main() {
     // Giảng viên được mời tham dự Hội đồng (0 đề tài hướng dẫn, chuyên chấm Hội đồng Nghiệm thu 04)
     { username: 'gv007', name: 'TS. Nguyễn Quang Hưng', role: 'LECTURER', email: 'hungnq@ptit.edu.vn', lecturerId: 'GV007', rank: 'TS', degree: 'Tiến sĩ', dept: 'CNTT1', field: 'Mạng máy tính & Hệ thống phân tán' },
 
+    // Bổ sung Giảng viên nội bộ từng Khoa để đảm bảo mỗi Khoa đủ >= 5 thành viên lập Hội đồng nghiệm thu (ngoài GVHD)
+    { username: 'gv008', name: 'PGS.TS. Phạm Thế Quế', role: 'LECTURER', email: 'queph@ptit.edu.vn', lecturerId: 'GV008', rank: 'PGS.TS', degree: 'Tiến sĩ', dept: 'CNTT1', field: 'Trí tuệ nhân tạo & Xử lý ngôn ngữ tự nhiên' },
+    { username: 'gv009', name: 'TS. Nguyễn Mạnh Sơn', role: 'LECTURER', email: 'sonnm@ptit.edu.vn', lecturerId: 'GV009', rank: 'TS', degree: 'Tiến sĩ', dept: 'CNTT1', field: 'Công nghệ phần mềm & Kiểm thử tự động' },
+    { username: 'gv010', name: 'TS. Lê Thị Ngọc Bích', role: 'LECTURER', email: 'bichltn@ptit.edu.vn', lecturerId: 'GV010', rank: 'TS', degree: 'Tiến sĩ', dept: 'CNTT1', field: 'Cơ sở dữ liệu & Khai phá dữ liệu' },
+    { username: 'gv011', name: 'ThS. Hoàng Tuấn Anh', role: 'LECTURER', email: 'anhht@ptit.edu.vn', lecturerId: 'GV011', rank: 'ThS', degree: 'Thạc sĩ', dept: 'CNTT1', field: 'Phát triển ứng dụng Web & Cloud' },
+
+    { username: 'gv012', name: 'PGS.TS. Đỗ Ngọc Minh', role: 'LECTURER', email: 'minhdn@ptit.edu.vn', lecturerId: 'GV012', rank: 'PGS.TS', degree: 'Tiến sĩ', dept: 'DPT', field: 'Xử lý ảnh & Đồ họa máy tính' },
+    { username: 'gv013', name: 'TS. Vũ Thị Lan Hương', role: 'LECTURER', email: 'huongvtl@ptit.edu.vn', lecturerId: 'GV013', rank: 'TS', degree: 'Tiến sĩ', dept: 'DPT', field: 'Thiết kế tương tác UI/UX' },
+    { username: 'gv014', name: 'TS. Phạm Văn Khánh', role: 'LECTURER', email: 'khanhpv@ptit.edu.vn', lecturerId: 'GV014', rank: 'TS', degree: 'Tiến sĩ', dept: 'DPT', field: 'Truyền thông đa phương tiện' },
+    { username: 'gv015', name: 'ThS. Nguyễn Hải Yến', role: 'LECTURER', email: 'yennh@ptit.edu.vn', lecturerId: 'GV015', rank: 'ThS', degree: 'Thạc sĩ', dept: 'DPT', field: 'Sản xuất nội dung số' },
+
+    { username: 'gv016', name: 'PGS.TS. Nguyễn Thị Thu Hà', role: 'LECTURER', email: 'hantt@ptit.edu.vn', lecturerId: 'GV016', rank: 'PGS.TS', degree: 'Tiến sĩ', dept: 'QTKD1', field: 'Quản trị chiến lược & Thương mại điện tử' },
+    { username: 'gv017', name: 'TS. Trần Quốc Bảo', role: 'LECTURER', email: 'baotq@ptit.edu.vn', lecturerId: 'GV017', rank: 'TS', degree: 'Tiến sĩ', dept: 'QTKD1', field: 'Marketing số & Phân tích hành vi' },
+    { username: 'gv018', name: 'TS. Lê Minh Phương', role: 'LECTURER', email: 'phuonglm@ptit.edu.vn', lecturerId: 'GV018', rank: 'TS', degree: 'Tiến sĩ', dept: 'QTKD1', field: 'Tài chính doanh nghiệp & Fintech' },
+    { username: 'gv019', name: 'ThS. Bùi Đức Thắng', role: 'LECTURER', email: 'thangbd@ptit.edu.vn', lecturerId: 'GV019', rank: 'ThS', degree: 'Thạc sĩ', dept: 'QTKD1', field: 'Quản trị vận hành & Logistics' },
+
+    { username: 'gv020', name: 'PGS.TS. Hoàng Xuân Dậu', role: 'LECTURER', email: 'dauhx@ptit.edu.vn', lecturerId: 'GV020', rank: 'PGS.TS', degree: 'Tiến sĩ', dept: 'ATTT', field: 'Mật mã học & An toàn hệ thống' },
+    { username: 'gv021', name: 'TS. Nguyễn Ngọc Điệp', role: 'LECTURER', email: 'diepnn@ptit.edu.vn', lecturerId: 'GV021', rank: 'TS', degree: 'Tiến sĩ', dept: 'ATTT', field: 'Phát hiện xâm nhập & Điều tra số' },
+    { username: 'gv022', name: 'TS. Đặng Minh Tuấn', role: 'LECTURER', email: 'tuandm@ptit.edu.vn', lecturerId: 'GV022', rank: 'TS', degree: 'Tiến sĩ', dept: 'ATTT', field: 'Bảo mật ứng dụng Web & Mobile' },
+    { username: 'gv023', name: 'ThS. Trần Thị Mai Anh', role: 'LECTURER', email: 'anhttm@ptit.edu.vn', lecturerId: 'GV023', rank: 'ThS', degree: 'Thạc sĩ', dept: 'ATTT', field: 'Quản trị rủi ro an ninh mạng' },
+
+    { username: 'gv024', name: 'TS. Nguyễn Tiến Dũng', role: 'LECTURER', email: 'dungnt@ptit.edu.vn', lecturerId: 'GV024', rank: 'TS', degree: 'Tiến sĩ', dept: 'DTVT1', field: 'Kỹ thuật siêu cao tần & Anten' },
+    { username: 'gv025', name: 'TS. Phạm Văn Cường', role: 'LECTURER', email: 'cuongpv@ptit.edu.vn', lecturerId: 'GV025', rank: 'TS', degree: 'Tiến sĩ', dept: 'DTVT1', field: 'Hệ thống nhúng & IoT công nghiệp' },
+    { username: 'gv026', name: 'TS. Lê Thanh Tùng', role: 'LECTURER', email: 'tunglt@ptit.edu.vn', lecturerId: 'GV026', rank: 'TS', degree: 'Tiến sĩ', dept: 'DTVT1', field: 'Xử lý tín hiệu số & FPGA' },
+    { username: 'gv027', name: 'ThS. Vũ Hoàng Nam', role: 'LECTURER', email: 'namvh@ptit.edu.vn', lecturerId: 'GV027', rank: 'ThS', degree: 'Thạc sĩ', dept: 'DTVT1', field: 'Mạng thông tin quang' },
+
     // Cán bộ quản lý các cấp
     { username: 'tk001', name: 'ThS. Nguyễn Thị Lan', role: 'FACULTY_SECRETARY', email: 'lannt@ptit.edu.vn', dept: 'CNTT1' },
     { username: 'lead001', name: 'PGS.TS. Trần Đình Quế', role: 'FACULTY_LEADER', email: 'quetd@ptit.edu.vn', dept: 'CNTT1' },

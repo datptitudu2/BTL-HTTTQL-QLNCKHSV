@@ -220,7 +220,7 @@ export class AcceptanceService {
 
     const project = await this.prisma.project.findUnique({
       where: { projectId },
-      include: { acceptance: true, seminars: true },
+      include: { acceptance: true, seminars: true, advisors: true },
     });
     if (!project) {
       throw new NotFoundException(`Không tìm thấy đề tài ${projectId}`);
@@ -258,6 +258,12 @@ export class AcceptanceService {
     const uniqueLecturerIds = new Set(members.map((m) => m.lecturerId).filter(Boolean));
     if (uniqueLecturerIds.size < 3) {
       throw new BadRequestException('Hội đồng nghiệm thu phải có tối thiểu 03 thành viên giảng viên không trùng lặp');
+    }
+    const activeAdvisorIds = new Set(
+      (project.advisors || []).filter((a) => a.status !== 'REJECTED').map((a) => a.lecturerId),
+    );
+    if (members.some((m) => activeAdvisorIds.has(m.lecturerId))) {
+      throw new BadRequestException('Giảng viên hướng dẫn của đề tài không được tham gia Hội đồng nghiệm thu đề tài đó (tránh xung đột lợi ích theo QĐ 521)');
     }
 
     const council = await this.prisma.council.create({
