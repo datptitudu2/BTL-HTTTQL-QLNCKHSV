@@ -11,7 +11,7 @@ function resolveServerlessDatabaseUrl(): string | undefined {
       url += (url.includes('?') ? '&' : '?') + 'pgbouncer=true';
     }
     if (!url.includes('connection_limit=')) {
-      url += '&connection_limit=1';
+      url += '&connection_limit=5';
     }
     return url;
   }
